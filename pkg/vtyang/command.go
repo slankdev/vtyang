@@ -24,7 +24,16 @@ func NewCommand() *cobra.Command {
 	fs.BoolVar(&config.GlobalOptDebug, "debug", false, "Enable debug output")
 	fs.StringArrayVarP(&config.GlobalOptPaths, "path", "p", []string{}, "Module paths")
 	rootCmd.AddCommand(newCommandCompletion(rootCmd))
+	rootCmd.AddCommand(newCommandAgent())
 	return rootCmd
+}
+
+func newCommandAgent() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:  "agent",
+		RunE: agentMain,
+	}
+	return cmd
 }
 
 func newCommandCompletion(rootCmd *cobra.Command) *cobra.Command {

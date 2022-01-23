@@ -62,19 +62,26 @@ func main(cmd *cobra.Command, args []string) error {
 		"./yang/model1.yang",
 		"./yang/model2.yang",
 	}
-	ms := yang.NewModules()
+	modules := yang.NewModules()
 	for _, name := range files {
-		if err := ms.Read(name); err != nil {
+		if err := modules.Read(name); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			continue
 		}
 	}
-	exitIfError(ms.Process())
+
+	errs := modules.Process()
+	if len(errs) > 0 {
+		for _, err := range errs {
+			fmt.Fprintln(os.Stderr, err)
+		}
+		return errs[0]
+	}
 
 	mods := map[string]*yang.Module{}
 	var names []string
 
-	for _, m := range ms.Modules {
+	for _, m := range modules.Modules {
 		if mods[m.Name] == nil {
 			mods[m.Name] = m
 			names = append(names, m.Name)
@@ -86,15 +93,8 @@ func main(cmd *cobra.Command, args []string) error {
 		entries[x] = yang.ToEntry(mods[n])
 	}
 
-	doTree(os.Stdout, entries)
-	return nil
-}
-
-func exitIfError(errs []error) {
-	if len(errs) > 0 {
-		for _, err := range errs {
-			fmt.Fprintln(os.Stderr, err)
-		}
-		os.Exit(1)
+	for _, e := range entries {
+		write(os.Stdout, e)
 	}
+	return nil
 }

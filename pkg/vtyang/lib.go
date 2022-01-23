@@ -9,12 +9,6 @@ import (
 	"github.com/openconfig/goyang/pkg/yang"
 )
 
-func doTree(w io.Writer, entries []*yang.Entry) {
-	for _, e := range entries {
-		write(w, e)
-	}
-}
-
 func write(w io.Writer, e *yang.Entry) {
 	if e.Description != "" {
 		fmt.Fprintln(w)

@@ -23,7 +23,6 @@ type CompletionNode struct {
 	Description string
 	Childs      []CompletionNode
 	Level       int
-	Executable  bool
 }
 
 func (n CompletionNode) String() string {
@@ -70,26 +69,16 @@ func (t CompletionTree) Completion(line string, pos int) []CompletionNode {
 		log.Printf("loop (%d) match %d candidates\n", i, n)
 
 		if i == last {
-			if pivot.Executable {
-				return []CompletionNode{*pivot}
-			} else {
-				return candidates
-			}
+			return candidates
 		}
 
 		switch {
 		case n == 0:
-			if pivot.Executable {
-				return []CompletionNode{*pivot}
-			} else {
-				return nil
-			}
+			return nil
 		case n == 1:
 			pivot = &candidates[0]
-			continue
 		case n >= 1:
 			pivot = &candidates[0]
-			continue
 		}
 	}
 
@@ -111,13 +100,13 @@ var tree = CompletionTree{
 						Name:        "running-config",
 						Description: "Display current configuration",
 						Level:       1,
-						Childs:      []CompletionNode{{Executable: true}},
+						Childs:      []CompletionNode{{Name: "<cr>"}},
 					},
 					{
 						Name:        "startup-config",
 						Description: "Display startup configuration",
 						Level:       1,
-						Childs:      []CompletionNode{{Executable: true}},
+						Childs:      []CompletionNode{{Name: "<cr>"}},
 					},
 					{
 						Name:        "commit",
@@ -128,7 +117,7 @@ var tree = CompletionTree{
 								Name:        "history",
 								Description: "Display commit history",
 								Level:       2,
-								Childs:      []CompletionNode{{Executable: true}},
+								Childs:      []CompletionNode{{Name: "<cr>"}},
 							},
 						},
 					},
@@ -138,7 +127,7 @@ var tree = CompletionTree{
 				Name:        "quit",
 				Description: "Quit system",
 				Level:       0,
-				Childs:      []CompletionNode{{Executable: true}},
+				Childs:      []CompletionNode{{Name: "<cr>"}},
 			},
 		},
 	},
@@ -172,18 +161,10 @@ func completer(line string, pos int) (string, []string, string) {
 
 func binder(line string, pos int) {
 	nodes := tree.Completion(line, pos)
-
 	if len(nodes) == 0 {
 		fmt.Printf("\n%% Invalid input detected\n")
 		return
 	}
-
-	if len(nodes) == 1 && nodes[0].Executable {
-		fmt.Printf("\nPossible Completions:\n")
-		fmt.Printf("  <CR>\n")
-		return
-	}
-
 	fmt.Printf("\nPossible Completions:\n")
 	for _, node := range nodes {
 		fmt.Printf("  %s  %s\n", node.Name, node.Description)

@@ -58,7 +58,10 @@ func newCommandCompletion(rootCmd *cobra.Command) *cobra.Command {
 }
 
 func main(cmd *cobra.Command, args []string) error {
-	files := []string{"./yang/data.yang"}
+	files := []string{
+		"./yang/model1.yang",
+		"./yang/model2.yang",
+	}
 	ms := yang.NewModules()
 	for _, name := range files {
 		if err := ms.Read(name); err != nil {

@@ -5,6 +5,8 @@ import (
 	"log"
 	"strings"
 
+	"github.com/k0kubun/pp"
+	"github.com/openconfig/goyang/pkg/yang"
 	"github.com/slankdev/vtyang/pkg/liner"
 	"github.com/spf13/cobra"
 )
@@ -145,6 +147,12 @@ var tree = CompletionTree{
 						Level:       1,
 						Childs:      []CompletionNode{{Name: "<cr>"}},
 					},
+					{
+						Name:        "cli-tree",
+						Description: "Display cli tree dump",
+						Level:       1,
+						Childs:      []CompletionNode{{Name: "<cr>"}},
+					},
 				},
 			},
 			{
@@ -155,6 +163,43 @@ var tree = CompletionTree{
 			},
 		},
 	},
+}
+
+func do(e *yang.Entry) CompletionNode {
+	log.Printf("TRANSLATE FROM YANG %s", e.Name)
+	node := CompletionNode{}
+	node.Name = e.Name
+	for _, child := range e.Dir {
+		node.Childs = append(node.Childs, do(child))
+	}
+	return node
+}
+
+func DigNode(node *CompletionNode, query []string) *CompletionNode {
+	if len(query) == 0 {
+		return node
+	}
+
+	for idx, _ := range node.Childs {
+		child := &node.Childs[idx]
+		if child.Name == query[0] {
+			return DigNode(child, query[1:])
+		}
+	}
+	return nil
+
+}
+
+func setCompletionTreeForOperationalData() {
+	root := DigNode(&tree.Root, []string{"show", "operational-data"})
+	if root == nil {
+		panic("OKASHII")
+	}
+	ents := dbm.DumpEntries()
+	for _, e := range ents {
+		log.Printf("hoge %s\n", e.Name)
+		root.Childs = append(root.Childs, do(e))
+	}
 }
 
 func completer(line string, pos int) (string, []string, string) {
@@ -240,7 +285,7 @@ func match(args []string, matchStr string) bool {
 func agentMain(cmd *cobra.Command, args []string) error {
 	dbm = NewDatabaseManager()
 	dbm.LoadYangModuleOrDie("./yang")
-	// ents := dbm.DumpEntries()
+	setCompletionTreeForOperationalData()
 
 	line := liner.NewLiner()
 	defer line.Close()
@@ -263,6 +308,8 @@ func agentMain(cmd *cobra.Command, args []string) error {
 				fmt.Printf("not implemented\n")
 			case match(args, "show yang-modules"):
 				dbm.Dump()
+			case match(args, "show cli-tree"):
+				pp.Println(tree)
 			case match(args, "show"):
 				fmt.Printf("not implemented\n")
 			default:

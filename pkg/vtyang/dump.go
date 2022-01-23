@@ -3,10 +3,12 @@ package vtyang
 import (
 	"fmt"
 	"io"
+	"os"
 	"sort"
 
 	"github.com/openconfig/goyang/pkg/indent"
 	"github.com/openconfig/goyang/pkg/yang"
+	"github.com/spf13/cobra"
 )
 
 func write(w io.Writer, e *yang.Entry) {
@@ -77,4 +79,46 @@ func getTypeName(e *yang.Entry) string {
 		return ""
 	}
 	return e.Type.Root.Name
+}
+
+func dumpMain(cmd *cobra.Command, args []string) error {
+	files := []string{
+		"./yang/model1.yang",
+		"./yang/model2.yang",
+	}
+	modules := yang.NewModules()
+	for _, name := range files {
+		if err := modules.Read(name); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			continue
+		}
+	}
+
+	errs := modules.Process()
+	if len(errs) > 0 {
+		for _, err := range errs {
+			fmt.Fprintln(os.Stderr, err)
+		}
+		return errs[0]
+	}
+
+	mods := map[string]*yang.Module{}
+	var names []string
+
+	for _, m := range modules.Modules {
+		if mods[m.Name] == nil {
+			mods[m.Name] = m
+			names = append(names, m.Name)
+		}
+	}
+	sort.Strings(names)
+	entries := make([]*yang.Entry, len(names))
+	for x, n := range names {
+		entries[x] = yang.ToEntry(mods[n])
+	}
+
+	for _, e := range entries {
+		write(os.Stdout, e)
+	}
+	return nil
 }

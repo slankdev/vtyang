@@ -1,11 +1,9 @@
 package vtyang
 
 import (
-	"fmt"
+	"log"
 	"os"
-	"sort"
 
-	"github.com/openconfig/goyang/pkg/yang"
 	"github.com/spf13/cobra"
 )
 
@@ -16,8 +14,7 @@ var config = struct {
 
 func NewCommand() *cobra.Command {
 	rootCmd := &cobra.Command{
-		Use:  "vtyang",
-		RunE: main,
+		Use: "vtyang",
 	}
 
 	fs := rootCmd.PersistentFlags()
@@ -25,6 +22,7 @@ func NewCommand() *cobra.Command {
 	fs.StringArrayVarP(&config.GlobalOptPaths, "path", "p", []string{}, "Module paths")
 	rootCmd.AddCommand(newCommandCompletion(rootCmd))
 	rootCmd.AddCommand(newCommandAgent())
+	rootCmd.AddCommand(newCommandDump())
 	return rootCmd
 }
 
@@ -32,6 +30,14 @@ func newCommandAgent() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:  "agent",
 		RunE: agentMain,
+	}
+	return cmd
+}
+
+func newCommandDump() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:  "dump",
+		RunE: dumpMain,
 	}
 	return cmd
 }
@@ -66,44 +72,18 @@ func newCommandCompletion(rootCmd *cobra.Command) *cobra.Command {
 	return cmd
 }
 
-func main(cmd *cobra.Command, args []string) error {
-	files := []string{
-		"./yang/model1.yang",
-		"./yang/model2.yang",
+func init() {
+	logfile, err := os.OpenFile("/tmp/vtyang.log",
+		os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		panic("cannnot open test.log:" + err.Error())
 	}
-	modules := yang.NewModules()
-	for _, name := range files {
-		if err := modules.Read(name); err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			continue
-		}
-	}
+	log.SetOutput(logfile)
+	log.Printf("starting vtyang...\n")
+}
 
-	errs := modules.Process()
-	if len(errs) > 0 {
-		for _, err := range errs {
-			fmt.Fprintln(os.Stderr, err)
-		}
-		return errs[0]
+func ErrorOnDie(err error) {
+	if err != nil {
+		panic(err)
 	}
-
-	mods := map[string]*yang.Module{}
-	var names []string
-
-	for _, m := range modules.Modules {
-		if mods[m.Name] == nil {
-			mods[m.Name] = m
-			names = append(names, m.Name)
-		}
-	}
-	sort.Strings(names)
-	entries := make([]*yang.Entry, len(names))
-	for x, n := range names {
-		entries[x] = yang.ToEntry(mods[n])
-	}
-
-	for _, e := range entries {
-		write(os.Stdout, e)
-	}
-	return nil
 }

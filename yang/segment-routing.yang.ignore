@@ -1,8 +1,10 @@
-module model1 {
+module sr {
   namespace "http://slank.dev/vtyang";
   prefix model1;
+  description "module1 is for segment-routing";
 
   container segment-routing {
+    description "sr configuration";
     container srv6 {
       container locators {
         container locators {
@@ -17,10 +19,25 @@ module model1 {
   }
 
   container segment-routing-state {
+    description "sr operational-state";
     config false;
     leaf running {
       type boolean;
       default false;
     }
+    // container sids {
+    //   list sid {
+    //     key "value";
+    //     leaf value {
+    //       type inet:prefix;
+    //     }
+    //     leaf protocol {
+    //       type inet:routing-type;
+    //     }
+    //     leaf message {
+    //       type string;
+    //     }
+    //   }
+    // }
   }
 }

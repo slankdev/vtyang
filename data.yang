@@ -1,0 +1,58 @@
+module slankdev {
+  namespace "http://slank.dev/vtyang"
+  prefix slankdev;
+
+  container segment-routing {
+    container srv6 {
+      container locators {
+        container locators {
+          list locator {
+            key "name";
+            leaf prefix { type string; }
+            leaf name { type string; }
+          }
+        }
+      }
+    }
+  }
+
+  container segment-routing-state {
+    config false;
+    leaf running {
+      type boolean;
+      default false;
+    }
+  }
+
+  // import tailf-common {
+  //   prefix tailf;
+  // }
+  // container segment-routing {
+  //   tailf:cli-add-mode;
+  //   container srv6 {
+  //     tailf:cli-add-mode;
+  //     container locators {
+  //       tailf:cli-add-mode;
+  //       container locators {
+  //         tailf:cli-drop-node-name;
+  //         list locator {
+  //           key "name";
+  //           container prefix {
+  //             leaf prefix {
+  //               tailf:cli-drop-node-name;
+  //               type string;
+  //             }
+  //             leaf prefix-length {
+  //               tailf:cli-drop-node-name;
+  //               type uint32;
+  //             }
+  //           }
+  //           leaf name {
+  //             type string;
+  //           }
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
+}

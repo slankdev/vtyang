@@ -1,6 +1,7 @@
 package vtyang
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -9,22 +10,6 @@ import (
 	"github.com/slankdev/vtyang/pkg/liner"
 	"github.com/spf13/cobra"
 )
-
-var (
-	names = []string{"john", "james", "mary", "nancy"}
-)
-
-func completerA(line string) []string {
-	log.Printf("hoge")
-
-	c := []string{}
-	for _, n := range names {
-		if strings.HasPrefix(n, strings.ToLower(line)) {
-			c = append(c, n)
-		}
-	}
-	return c
-}
 
 func init() {
 	logfile, err := os.OpenFile("/tmp/vtyang.log",
@@ -35,12 +20,27 @@ func init() {
 	log.SetOutput(logfile)
 }
 
+func completer(line string, pos int) (string, []string, string) {
+	log.Printf("hoge")
+	names := []string{"john", "james", "mary", "nancy"}
+	return line[:pos], names, line[pos:]
+}
+
+func binder(line string) {
+	fmt.Printf("\n\n")
+	fmt.Printf("Possible Completions:\n")
+	fmt.Printf(" hoge    sdkfjds sadf sdfsd fsdf\n")
+	fmt.Printf(" fuga    sdkfjds sadf sdfsd fsdf\n")
+	fmt.Printf("\n")
+}
+
 func agentMain(cmd *cobra.Command, args []string) error {
 	line := liner.NewLiner()
 	defer line.Close()
 	line.SetCtrlCAborts(true)
-	line.SetCompleter(completerA)
+	line.SetWordCompleter(completer)
 	line.SetTabCompletionStyle(liner.TabPrints)
+	line.SetBinder(63, binder) // 63 = Question Mark '?'
 
 	for {
 		if name, err := line.Prompt("vtyang# "); err == nil {

@@ -1,10 +1,16 @@
 package main
 
-import(
-	"github.com/k0kubun/pp/v3"
+import (
+	"math/rand"
+	"os"
+	"time"
+
+	"github.com/slankdev/vtyang/pkg/vtyang"
 )
 
 func main() {
-	print("slankdev\n")
-	pp.Println("slankdev")
+	rand.Seed(time.Now().UnixNano())
+	if err := vtyang.NewCommand().Execute(); err != nil {
+		os.Exit(1)
+	}
 }

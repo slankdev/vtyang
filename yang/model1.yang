@@ -1,0 +1,26 @@
+module model1 {
+  namespace "http://slank.dev/vtyang";
+  prefix model1;
+
+  container segment-routing {
+    container srv6 {
+      container locators {
+        container locators {
+          list locator {
+            key "name";
+            leaf prefix { type string; }
+            leaf name { type string; }
+          }
+        }
+      }
+    }
+  }
+
+  container segment-routing-state {
+    config false;
+    leaf running {
+      type boolean;
+      default false;
+    }
+  }
+}

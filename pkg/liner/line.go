@@ -838,7 +838,7 @@ mainLoop:
 				// BEGIN Added by slankdev
 				binder, foundBinder := s.binder[v]
 				if foundBinder {
-					binder(string(line))
+					binder(string(line), pos)
 					s.needRefresh = true
 					break
 				}

@@ -5,7 +5,6 @@ import (
 	"log"
 	"strings"
 
-	"github.com/k0kubun/pp"
 	"github.com/slankdev/vtyang/pkg/liner"
 	"github.com/spf13/cobra"
 )
@@ -32,10 +31,28 @@ func binder(line string, pos int) {
 	}
 }
 
+func match(args []string, matchStr string) bool {
+	matchArgs := strings.Fields(matchStr)
+	if len(matchArgs) > len(args) {
+		log.Printf("Unmatch %s v.s. %s\n", args, matchStr)
+		return false
+	}
+
+	for i, _ := range matchArgs {
+		if matchArgs[i] != args[i] {
+			log.Printf("Unmatch %s v.s. %s\n", args, matchStr)
+			return false
+		}
+	}
+
+	log.Printf("Match %s v.s. %s\n", args, matchStr)
+	return true
+}
+
 func agentMain(cmd *cobra.Command, args []string) error {
 	dbm = NewDatabaseManager()
 	dbm.LoadYangModuleOrDie("./yang")
-	dbm.Dump()
+	//dbm.Dump()
 
 	line := liner.NewLiner()
 	defer line.Close()
@@ -53,10 +70,15 @@ func agentMain(cmd *cobra.Command, args []string) error {
 				continue
 
 			}
-
-			switch args[0] {
+			switch {
+			case match(args, "show configuration"):
+				fmt.Printf("not implemented\n")
+			case match(args, "show"):
+				fmt.Printf("not implemented\n")
+			case match(args, "dump"):
+				dbm.Dump()
 			default:
-				pp.Println(args)
+				fmt.Printf("Error: command %s not found\n", args[0])
 			}
 
 		} else if err == liner.ErrPromptAborted {

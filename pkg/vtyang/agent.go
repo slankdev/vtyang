@@ -2,6 +2,7 @@ package vtyang
 
 import (
 	"log"
+	"os"
 	"strings"
 
 	"github.com/k0kubun/pp"
@@ -14,6 +15,8 @@ var (
 )
 
 func completerA(line string) []string {
+	log.Printf("hoge")
+
 	c := []string{}
 	for _, n := range names {
 		if strings.HasPrefix(n, strings.ToLower(line)) {
@@ -21,6 +24,15 @@ func completerA(line string) []string {
 		}
 	}
 	return c
+}
+
+func init() {
+	logfile, err := os.OpenFile("/tmp/vtyang.log",
+		os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		panic("cannnot open test.log:" + err.Error())
+	}
+	log.SetOutput(logfile)
 }
 
 func agentMain(cmd *cobra.Command, args []string) error {

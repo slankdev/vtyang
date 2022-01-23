@@ -85,6 +85,18 @@ func (t CompletionTree) Completion(line string, pos int) []CompletionNode {
 	return nil
 }
 
+// func init() {
+// 	InstallCommand("show operational-data",
+//                           "Display information\n"+
+// 			  "Display yang modules\n",
+// 			  func (args []string) error {
+// 				dbm.Dump()
+// 			  },
+// 			func(...) {
+// 				...
+// 			})
+// }
+
 var tree = CompletionTree{
 	Root: CompletionNode{
 		Name:        "",

@@ -16,6 +16,8 @@ type DatabaseManager struct {
 	modules *yang.Modules
 }
 
+var dbm *DatabaseManager
+
 func NewDatabaseManager() *DatabaseManager {
 	m := DatabaseManager{}
 	m.modules = yang.NewModules()

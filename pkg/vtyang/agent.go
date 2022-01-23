@@ -14,8 +14,6 @@ const (
 	QUESTION_MARK rune = 63
 )
 
-var dbm *DatabaseManager
-
 func completer(line string, pos int) (string, []string, string) {
 	log.Printf("hoge")
 	names := []string{"john", "james", "mary", "nancy"}

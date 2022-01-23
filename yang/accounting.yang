@@ -1,0 +1,18 @@
+module account {
+  namespace "http://slank.dev/vtyang";
+  prefix model2;
+  description "module2 is for user-management";
+
+  container users {
+    list user  {
+      key "name";
+      leaf name { type string; }
+      leaf age  { type int32; }
+      list projects {
+        key "name";
+        leaf name { type string; }
+        leaf finished { type boolean; }
+      }
+    }
+  }
+}

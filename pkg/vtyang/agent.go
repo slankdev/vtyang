@@ -109,6 +109,12 @@ var tree = CompletionTree{
 						Childs:      []CompletionNode{{Name: "<cr>"}},
 					},
 					{
+						Name:        "operational-data",
+						Description: "Display operational data",
+						Level:       1,
+						Childs:      []CompletionNode{{Name: "<cr>"}},
+					},
+					{
 						Name:        "commit",
 						Description: "Display commit information",
 						Level:       1,

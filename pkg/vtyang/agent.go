@@ -119,6 +119,19 @@ var tree = CompletionTree{
 						Level:       1,
 						Childs:      []CompletionNode{{Executable: true}},
 					},
+					{
+						Name:        "commit",
+						Description: "Display commit information",
+						Level:       1,
+						Childs: []CompletionNode{
+							{
+								Name:        "history",
+								Description: "Display commit history",
+								Level:       2,
+								Childs:      []CompletionNode{{Executable: true}},
+							},
+						},
+					},
 				},
 			},
 			{
@@ -133,12 +146,28 @@ var tree = CompletionTree{
 
 func completer(line string, pos int) (string, []string, string) {
 	nodes := tree.Completion(line, pos)
+	if len(nodes) == 0 {
+		return line[:pos], nil, line[pos:]
+	}
+
 	names := []string{}
 	for _, node := range nodes {
 		names = append(names, node.Name)
 	}
 
-	return line[:pos], names, line[pos:]
+	pre := line[:pos]
+	if len(pre) > 0 && pre[len(pre)-1] != ' ' {
+		words := strings.Fields(pre)
+		last := len(words) - 1
+		words = append(words[:last], words[last+1:]...)
+		pre = ""
+		for _, word := range words {
+			pre += word
+			pre += " "
+		}
+	}
+
+	return pre, names, line[pos:]
 }
 
 func binder(line string, pos int) {

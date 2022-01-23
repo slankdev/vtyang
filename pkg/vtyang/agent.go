@@ -23,7 +23,7 @@ func completer(line string, pos int) (string, []string, string) {
 	return line[:pos], names, line[pos:]
 }
 
-func binder(line string) {
+func binder(line string, pos int) {
 	fmt.Printf("\n")
 	fmt.Printf("Possible Completions:\n")
 	ents := dbm.DumpEntries()

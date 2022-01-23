@@ -68,8 +68,6 @@ func main(cmd *cobra.Command, args []string) error {
 	}
 	exitIfError(ms.Process())
 
-	// Keep track of the top level modules we read in.
-	// Those are the only modules we want to print below.
 	mods := map[string]*yang.Module{}
 	var names []string
 

@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"sort"
 
 	"github.com/openconfig/goyang/pkg/yang"
 )
@@ -44,19 +43,9 @@ func (m *DatabaseManager) LoadYangModule(path string) error {
 		return errs[0]
 	}
 
-	mods := map[string]*yang.Module{}
-	var names []string
-
+	entries := []*yang.Entry{}
 	for _, m := range modules.Modules {
-		if mods[m.Name] == nil {
-			mods[m.Name] = m
-			names = append(names, m.Name)
-		}
-	}
-	sort.Strings(names)
-	entries := make([]*yang.Entry, len(names))
-	for x, n := range names {
-		entries[x] = yang.ToEntry(mods[n])
+		entries = append(entries, yang.ToEntry(m))
 	}
 
 	for _, e := range entries {

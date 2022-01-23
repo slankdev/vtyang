@@ -85,6 +85,7 @@ func main(cmd *cobra.Command, args []string) error {
 		entries[x] = yang.ToEntry(mods[n])
 	}
 
-	formatters["tree"].f(os.Stdout, entries)
+	//formatters["tree"].f(os.Stdout, entries)
+	doTree(os.Stdout, entries)
 	return nil
 }

@@ -180,9 +180,24 @@ func binder(line string, pos int) {
 		fmt.Printf("\n%% Invalid input detected\n")
 		return
 	}
+
+	longestnamelen := 0
+	for _, node := range nodes {
+		if len(node.Name) > longestnamelen {
+			longestnamelen = len(node.Name)
+		}
+	}
+	padding := func(str string, maxlen int) string {
+		retStr := ""
+		for i := 0; i < maxlen-len(str); i++ {
+			retStr += " "
+		}
+		return retStr
+	}
+
 	fmt.Printf("\nPossible Completions:\n")
 	for _, node := range nodes {
-		fmt.Printf("  %s  %s\n", node.Name, node.Description)
+		fmt.Printf("  %s%s  %s\n", node.Name, padding(node.Name, longestnamelen), node.Description)
 	}
 }
 

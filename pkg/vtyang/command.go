@@ -1,6 +1,7 @@
 package vtyang
 
 import (
+	"log"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -69,4 +70,14 @@ func newCommandCompletion(rootCmd *cobra.Command) *cobra.Command {
 	})
 
 	return cmd
+}
+
+func init() {
+	logfile, err := os.OpenFile("/tmp/vtyang.log",
+		os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		panic("cannnot open test.log:" + err.Error())
+	}
+	log.SetOutput(logfile)
+	log.Printf("starting vtyang...\n")
 }

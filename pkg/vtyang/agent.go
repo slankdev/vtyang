@@ -3,7 +3,6 @@ package vtyang
 import (
 	"fmt"
 	"log"
-	"os"
 	"strings"
 
 	"github.com/k0kubun/pp"
@@ -11,14 +10,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	logfile, err := os.OpenFile("/tmp/vtyang.log",
-		os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
-	if err != nil {
-		panic("cannnot open test.log:" + err.Error())
-	}
-	log.SetOutput(logfile)
-}
+const (
+	// Question mark '?'
+	QUESTION_MARK rune = 64
+)
 
 func completer(line string, pos int) (string, []string, string) {
 	log.Printf("hoge")
@@ -35,12 +30,17 @@ func binder(line string) {
 }
 
 func agentMain(cmd *cobra.Command, args []string) error {
+	m := NewDatabaseManager()
+	if err := m.LoadYangModule("./yang"); err != nil {
+		return err
+	}
+
 	line := liner.NewLiner()
 	defer line.Close()
 	line.SetCtrlCAborts(true)
 	line.SetWordCompleter(completer)
 	line.SetTabCompletionStyle(liner.TabPrints)
-	line.SetBinder(63, binder) // 63 = Question Mark '?'
+	line.SetBinder(QUESTION_MARK, binder)
 
 	for {
 		if name, err := line.Prompt("vtyang# "); err == nil {
@@ -58,10 +58,10 @@ func agentMain(cmd *cobra.Command, args []string) error {
 			}
 
 		} else if err == liner.ErrPromptAborted {
-			log.Print("Aborted")
+			log.Print("aborted")
 			break
 		} else {
-			log.Print("Error reading line: ", err)
+			log.Print("error reading line: ", err)
 		}
 	}
 

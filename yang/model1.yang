@@ -25,5 +25,19 @@ module model1 {
       type boolean;
       default false;
     }
+    // container sids {
+    //   list sid {
+    //     key "value";
+    //     leaf value {
+    //       type inet:prefix;
+    //     }
+    //     leaf protocol {
+    //       type inet:routing-type;
+    //     }
+    //     leaf message {
+    //       type string;
+    //     }
+    //   }
+    // }
   }
 }

@@ -121,6 +121,12 @@ var tree = CompletionTree{
 							},
 						},
 					},
+					{
+						Name:        "yang-modules",
+						Description: "Display yang modules",
+						Level:       1,
+						Childs:      []CompletionNode{{Name: "<cr>"}},
+					},
 				},
 			},
 			{
@@ -217,15 +223,15 @@ func agentMain(cmd *cobra.Command, args []string) error {
 			args := strings.Fields(name)
 			if len(args) == 0 {
 				continue
-
 			}
+
 			switch {
 			case match(args, "show configuration"):
 				fmt.Printf("not implemented\n")
+			case match(args, "show yang-modules"):
+				dbm.Dump()
 			case match(args, "show"):
 				fmt.Printf("not implemented\n")
-			case match(args, "dump"):
-				dbm.Dump()
 			default:
 				fmt.Printf("Error: command %s not found\n", args[0])
 			}

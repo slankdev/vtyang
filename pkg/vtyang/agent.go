@@ -40,6 +40,7 @@ func agentMain(cmd *cobra.Command, args []string) error {
 	defer line.Close()
 	line.SetCtrlCAborts(true)
 	line.SetCompleter(completerA)
+	line.SetTabCompletionStyle(liner.TabPrints)
 
 	for {
 		if name, err := line.Prompt("vtyang# "); err == nil {

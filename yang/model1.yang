@@ -3,6 +3,7 @@ module model1 {
   prefix model1;
 
   container segment-routing {
+    description "sr configuration";
     container srv6 {
       container locators {
         container locators {
@@ -17,6 +18,7 @@ module model1 {
   }
 
   container segment-routing-state {
+    description "sr operational-state";
     config false;
     leaf running {
       type boolean;

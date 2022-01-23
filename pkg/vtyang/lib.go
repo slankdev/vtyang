@@ -3,7 +3,6 @@ package vtyang
 import (
 	"fmt"
 	"io"
-	"os"
 	"sort"
 
 	"github.com/openconfig/goyang/pkg/indent"
@@ -84,13 +83,4 @@ func getTypeName(e *yang.Entry) string {
 		return ""
 	}
 	return e.Type.Root.Name
-}
-
-func exitIfError(errs []error) {
-	if len(errs) > 0 {
-		for _, err := range errs {
-			fmt.Fprintln(os.Stderr, err)
-		}
-		os.Exit(1)
-	}
 }

@@ -86,3 +86,12 @@ func main(cmd *cobra.Command, args []string) error {
 	doTree(os.Stdout, entries)
 	return nil
 }
+
+func exitIfError(errs []error) {
+	if len(errs) > 0 {
+		for _, err := range errs {
+			fmt.Fprintln(os.Stderr, err)
+		}
+		os.Exit(1)
+	}
+}

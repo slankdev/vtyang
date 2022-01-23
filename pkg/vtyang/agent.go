@@ -14,6 +14,39 @@ const (
 	QUESTION_MARK rune = 63
 )
 
+type CompletionTree struct {
+	Root CompletionNode
+}
+
+type CompletionNode struct {
+	Name        string
+	Description string
+	Childs      []CompletionNode
+}
+
+var completionTree = CompletionTree{
+	Root: CompletionNode{
+		Name:        "",
+		Description: "",
+		Childs: []CompletionNode{
+			{
+				Name:        "show",
+				Description: "Display information",
+				Childs: []CompletionNode{
+					{
+						Name:        "running-config",
+						Description: "Display current configuration",
+					},
+					{
+						Name:        "startup-config",
+						Description: "Display startup configuration",
+					},
+				},
+			},
+		},
+	},
+}
+
 func completer(line string, pos int) (string, []string, string) {
 	log.Printf("hoge")
 	names := []string{"john", "james", "mary", "nancy"}

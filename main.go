@@ -1,10 +1,11 @@
 package main
 
-import(
-	"github.com/k0kubun/pp/v3"
+import (
+	//"github.com/k0kubun/pp/v3"
+	app "github.com/slankdev/vtyang/pkg/vtyang"
 )
 
 func main() {
 	print("slankdev\n")
-	pp.Println("slankdev")
+	println(app.S)
 }

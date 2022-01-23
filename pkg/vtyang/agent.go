@@ -24,17 +24,12 @@ func completer(line string, pos int) (string, []string, string) {
 }
 
 func binder(line string) {
-	fmt.Printf("\n\n")
+	fmt.Printf("\n")
 	fmt.Printf("Possible Completions:\n")
-	// fmt.Printf(" hoge    sdkfjds sadf sdfsd fsdf\n")
-	// fmt.Printf(" fuga    sdkfjds sadf sdfsd fsdf\n")
-	// fmt.Printf("\n")
-
 	ents := dbm.DumpEntries()
 	for _, ent := range ents {
-		fmt.Printf("  %s\t%s\n", ent.Name, ent.Description)
+		fmt.Printf("  %s  %s\n", ent.Name, ent.Description)
 	}
-	fmt.Printf("\n")
 }
 
 func agentMain(cmd *cobra.Command, args []string) error {

@@ -12,8 +12,10 @@ import (
 
 const (
 	// Question mark '?'
-	QUESTION_MARK rune = 64
+	QUESTION_MARK rune = 63
 )
+
+var dbm *DatabaseManager
 
 func completer(line string, pos int) (string, []string, string) {
 	log.Printf("hoge")
@@ -24,16 +26,21 @@ func completer(line string, pos int) (string, []string, string) {
 func binder(line string) {
 	fmt.Printf("\n\n")
 	fmt.Printf("Possible Completions:\n")
-	fmt.Printf(" hoge    sdkfjds sadf sdfsd fsdf\n")
-	fmt.Printf(" fuga    sdkfjds sadf sdfsd fsdf\n")
+	// fmt.Printf(" hoge    sdkfjds sadf sdfsd fsdf\n")
+	// fmt.Printf(" fuga    sdkfjds sadf sdfsd fsdf\n")
+	// fmt.Printf("\n")
+
+	ents := dbm.DumpEntries()
+	for _, ent := range ents {
+		fmt.Printf("  %s\t%s\n", ent.Name, ent.Description)
+	}
 	fmt.Printf("\n")
 }
 
 func agentMain(cmd *cobra.Command, args []string) error {
-	m := NewDatabaseManager()
-	if err := m.LoadYangModule("./yang"); err != nil {
-		return err
-	}
+	dbm = NewDatabaseManager()
+	dbm.LoadYangModuleOrDie("./yang")
+	dbm.Dump()
 
 	line := liner.NewLiner()
 	defer line.Close()

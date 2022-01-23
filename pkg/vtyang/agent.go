@@ -22,43 +22,142 @@ type CompletionNode struct {
 	Name        string
 	Description string
 	Childs      []CompletionNode
+	Level       int
+	Executable  bool
 }
 
-var completionTree = CompletionTree{
+func (n CompletionNode) String() string {
+	name := "<root>"
+	if n.Name != "" {
+		name = n.Name
+	}
+	return fmt.Sprintf("%d:%s", n.Level, name)
+}
+
+func (t CompletionTree) Completion(line string, pos int) []CompletionNode {
+	line = line[:pos]
+	args := strings.Fields(line)
+	if len(args) == 0 {
+		args = append(args, "")
+	} else if line[len(line)-1] == ' ' {
+		args = append(args, "")
+	}
+	log.Printf("DEBUG: line=\"%s\" pos=%d, args=%d:%+v", line, pos, len(args), args)
+
+	search := func(nodes []CompletionNode, str string) []CompletionNode {
+		result := []CompletionNode{}
+		for _, node := range nodes {
+			log.Printf("HasPrefix(%s,%s)\n", node.Name, str)
+			if strings.HasPrefix(node.Name, str) {
+				result = append(result, node)
+			}
+		}
+		return result
+	}
+
+	var pivot *CompletionNode = &tree.Root
+	last := len(args) - 1
+	for i, arg := range args {
+		if i == last {
+			log.Printf("loop (%d) last\n", i)
+		} else {
+			log.Printf("loop (%d)\n", i)
+		}
+		log.Printf("loop (%d) %s", i, pivot.String())
+
+		candidates := search(pivot.Childs, arg)
+		n := len(candidates)
+		log.Printf("loop (%d) match %d candidates\n", i, n)
+
+		if i == last {
+			if pivot.Executable {
+				return []CompletionNode{*pivot}
+			} else {
+				return candidates
+			}
+		}
+
+		switch {
+		case n == 0:
+			if pivot.Executable {
+				return []CompletionNode{*pivot}
+			} else {
+				return nil
+			}
+		case n == 1:
+			pivot = &candidates[0]
+			continue
+		case n >= 1:
+			pivot = &candidates[0]
+			continue
+		}
+	}
+
+	return nil
+}
+
+var tree = CompletionTree{
 	Root: CompletionNode{
 		Name:        "",
 		Description: "",
+		Level:       -1,
 		Childs: []CompletionNode{
 			{
 				Name:        "show",
 				Description: "Display information",
+				Level:       0,
 				Childs: []CompletionNode{
 					{
 						Name:        "running-config",
 						Description: "Display current configuration",
+						Level:       1,
+						Childs:      []CompletionNode{{Executable: true}},
 					},
 					{
 						Name:        "startup-config",
 						Description: "Display startup configuration",
+						Level:       1,
+						Childs:      []CompletionNode{{Executable: true}},
 					},
 				},
+			},
+			{
+				Name:        "quit",
+				Description: "Quit system",
+				Level:       0,
+				Childs:      []CompletionNode{{Executable: true}},
 			},
 		},
 	},
 }
 
 func completer(line string, pos int) (string, []string, string) {
-	log.Printf("hoge")
-	names := []string{"john", "james", "mary", "nancy"}
+	nodes := tree.Completion(line, pos)
+	names := []string{}
+	for _, node := range nodes {
+		names = append(names, node.Name)
+	}
+
 	return line[:pos], names, line[pos:]
 }
 
 func binder(line string, pos int) {
-	fmt.Printf("\n")
-	fmt.Printf("Possible Completions:\n")
-	ents := dbm.DumpEntries()
-	for _, ent := range ents {
-		fmt.Printf("  %s  %s\n", ent.Name, ent.Description)
+	nodes := tree.Completion(line, pos)
+
+	if len(nodes) == 0 {
+		fmt.Printf("\n%% Invalid input detected\n")
+		return
+	}
+
+	if len(nodes) == 1 && nodes[0].Executable {
+		fmt.Printf("\nPossible Completions:\n")
+		fmt.Printf("  <CR>\n")
+		return
+	}
+
+	fmt.Printf("\nPossible Completions:\n")
+	for _, node := range nodes {
+		fmt.Printf("  %s  %s\n", node.Name, node.Description)
 	}
 }
 
@@ -83,6 +182,7 @@ func match(args []string, matchStr string) bool {
 func agentMain(cmd *cobra.Command, args []string) error {
 	dbm = NewDatabaseManager()
 	dbm.LoadYangModuleOrDie("./yang")
+	// ents := dbm.DumpEntries()
 
 	line := liner.NewLiner()
 	defer line.Close()

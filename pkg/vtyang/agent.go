@@ -52,7 +52,6 @@ func match(args []string, matchStr string) bool {
 func agentMain(cmd *cobra.Command, args []string) error {
 	dbm = NewDatabaseManager()
 	dbm.LoadYangModuleOrDie("./yang")
-	//dbm.Dump()
 
 	line := liner.NewLiner()
 	defer line.Close()

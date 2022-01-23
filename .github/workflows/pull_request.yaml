@@ -1,0 +1,44 @@
+name: test
+
+on:
+  push:
+    branches:
+    - "**"
+  pull_request: {}
+
+jobs:
+  build:
+    name: Publish for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+        - os: ubuntu-latest
+          artifact_name: vtyang
+          asset_name: vtyang.linux-amd64
+        - os: macos-latest
+          artifact_name: vtyang
+          asset_name: vtyang.darwin-amd64
+    steps:
+    - name: set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.17
+      id: go
+    - name: checkout
+      uses: actions/checkout@v2
+    - name: download modules
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: go get
+    - name: test
+      run: go test ./... -v
+    - name: build
+      run: go build -o ${{ matrix.artifact_name }}
+    - name: upload
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: ${{ matrix.artifact_name }}
+        asset_name: ${{ matrix.asset_name }}
+        tag: ${{ github.ref }}
+        overwrite: true

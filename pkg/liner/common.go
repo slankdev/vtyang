@@ -177,7 +177,7 @@ func (s *State) getHistoryByPattern(pattern string) (ph []string, pos []int) {
 }
 
 // Binder is added by slankdev
-type Binder func(line string)
+type Binder func(line string, pos int)
 
 // SetBinder is added by slankdev
 func (s *State) SetBinder(b rune, callback Binder) {

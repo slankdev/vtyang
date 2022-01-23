@@ -156,6 +156,15 @@ func completer(line string, pos int) (string, []string, string) {
 		}
 	}
 
+	if len(names) == 1 && names[0] == "<cr>" {
+		return pre, nil, line[pos:]
+	}
+
+	if len(names) == 1 {
+		names[0] += " "
+		return pre, names, line[pos:]
+	}
+
 	return pre, names, line[pos:]
 }
 

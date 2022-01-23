@@ -28,6 +28,9 @@ type State struct {
 	winch       chan os.Signal
 	pending     []rune
 	useCHA      bool
+
+	// Added by slankdev
+	binder map[rune]Binder
 }
 
 // NewLiner initializes a new *State, and sets the terminal into raw mode. To
@@ -35,6 +38,9 @@ type State struct {
 func NewLiner() *State {
 	var s State
 	s.r = bufio.NewReader(os.Stdin)
+
+	// Added by slakdev
+	s.binder = map[rune]Binder{}
 
 	s.terminalSupported = TerminalSupported()
 	if m, err := TerminalMode(); err == nil {

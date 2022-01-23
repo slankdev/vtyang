@@ -835,6 +835,15 @@ mainLoop:
 			case 0, 28, 29, 30, 31:
 				s.doBeep()
 			default:
+				// BEGIN Added by slankdev
+				binder, foundBinder := s.binder[v]
+				if foundBinder {
+					binder(string(line), pos)
+					s.needRefresh = true
+					break
+				}
+				// END Added by slankdev
+
 				if pos == len(line) && !s.multiLineMode &&
 					len(p)+len(line) < s.columns*4 && // Avoid countGlyphs on large lines
 					countGlyphs(p)+countGlyphs(line) < s.columns-1 {

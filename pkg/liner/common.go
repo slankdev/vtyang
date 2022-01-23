@@ -176,6 +176,14 @@ func (s *State) getHistoryByPattern(pattern string) (ph []string, pos []int) {
 	return
 }
 
+// Binder is added by slankdev
+type Binder func(line string, pos int)
+
+// SetBinder is added by slankdev
+func (s *State) SetBinder(b rune, callback Binder) {
+	s.binder[b] = callback
+}
+
 // Completer takes the currently edited line content at the left of the cursor
 // and returns a list of completion candidates.
 // If the line is "Hello, wo!!!" and the cursor is before the first '!', "Hello, wo" is passed

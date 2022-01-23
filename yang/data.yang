@@ -1,5 +1,5 @@
 module slankdev {
-  namespace "http://slank.dev/vtyang"
+  namespace "http://slank.dev/vtyang";
   prefix slankdev;
 
   container segment-routing {

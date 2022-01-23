@@ -14,12 +14,7 @@ import (
 	"github.com/pborman/getopt"
 )
 
-var (
-	S = "hoge"
-)
-
 func init() {
-	print("hoge")
 	register(&formatter{
 		name: "tree",
 		f:    doTree,
@@ -245,7 +240,7 @@ func exitIfError(errs []error) {
 
 var stop = os.Exit
 
-func main() {
+func Main() {
 	var format string
 	formats := make([]string, 0, len(formatters))
 	for k := range formatters {

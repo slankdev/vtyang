@@ -6,3 +6,5 @@ r: build
 	./vtyang -p ./yang
 kill:
 	killall vtyang
+log:
+	tail -F /tmp/vtyang.log

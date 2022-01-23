@@ -1,4 +1,4 @@
-module model1 {
+module sr {
   namespace "http://slank.dev/vtyang";
   prefix model1;
   description "module1 is for segment-routing";

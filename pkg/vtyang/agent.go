@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/k0kubun/pp"
-	"github.com/openconfig/goyang/pkg/yang"
 	"github.com/slankdev/vtyang/pkg/liner"
 	"github.com/spf13/cobra"
 )
@@ -43,14 +42,29 @@ func (t CompletionTree) Completion(line string, pos int) []CompletionNode {
 	} else if line[len(line)-1] == ' ' {
 		args = append(args, "")
 	}
-	log.Printf("DEBUG: line=\"%s\" pos=%d, args=%d:%+v", line, pos, len(args), args)
+	log.Printf("DEBUG: line=\"%s\" pos=%d, args=%d:%+v", line, pos, len(args),
+		args)
 
 	search := func(nodes []CompletionNode, str string) []CompletionNode {
 		result := []CompletionNode{}
 		for _, node := range nodes {
-			log.Printf("HasPrefix(%s,%s)\n", node.Name, str)
-			if strings.HasPrefix(node.Name, str) {
+			switch node.Name {
+			case "NAME":
 				result = append(result, node)
+
+			// // TODO(slankdev)
+			// case "INTEGER":
+			// 	if _, err := strconv.Atoi(str); err == nil {
+			// 		result = append(result, node)
+			// 	} else if str == "" {
+			// 		result = append(result, node)
+			// 	}
+
+			default:
+				log.Printf("HasPrefix(%s,%s)\n", node.Name, str)
+				if strings.HasPrefix(node.Name, str) {
+					result = append(result, node)
+				}
 			}
 		}
 		return result
@@ -99,82 +113,6 @@ func (t CompletionTree) Completion(line string, pos int) []CompletionNode {
 // 			})
 // }
 
-var tree = CompletionTree{
-	Root: CompletionNode{
-		Name:        "",
-		Description: "",
-		Level:       -1,
-		Childs: []CompletionNode{
-			{
-				Name:        "show",
-				Description: "Display information",
-				Level:       0,
-				Childs: []CompletionNode{
-					{
-						Name:        "running-config",
-						Description: "Display current configuration",
-						Level:       1,
-						Childs:      []CompletionNode{{Name: "<cr>"}},
-					},
-					{
-						Name:        "startup-config",
-						Description: "Display startup configuration",
-						Level:       1,
-						Childs:      []CompletionNode{{Name: "<cr>"}},
-					},
-					{
-						Name:        "operational-data",
-						Description: "Display operational data",
-						Level:       1,
-						Childs:      []CompletionNode{{Name: "<cr>"}},
-					},
-					{
-						Name:        "commit",
-						Description: "Display commit information",
-						Level:       1,
-						Childs: []CompletionNode{
-							{
-								Name:        "history",
-								Description: "Display commit history",
-								Level:       2,
-								Childs:      []CompletionNode{{Name: "<cr>"}},
-							},
-						},
-					},
-					{
-						Name:        "yang-modules",
-						Description: "Display yang modules",
-						Level:       1,
-						Childs:      []CompletionNode{{Name: "<cr>"}},
-					},
-					{
-						Name:        "cli-tree",
-						Description: "Display cli tree dump",
-						Level:       1,
-						Childs:      []CompletionNode{{Name: "<cr>"}},
-					},
-				},
-			},
-			{
-				Name:        "quit",
-				Description: "Quit system",
-				Level:       0,
-				Childs:      []CompletionNode{{Name: "<cr>"}},
-			},
-		},
-	},
-}
-
-func do(e *yang.Entry) CompletionNode {
-	log.Printf("TRANSLATE FROM YANG %s", e.Name)
-	node := CompletionNode{}
-	node.Name = e.Name
-	for _, child := range e.Dir {
-		node.Childs = append(node.Childs, do(child))
-	}
-	return node
-}
-
 func DigNode(node *CompletionNode, query []string) *CompletionNode {
 	if len(query) == 0 {
 		return node
@@ -188,18 +126,6 @@ func DigNode(node *CompletionNode, query []string) *CompletionNode {
 	}
 	return nil
 
-}
-
-func setCompletionTreeForOperationalData() {
-	root := DigNode(&tree.Root, []string{"show", "operational-data"})
-	if root == nil {
-		panic("OKASHII")
-	}
-	ents := dbm.DumpEntries()
-	for _, e := range ents {
-		log.Printf("hoge %s\n", e.Name)
-		root.Childs = append(root.Childs, do(e))
-	}
 }
 
 func completer(line string, pos int) (string, []string, string) {
@@ -226,6 +152,10 @@ func completer(line string, pos int) (string, []string, string) {
 	}
 
 	if len(names) == 1 && names[0] == "<cr>" {
+		return pre, nil, line[pos:]
+	}
+
+	if len(names) > 0 && names[len(names)-1] == "NAME" {
 		return pre, nil, line[pos:]
 	}
 
@@ -260,7 +190,8 @@ func binder(line string, pos int) {
 
 	fmt.Printf("\nPossible Completions:\n")
 	for _, node := range nodes {
-		fmt.Printf("  %s%s  %s\n", node.Name, padding(node.Name, longestnamelen), node.Description)
+		fmt.Printf("  %s%s  %s\n", node.Name, padding(node.Name, longestnamelen),
+			node.Description)
 	}
 }
 
@@ -285,7 +216,8 @@ func match(args []string, matchStr string) bool {
 func agentMain(cmd *cobra.Command, args []string) error {
 	dbm = NewDatabaseManager()
 	dbm.LoadYangModuleOrDie("./yang")
-	setCompletionTreeForOperationalData()
+	setCompletionTreeForCommandShowOperationalData()
+	setCompletionTreeForCommandSet()
 
 	line := liner.NewLiner()
 	defer line.Close()
@@ -304,8 +236,10 @@ func agentMain(cmd *cobra.Command, args []string) error {
 			}
 
 			switch {
-			case match(args, "show configuration"):
+			case match(args, "set"):
 				fmt.Printf("not implemented\n")
+			case match(args, "show running-config"):
+				pp.Println(dbm.db.root)
 			case match(args, "show yang-modules"):
 				dbm.Dump()
 			case match(args, "show cli-tree"):

@@ -1,6 +1,7 @@
 module model2 {
   namespace "http://slank.dev/vtyang";
   prefix model2;
+  description "module2 is for user-management";
 
   container users {
     list user  {

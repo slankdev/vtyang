@@ -1,6 +1,7 @@
 module model1 {
   namespace "http://slank.dev/vtyang";
   prefix model1;
+  description "module1 is for segment-routing";
 
   container segment-routing {
     description "sr configuration";

@@ -4,3 +4,5 @@ run: build
 	./vtyang agent
 r: build
 	./vtyang -p ./yang
+kill:
+	killall vtyang

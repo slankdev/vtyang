@@ -213,6 +213,17 @@ func match(args []string, matchStr string) bool {
 	return true
 }
 
+var commands []Command
+
+type Command struct {
+	m string
+	f func(args []string)
+}
+
+func InstallCommand(match string, f func(args []string)) {
+	commands = append(commands, Command{m: match, f: f})
+}
+
 func agentMain(cmd *cobra.Command, args []string) error {
 	dbm = NewDatabaseManager()
 	dbm.LoadYangModuleOrDie("./yang")
@@ -224,6 +235,7 @@ func agentMain(cmd *cobra.Command, args []string) error {
 	// fmt.Println("------")
 	// C(dbm, []string{"show", "operational-data", "account", "users", "user", "hiroki", "age"})
 	// pp.Println(xpath)
+	InstallCommands()
 
 	line := liner.NewLiner()
 	defer line.Close()
@@ -250,12 +262,18 @@ func agentMain(cmd *cobra.Command, args []string) error {
 				dbm.Dump()
 			case match(args, "show cli-tree"):
 				pp.Println(tree)
-			case match(args, "show operational-data"):
-				C(dbm, args)
-			case match(args, "show"):
-				fmt.Printf("not implemented\n")
 			default:
-				fmt.Printf("Error: command %s not found\n", args[0])
+				notfound := true
+				for _, cmd := range commands {
+					if match(args, cmd.m) {
+						cmd.f(args)
+						notfound = false
+						break
+					}
+				}
+				if notfound {
+					fmt.Printf("Error: command %s not found\n", args[0])
+				}
 			}
 
 		} else if err == liner.ErrPromptAborted {

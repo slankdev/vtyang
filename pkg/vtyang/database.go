@@ -56,7 +56,7 @@ func (dbm DatabaseManager) Create(mod, xpath string) error {
 	})
 	pp.Println(words)
 
-	n, err := dbm.Dig(words, root)
+	n, err := dbm.DigContainer(words, root)
 	if err != nil {
 		return err
 	}
@@ -66,7 +66,7 @@ func (dbm DatabaseManager) Create(mod, xpath string) error {
 	return nil
 }
 
-func (dbm DatabaseManager) Dig(words []string, n *DBNode) (*DBNode, error) {
+func (dbm DatabaseManager) DigContainer(words []string, n *DBNode) (*DBNode, error) {
 	if len(words) == 0 {
 		return n, nil
 	}
@@ -100,7 +100,7 @@ func (dbm DatabaseManager) Dig(words []string, n *DBNode) (*DBNode, error) {
 				case Leaf:
 					fallthrough
 				case Container:
-					return dbm.Dig(words[1:], &n.Childs[idx])
+					return dbm.DigContainer(words[1:], &n.Childs[idx])
 				case List:
 					k := key(words[0])
 					v := val(words[0])
@@ -109,7 +109,7 @@ func (dbm DatabaseManager) Dig(words []string, n *DBNode) (*DBNode, error) {
 						for idx3 := range child.Childs[idx2].Childs {
 							child3 := &child.Childs[idx2].Childs[idx3]
 							if child3.Name == k && child3.Value.String == v {
-								return dbm.Dig(words[1:], child2)
+								return dbm.DigContainer(words[1:], child2)
 							}
 						}
 					}

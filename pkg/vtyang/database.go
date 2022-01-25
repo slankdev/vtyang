@@ -79,14 +79,14 @@ func (dbm DatabaseManager) Dig(words []string, n *DBNode) (*DBNode, error) {
 	key := func(s string) string {
 		ret := util.SplitMultiSep(s, []string{"'", "[", "]", "="})
 		if len(ret) != 3 {
-			panic(fmt.Sprintf(s))
+			panic(s)
 		}
 		return ret[1]
 	}
 	val := func(s string) string {
 		ret := util.SplitMultiSep(s, []string{"'", "[", "]", "="})
 		if len(ret) != 3 {
-			panic(fmt.Sprintf(s))
+			panic(s)
 		}
 		return ret[2]
 	}

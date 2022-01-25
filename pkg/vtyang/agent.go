@@ -219,7 +219,7 @@ func agentMain(cmd *cobra.Command, args []string) error {
 	setCompletionTreeForCommandShowOperationalData()
 	setCompletionTreeForCommandSet()
 
-	ErrorOnDie(dbm.Create("account", "/users/user['name'='hiroki']/age"))
+	ErrorOnDie(dbm.Create("account", "/users/user['name'='hiroki']/projects['name'='tennis']/finished"))
 
 	line := liner.NewLiner()
 	defer line.Close()

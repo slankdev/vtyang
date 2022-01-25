@@ -55,6 +55,14 @@ var DummyDBRoot = DBNode{
 														String: "tennis",
 													},
 												},
+												{
+													Name: "finished",
+													Type: Leaf,
+													Value: DBValue{
+														Type:   YBoolean,
+														String: "true",
+													},
+												},
 											},
 										},
 										{
@@ -67,6 +75,14 @@ var DummyDBRoot = DBNode{
 													Value: DBValue{
 														Type:   YString,
 														String: "driving",
+													},
+												},
+												{
+													Name: "finished",
+													Type: Leaf,
+													Value: DBValue{
+														Type:   YBoolean,
+														String: "false",
 													},
 												},
 											},
@@ -98,26 +114,52 @@ var DummyDBRoot = DBNode{
 								{
 									Name: "projects",
 									Type: List,
-									// 	ListChilds: [][]DBNode{
-									// 		{
-									// 			{
-									// 				Name: "name",
-									// 				Type: Leaf,
-									// 				Value: DBValue{
-									// 					Type:   YString,
-									// 					String: "kloudnfv",
-									// 				},
-									// 			},
-									// 			{
-									// 				Name: "name",
-									// 				Type: Leaf,
-									// 				Value: DBValue{
-									// 					Type:   YString,
-									// 					String: "wide",
-									// 				},
-									// 			},
-									// 		},
-									// 	},
+									Childs: []DBNode{
+										{
+											Name: ".",
+											Type: Container,
+											Childs: []DBNode{
+												{
+													Name: "name",
+													Type: Leaf,
+													Value: DBValue{
+														Type:   YString,
+														String: "kloudnfv",
+													},
+												},
+												{
+													Name: "finished",
+													Type: Leaf,
+													Value: DBValue{
+														Type:   YBoolean,
+														String: "false",
+													},
+												},
+											},
+										},
+										{
+											Name: ".",
+											Type: Container,
+											Childs: []DBNode{
+												{
+													Name: "name",
+													Type: Leaf,
+													Value: DBValue{
+														Type:   YString,
+														String: "wide",
+													},
+												},
+												{
+													Name: "finished",
+													Type: Leaf,
+													Value: DBValue{
+														Type:   YBoolean,
+														String: "false",
+													},
+												},
+											},
+										},
+									},
 								},
 							},
 						},

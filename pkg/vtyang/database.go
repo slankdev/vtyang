@@ -73,13 +73,22 @@ func (dbm DatabaseManager) Dig(words []string, n *DBNode) (*DBNode, error) {
 	fmt.Printf("DEBUG %s(%s), %+v\n", n.Name, n.Type, words[0])
 
 	name := func(s string) string {
-		return util.SplitMultiSep(s, []string{"'", "[", "]", "="})[0]
+		ret := util.SplitMultiSep(s, []string{"'", "[", "]", "="})
+		return ret[0]
 	}
 	key := func(s string) string {
-		return util.SplitMultiSep(s, []string{"'", "[", "]", "="})[1]
+		ret := util.SplitMultiSep(s, []string{"'", "[", "]", "="})
+		if len(ret) != 3 {
+			panic(fmt.Sprintf(s))
+		}
+		return ret[1]
 	}
 	val := func(s string) string {
-		return util.SplitMultiSep(s, []string{"'", "[", "]", "="})[2]
+		ret := util.SplitMultiSep(s, []string{"'", "[", "]", "="})
+		if len(ret) != 3 {
+			panic(fmt.Sprintf(s))
+		}
+		return ret[2]
 	}
 
 	switch n.Type {

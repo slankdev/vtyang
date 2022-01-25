@@ -81,3 +81,9 @@ func init() {
 	log.SetOutput(logfile)
 	log.Printf("starting vtyang...\n")
 }
+
+func ErrorOnDie(err error) {
+	if err != nil {
+		panic(err)
+	}
+}

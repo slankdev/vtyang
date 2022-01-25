@@ -8,6 +8,7 @@ package vtyang
 // set account users user slankdev projects wide
 
 var DummyDBRoot = DBNode{
+	Name: "<root>",
 	Type: Container,
 	Childs: []DBNode{
 		{
@@ -17,89 +18,97 @@ var DummyDBRoot = DBNode{
 				{
 					Name: "user",
 					Type: List,
-					ListChilds: [][]DBNode{
+					Childs: []DBNode{
 						{
-							{
-								Name: "name",
-								Type: Leaf,
-								Value: DBValue{
-									Type:   YString,
-									String: "hiroki",
-								},
-							},
-							{
-								Name: "age",
-								Type: Leaf,
-								Value: DBValue{
-									Type:    YInteger,
-									Integer: 26,
-								},
-							},
-							{
-								Name: "projects",
-								Type: List,
-								ListChilds: [][]DBNode{
-									{
-										{
-											Name: "name",
-											Type: Leaf,
-											Value: DBValue{
-												Type:   YString,
-												String: "tennis",
-											},
-										},
-										{
-											Name: "name",
-											Type: Leaf,
-											Value: DBValue{
-												Type:   YString,
-												String: "driving",
-											},
-										},
+							Name: ".",
+							Type: Container,
+							Childs: []DBNode{
+								{
+									Name: "name",
+									Type: Leaf,
+									Value: DBValue{
+										Type:   YString,
+										String: "hiroki",
 									},
 								},
+								{
+									Name: "age",
+									Type: Leaf,
+									Value: DBValue{
+										Type:    YInteger,
+										Integer: 26,
+									},
+								},
+								// {
+								// 	Name: "projects",
+								// 	Type: List,
+								// 	ListChilds: [][]DBNode{
+								// 		{
+								// 			{
+								// 				Name: "name",
+								// 				Type: Leaf,
+								// 				Value: DBValue{
+								// 					Type:   YString,
+								// 					String: "tennis",
+								// 				},
+								// 			},
+								// 			{
+								// 				Name: "name",
+								// 				Type: Leaf,
+								// 				Value: DBValue{
+								// 					Type:   YString,
+								// 					String: "driving",
+								// 				},
+								// 			},
+								// 		},
+								// 	},
+								// },
 							},
 						},
 						{
-							{
-								Name: "name",
-								Type: Leaf,
-								Value: DBValue{
-									Type:   YString,
-									String: "slankdev",
-								},
-							},
-							{
-								Name: "age",
-								Type: Leaf,
-								Value: DBValue{
-									Type:    YInteger,
-									Integer: 36,
-								},
-							},
-							{
-								Name: "projects",
-								Type: List,
-								ListChilds: [][]DBNode{
-									{
-										{
-											Name: "name",
-											Type: Leaf,
-											Value: DBValue{
-												Type:   YString,
-												String: "kloudnfv",
-											},
-										},
-										{
-											Name: "name",
-											Type: Leaf,
-											Value: DBValue{
-												Type:   YString,
-												String: "wide",
-											},
-										},
+							Name: ".",
+							Type: Container,
+							Childs: []DBNode{
+								{
+									Name: "name",
+									Type: Leaf,
+									Value: DBValue{
+										Type:   YString,
+										String: "slankdev",
 									},
 								},
+								{
+									Name: "age",
+									Type: Leaf,
+									Value: DBValue{
+										Type:    YInteger,
+										Integer: 36,
+									},
+								},
+								// {
+								// 	Name: "projects",
+								// 	Type: List,
+								// 	ListChilds: [][]DBNode{
+								// 		{
+								// 			{
+								// 				Name: "name",
+								// 				Type: Leaf,
+								// 				Value: DBValue{
+								// 					Type:   YString,
+								// 					String: "kloudnfv",
+								// 				},
+								// 			},
+								// 			{
+								// 				Name: "name",
+								// 				Type: Leaf,
+								// 				Value: DBValue{
+								// 					Type:   YString,
+								// 					String: "wide",
+								// 				},
+								// 			},
+								// 		},
+								// 	},
+								// },
 							},
 						},
 					},

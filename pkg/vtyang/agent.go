@@ -219,6 +219,8 @@ func agentMain(cmd *cobra.Command, args []string) error {
 	setCompletionTreeForCommandShowOperationalData()
 	setCompletionTreeForCommandSet()
 
+	ErrorOnDie(dbm.Create("account", "/users/user['name'='hiroki']/age"))
+
 	line := liner.NewLiner()
 	defer line.Close()
 	line.SetCtrlCAborts(true)
@@ -244,6 +246,8 @@ func agentMain(cmd *cobra.Command, args []string) error {
 				dbm.Dump()
 			case match(args, "show cli-tree"):
 				pp.Println(tree)
+			case match(args, "show database-tree"):
+				pp.Println(DummyDBRoot)
 			case match(args, "show"):
 				fmt.Printf("not implemented\n")
 			default:

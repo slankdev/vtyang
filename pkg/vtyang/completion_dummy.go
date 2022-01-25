@@ -89,6 +89,12 @@ var tree = CompletionTree{
 						Level:       1,
 						Childs:      []CompletionNode{{Name: "<cr>"}},
 					},
+					{
+						Name:        "database-tree",
+						Description: "Display database dump",
+						Level:       1,
+						Childs:      []CompletionNode{{Name: "<cr>"}},
+					},
 				},
 			},
 			{

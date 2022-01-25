@@ -246,8 +246,9 @@ func agentMain(cmd *cobra.Command, args []string) error {
 				dbm.Dump()
 			case match(args, "show cli-tree"):
 				pp.Println(tree)
-			case match(args, "show database-tree"):
+			case match(args, "show operational-data"):
 				pp.Println(DummyDBRoot)
+				C(dbm, args)
 			case match(args, "show"):
 				fmt.Printf("not implemented\n")
 			default:

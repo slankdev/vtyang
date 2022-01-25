@@ -3,6 +3,7 @@ package vtyang
 import (
 	"fmt"
 
+	"github.com/k0kubun/pp"
 	"github.com/openconfig/goyang/pkg/yang"
 )
 
@@ -13,8 +14,13 @@ func C(dbm *DatabaseManager, args []string) {
 	}
 
 	mod, xpath := dbm.CraftXPath(args[2:])
-	//fmt.Printf("xpath  %s, %s\n", mod, xpath)
-	ErrorOnDie(dbm.Create(mod, xpath))
+	node, err := dbm.GetNode(mod, xpath)
+	if err != nil {
+		fmt.Printf("Error: %s\n", err.Error())
+		return
+	}
+
+	pp.Println(node)
 }
 
 func (dbm *DatabaseManager) CraftXPath(args []string) (string, string) {

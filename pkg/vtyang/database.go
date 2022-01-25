@@ -3,7 +3,6 @@ package vtyang
 import (
 	"strings"
 
-	"github.com/k0kubun/pp"
 	"github.com/slankdev/vtyang/pkg/util"
 )
 
@@ -46,9 +45,7 @@ type DB struct {
 	root   DBNode
 }
 
-func (dbm DatabaseManager) Create(mod, xpath string) error {
-	//fmt.Printf("HELLO %s %s\n", mod, xpath)
-
+func (dbm DatabaseManager) GetNode(mod, xpath string) (*DBNode, error) {
 	root := &dbm.db.root
 	words := strings.FieldsFunc(xpath, func(c rune) bool {
 		return c == '/'
@@ -56,11 +53,9 @@ func (dbm DatabaseManager) Create(mod, xpath string) error {
 
 	n, err := dbm.DigContainer(words, root)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	pp.Println(xpath, n)
-
-	return nil
+	return n, nil
 }
 
 func (dbm DatabaseManager) DigContainer(words []string, n *DBNode) (*DBNode, error) {
@@ -116,12 +111,12 @@ func (dbm DatabaseManager) DigContainer(words []string, n *DBNode) (*DBNode, err
 			}
 		}
 	case List:
-		println("OWAI\n")
+		panic("UNSUPPORTED")
 
 	default:
 		panic("UNSUPPORTED")
 	}
 
-	println("NOTFOUND!!")
+	// println("NOTFOUND!!")
 	return nil, nil
 }

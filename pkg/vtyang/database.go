@@ -1,7 +1,6 @@
 package vtyang
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/k0kubun/pp"
@@ -54,14 +53,12 @@ func (dbm DatabaseManager) Create(mod, xpath string) error {
 	words := strings.FieldsFunc(xpath, func(c rune) bool {
 		return c == '/'
 	})
-	pp.Println(words)
 
 	n, err := dbm.DigContainer(words, root)
 	if err != nil {
 		return err
 	}
-	//pp.Println(n.Name, n.Type)
-	pp.Println(n)
+	pp.Println(xpath, n)
 
 	return nil
 }
@@ -70,7 +67,7 @@ func (dbm DatabaseManager) DigContainer(words []string, n *DBNode) (*DBNode, err
 	if len(words) == 0 {
 		return n, nil
 	}
-	fmt.Printf("DEBUG %s(%s), %+v\n", n.Name, n.Type, words[0])
+	// fmt.Printf("DEBUG %s(%s), %+v\n", n.Name, n.Type, words[0])
 
 	name := func(s string) string {
 		ret := util.SplitMultiSep(s, []string{"'", "[", "]", "="})

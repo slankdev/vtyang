@@ -20,7 +20,6 @@ var DummyDBRoot = DBNode{
 					Type: List,
 					Childs: []DBNode{
 						{
-							Name: ".",
 							Type: Container,
 							Childs: []DBNode{
 								{
@@ -44,7 +43,6 @@ var DummyDBRoot = DBNode{
 									Type: List,
 									Childs: []DBNode{
 										{
-											Name: ".",
 											Type: Container,
 											Childs: []DBNode{
 												{
@@ -59,14 +57,13 @@ var DummyDBRoot = DBNode{
 													Name: "finished",
 													Type: Leaf,
 													Value: DBValue{
-														Type:   YBoolean,
-														String: "true",
+														Type:    YBoolean,
+														Boolean: true,
 													},
 												},
 											},
 										},
 										{
-											Name: ".",
 											Type: Container,
 											Childs: []DBNode{
 												{
@@ -81,8 +78,8 @@ var DummyDBRoot = DBNode{
 													Name: "finished",
 													Type: Leaf,
 													Value: DBValue{
-														Type:   YBoolean,
-														String: "false",
+														Type:    YBoolean,
+														Boolean: false,
 													},
 												},
 											},
@@ -92,7 +89,6 @@ var DummyDBRoot = DBNode{
 							},
 						},
 						{
-							Name: ".",
 							Type: Container,
 							Childs: []DBNode{
 								{
@@ -116,7 +112,6 @@ var DummyDBRoot = DBNode{
 									Type: List,
 									Childs: []DBNode{
 										{
-											Name: ".",
 											Type: Container,
 											Childs: []DBNode{
 												{
@@ -131,14 +126,13 @@ var DummyDBRoot = DBNode{
 													Name: "finished",
 													Type: Leaf,
 													Value: DBValue{
-														Type:   YBoolean,
-														String: "false",
+														Type:    YBoolean,
+														Boolean: false,
 													},
 												},
 											},
 										},
 										{
-											Name: ".",
 											Type: Container,
 											Childs: []DBNode{
 												{
@@ -153,8 +147,8 @@ var DummyDBRoot = DBNode{
 													Name: "finished",
 													Type: Leaf,
 													Value: DBValue{
-														Type:   YBoolean,
-														String: "false",
+														Type:    YBoolean,
+														Boolean: false,
 													},
 												},
 											},

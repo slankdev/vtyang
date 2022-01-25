@@ -1,8 +1,13 @@
 package vtyang
 
 import (
+	"fmt"
+	"io"
+	"strconv"
 	"strings"
 
+	"github.com/k0kubun/pp"
+	"github.com/openconfig/goyang/pkg/indent"
 	"github.com/slankdev/vtyang/pkg/util"
 )
 
@@ -23,6 +28,32 @@ type DBNode struct {
 	Value      DBValue
 }
 
+func (n *DBNode) String() string {
+	return pp.Sprintln(n)
+}
+
+func (n *DBNode) Write(w io.Writer) {
+	switch n.Type {
+	case Container:
+		if n.Name != "" {
+			fmt.Fprintf(w, "\"%s\": ", n.Name)
+		}
+		fmt.Fprintf(w, "{\n")
+		for _, child := range n.Childs {
+			child.Write(indent.NewWriter(w, "  "))
+		}
+		fmt.Fprintf(w, "}\n")
+	case List:
+		fmt.Fprintf(w, "\"%s\": [\n", n.Name)
+		for _, child := range n.Childs {
+			child.Write(indent.NewWriter(w, "  "))
+		}
+		fmt.Fprintf(w, "]\n")
+	case Leaf:
+		fmt.Fprintf(w, "\"%s\": %s\n", n.Name, n.Value.ToJsonValue())
+	}
+}
+
 type DBValueType string
 
 const (
@@ -37,7 +68,19 @@ type DBValue struct {
 	// Union
 	Integer int
 	String  string
-	Boolean string
+	Boolean bool
+}
+
+func (v DBValue) ToJsonValue() string {
+	switch v.Type {
+	case YInteger:
+		return fmt.Sprintf("%d", v.Integer)
+	case YBoolean:
+		return strconv.FormatBool(v.Boolean)
+	case YString:
+		return fmt.Sprintf("\"%s\"", v.String)
+	}
+	panic("unsupported")
 }
 
 type DB struct {

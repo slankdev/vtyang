@@ -221,6 +221,8 @@ func agentMain(cmd *cobra.Command, args []string) error {
 
 	// ErrorOnDie(dbm.Create("account", "/users/user['name'='hiroki']/projects['name'='tennis']/finished"))
 	// C(dbm, []string{"show", "operational-data", "account", "users", "user", "hiroki"})
+	// fmt.Println("------")
+	// C(dbm, []string{"show", "operational-data", "account", "users", "user", "hiroki", "age"})
 	// pp.Println(xpath)
 
 	line := liner.NewLiner()

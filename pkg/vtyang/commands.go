@@ -31,7 +31,7 @@ func (dbm *DatabaseManager) CraftXPath(args []string) (string, string) {
 			return e.Name, xpath
 		}
 	}
-	return "???", "???"
+	return "module-not-found", "error"
 }
 
 func (dbm *DatabaseManager) CraftXPathRc(args []string, e *yang.Entry, xpath string) string {

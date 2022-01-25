@@ -83,6 +83,26 @@ func (v DBValue) ToJsonValue() string {
 	panic("unsupported")
 }
 
+func (v *DBValue) SetFromString(s string) error {
+	switch v.Type {
+	case YInteger:
+		i, err := strconv.Atoi(s)
+		if err != nil {
+			return err
+		}
+		v.Integer = i
+	case YBoolean:
+		b, err := strconv.ParseBool(s)
+		if err != nil {
+			return err
+		}
+		v.Boolean = b
+	case YString:
+		v.String = s
+	}
+	return nil
+}
+
 type DB struct {
 	active bool
 	root   DBNode

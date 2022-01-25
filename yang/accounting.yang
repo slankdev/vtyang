@@ -11,6 +11,7 @@ module account {
       list projects {
         key "name";
         leaf name { type string; }
+        leaf finished { type boolean; }
       }
     }
   }

@@ -254,8 +254,6 @@ func agentMain(cmd *cobra.Command, args []string) error {
 			}
 
 			switch {
-			case match(args, "set"):
-				fmt.Printf("not implemented\n")
 			case match(args, "show running-config"):
 				pp.Println(dbm.db.root)
 			case match(args, "show yang-modules"):

@@ -24,4 +24,9 @@ func InstallCommands() {
 		}
 		node.Write(os.Stdout)
 	})
+
+	InstallCommand("set", func(args []string) {
+		// 	fmt.Printf("not implemented\n")
+		fmt.Printf("!!!\n")
+	})
 }

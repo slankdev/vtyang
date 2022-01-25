@@ -39,30 +39,40 @@ var DummyDBRoot = DBNode{
 										Integer: 26,
 									},
 								},
-								// {
-								// 	Name: "projects",
-								// 	Type: List,
-								// 	ListChilds: [][]DBNode{
-								// 		{
-								// 			{
-								// 				Name: "name",
-								// 				Type: Leaf,
-								// 				Value: DBValue{
-								// 					Type:   YString,
-								// 					String: "tennis",
-								// 				},
-								// 			},
-								// 			{
-								// 				Name: "name",
-								// 				Type: Leaf,
-								// 				Value: DBValue{
-								// 					Type:   YString,
-								// 					String: "driving",
-								// 				},
-								// 			},
-								// 		},
-								// 	},
-								// },
+								{
+									Name: "projects",
+									Type: List,
+									Childs: []DBNode{
+										{
+											Name: ".",
+											Type: Container,
+											Childs: []DBNode{
+												{
+													Name: "name",
+													Type: Leaf,
+													Value: DBValue{
+														Type:   YString,
+														String: "tennis",
+													},
+												},
+											},
+										},
+										{
+											Name: ".",
+											Type: Container,
+											Childs: []DBNode{
+												{
+													Name: "name",
+													Type: Leaf,
+													Value: DBValue{
+														Type:   YString,
+														String: "driving",
+													},
+												},
+											},
+										},
+									},
+								},
 							},
 						},
 						{
@@ -85,30 +95,30 @@ var DummyDBRoot = DBNode{
 										Integer: 36,
 									},
 								},
-								// {
-								// 	Name: "projects",
-								// 	Type: List,
-								// 	ListChilds: [][]DBNode{
-								// 		{
-								// 			{
-								// 				Name: "name",
-								// 				Type: Leaf,
-								// 				Value: DBValue{
-								// 					Type:   YString,
-								// 					String: "kloudnfv",
-								// 				},
-								// 			},
-								// 			{
-								// 				Name: "name",
-								// 				Type: Leaf,
-								// 				Value: DBValue{
-								// 					Type:   YString,
-								// 					String: "wide",
-								// 				},
-								// 			},
-								// 		},
-								// 	},
-								// },
+								{
+									Name: "projects",
+									Type: List,
+									// 	ListChilds: [][]DBNode{
+									// 		{
+									// 			{
+									// 				Name: "name",
+									// 				Type: Leaf,
+									// 				Value: DBValue{
+									// 					Type:   YString,
+									// 					String: "kloudnfv",
+									// 				},
+									// 			},
+									// 			{
+									// 				Name: "name",
+									// 				Type: Leaf,
+									// 				Value: DBValue{
+									// 					Type:   YString,
+									// 					String: "wide",
+									// 				},
+									// 			},
+									// 		},
+									// 	},
+								},
 							},
 						},
 					},

@@ -219,7 +219,9 @@ func agentMain(cmd *cobra.Command, args []string) error {
 	setCompletionTreeForCommandShowOperationalData()
 	setCompletionTreeForCommandSet()
 
-	ErrorOnDie(dbm.Create("account", "/users/user['name'='hiroki']/projects['name'='tennis']/finished"))
+	// ErrorOnDie(dbm.Create("account", "/users/user['name'='hiroki']/projects['name'='tennis']/finished"))
+	// C(dbm, []string{"show", "operational-data", "account", "users", "user", "hiroki"})
+	// pp.Println(xpath)
 
 	line := liner.NewLiner()
 	defer line.Close()
@@ -247,7 +249,6 @@ func agentMain(cmd *cobra.Command, args []string) error {
 			case match(args, "show cli-tree"):
 				pp.Println(tree)
 			case match(args, "show operational-data"):
-				pp.Println(DummyDBRoot)
 				C(dbm, args)
 			case match(args, "show"):
 				fmt.Printf("not implemented\n")

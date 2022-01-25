@@ -25,7 +25,7 @@ func setCompletionTreeForCommandShowOperationalData() {
 	ents := dbm.DumpEntries()
 	for _, e := range ents {
 		log.Printf("hoge %s\n", e.Name)
-		root.Childs = append(root.Childs, do1(e))
+		root.Childs = append(root.Childs, do2(e))
 	}
 }
 

@@ -3,6 +3,8 @@ package vtyang
 import (
 	"fmt"
 	"strconv"
+
+	"github.com/slankdev/vtyang/pkg/util"
 )
 
 type DBNodeType string
@@ -260,7 +262,7 @@ func (dbm *DatabaseManager) SetNode(mod string, xpath XPath, val string) (
 
 	for ; len(xwords) != 0; xwords = xwords[1:] {
 		if n.Type != Container {
-			panic(fmt.Sprintf("ASSERT(%s)", n.Type))
+			return nil, fmt.Errorf("%s: unsupported(%s)", util.LINE(), n.Type)
 		}
 
 		xword := xwords[0]

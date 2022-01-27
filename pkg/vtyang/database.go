@@ -47,6 +47,10 @@ func (n *DBNode) ToMap() interface{} {
 	return m
 }
 
+func Interface2DBNode(i interface{}) (*DBNode, error) {
+	return nil, nil
+}
+
 type DBValueType string
 
 const (

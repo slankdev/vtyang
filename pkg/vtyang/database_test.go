@@ -1,7 +1,7 @@
 package vtyang
 
 import (
-	"os"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -154,8 +154,8 @@ func TestDBNodeCreate(t *testing.T) {
 		ErrorOnDie(err)
 
 		if !reflect.DeepEqual(root, &tc.root) {
-			root.Write(os.Stdout)
-			tc.root.Write(os.Stdout)
+			fmt.Println(root.String())
+			fmt.Println(tc.root.String())
 			diff := cmp.Diff(root, tc.root)
 			t.Errorf("Hogefunc differs: (-got +want)\n%s", diff)
 		}
@@ -288,8 +288,8 @@ func TestDBNodeMerge(t *testing.T) {
 		}
 
 		if !reflect.DeepEqual(result, tc.result) {
-			result.Write(os.Stdout)
-			tc.result.Write(os.Stdout)
+			fmt.Println(result.String())
+			fmt.Println(tc.result.String())
 			diff := cmp.Diff(result, tc.result)
 			t.Errorf("Hogefunc differs: (-got +want)\n%s", diff)
 		}

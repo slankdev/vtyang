@@ -77,18 +77,6 @@ func (v DBValue) ToValue() interface{} {
 	}
 }
 
-func (v DBValue) ToJsonValue() string {
-	switch v.Type {
-	case YInteger:
-		return fmt.Sprintf("%d", v.Integer)
-	case YBoolean:
-		return strconv.FormatBool(v.Boolean)
-	case YString:
-		return fmt.Sprintf("\"%s\"", v.String)
-	}
-	panic(fmt.Sprintf("unsupported \"%s\"", v.Type))
-}
-
 func (v *DBValue) SetFromString(s string) error {
 	switch v.Type {
 	case YInteger:

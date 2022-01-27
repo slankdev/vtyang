@@ -87,3 +87,15 @@ func setCompletionTreeForCommandSet() {
 		root.Childs = append(root.Childs, do2(e))
 	}
 }
+
+func setCompletionTreeForCommandDelete() {
+	root := DigNode(&tree.Root, []string{"delete"})
+	if root == nil {
+		panic("OKASHII")
+	}
+	ents := dbm.DumpEntries()
+	for _, e := range ents {
+		log.Printf("hoge %s\n", e.Name)
+		root.Childs = append(root.Childs, do2(e))
+	}
+}

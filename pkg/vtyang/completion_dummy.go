@@ -37,6 +37,11 @@ var tree = CompletionTree{
 				},
 			},
 			{
+				Name:        "delete",
+				Description: "Delete system parameter",
+				Level:       0,
+			},
+			{
 				Name:        "set",
 				Description: "Set system parameter",
 				Level:       0,

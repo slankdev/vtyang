@@ -34,7 +34,7 @@ func NewDatabaseManager() *DatabaseManager {
 }
 
 func (m *DatabaseManager) LoadYangModuleOrDie(path string) {
-	if err := m.LoadYangModule("./yang"); err != nil {
+	if err := m.LoadYangModule(path); err != nil {
 		panic(err)
 	}
 }

@@ -12,7 +12,12 @@ func InstallCommands() {
 			return
 		}
 
-		mod, xpath := dbm.CraftXPath(args[2:])
+		mod, xpath, _, err := ParseXPathArgs(args[2:], false)
+		if err != nil {
+			fmt.Printf("Error: %s\n", err.Error())
+			return
+		}
+
 		node, err := dbm.GetNode(mod, xpath)
 		if err != nil {
 			fmt.Printf("Error: %s\n", err.Error())
@@ -26,34 +31,43 @@ func InstallCommands() {
 	})
 
 	InstallCommand("set", func(args []string) {
-		if len(args) < 3 {
+		if len(args) < 2 {
 			fmt.Printf("usage:\n")
 			return
 		}
 
-		valueStr := args[len(args)-1]
-		args = args[1 : len(args)-1]
-		// pp.Println(valueStr)
-		// pp.Println(args)
-
-		mod, xpath := dbm.CraftXPath(args)
-		// fmt.Printf("DEBUG xpath=%s\n", xpath)
-
-		node, err := dbm.GetNode(mod, xpath)
+		args = args[1:]
+		mod, xpath, valueStr, err := ParseXPathArgs(args, true)
 		if err != nil {
 			fmt.Printf("Error: %s\n", err.Error())
 			return
 		}
-		if node == nil {
-			fmt.Printf("Error: Resource Not Found\n")
+
+		node, err := dbm.SetNode(mod, xpath, valueStr)
+		if err != nil {
+			fmt.Printf("Error: %s\n", err.Error())
 			return
 		}
-		if node.Type != Leaf {
-			fmt.Printf("Error: Specified path is not Leaf\n")
+		_ = node
+		// pp.Println(node)
+	})
+
+	InstallCommand("delete", func(args []string) {
+		if len(args) < 2 {
+			fmt.Printf("usage:\n")
 			return
 		}
 
-		node.Value.SetFromString(valueStr)
-		//node.Write(os.Stdout)
+		args = args[1:]
+		mod, xpath, _, err := ParseXPathArgs(args, false)
+		if err != nil {
+			fmt.Printf("Error: %s\n", err.Error())
+			return
+		}
+
+		if err := dbm.DeleteNode(mod, xpath); err != nil {
+			fmt.Printf("Error: %s\n", err.Error())
+			return
+		}
 	})
 }

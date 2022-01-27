@@ -101,18 +101,6 @@ func (t CompletionTree) Completion(line string, pos int) []CompletionNode {
 	return nil
 }
 
-// func init() {
-// 	InstallCommand("show operational-data",
-//                           "Display information\n"+
-// 			  "Display yang modules\n",
-// 			  func (args []string) error {
-// 				dbm.Dump()
-// 			  },
-// 			func(...) {
-// 				...
-// 			})
-// }
-
 func DigNode(node *CompletionNode, query []string) *CompletionNode {
 	if len(query) == 0 {
 		return node
@@ -224,18 +212,37 @@ func InstallCommand(match string, f func(args []string)) {
 	commands = append(commands, Command{m: match, f: f})
 }
 
+func ExecuteCommand(cli string) {
+	args := strings.Fields(cli)
+	notfound := true
+	for _, cmd := range commands {
+		if match(args, cmd.m) {
+			cmd.f(args)
+			notfound = false
+			break
+		}
+	}
+	if notfound {
+		fmt.Printf("Error: command %s not found\n", args[0])
+	}
+}
+
+func cat(args []string) string {
+	s := ""
+	for _, a := range args {
+		s += fmt.Sprintf("%s ", a)
+	}
+	return s
+}
+
 func agentMain(cmd *cobra.Command, args []string) error {
 	dbm = NewDatabaseManager()
 	dbm.LoadYangModuleOrDie("./yang")
 	setCompletionTreeForCommandShowOperationalData()
 	setCompletionTreeForCommandSet()
-
-	// ErrorOnDie(dbm.Create("account", "/users/user['name'='hiroki']/projects['name'='tennis']/finished"))
-	// C(dbm, []string{"show", "operational-data", "account", "users", "user", "hiroki"})
-	// fmt.Println("------")
-	// C(dbm, []string{"show", "operational-data", "account", "users", "user", "hiroki", "age"})
-	// pp.Println(xpath)
+	setCompletionTreeForCommandDelete()
 	InstallCommands()
+	InitVTYang()
 
 	line := liner.NewLiner()
 	defer line.Close()
@@ -261,17 +268,7 @@ func agentMain(cmd *cobra.Command, args []string) error {
 			case match(args, "show cli-tree"):
 				pp.Println(tree)
 			default:
-				notfound := true
-				for _, cmd := range commands {
-					if match(args, cmd.m) {
-						cmd.f(args)
-						notfound = false
-						break
-					}
-				}
-				if notfound {
-					fmt.Printf("Error: command %s not found\n", args[0])
-				}
+				ExecuteCommand(cat(args))
 			}
 
 		} else if err == liner.ErrPromptAborted {

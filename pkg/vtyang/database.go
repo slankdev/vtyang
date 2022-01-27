@@ -4,11 +4,9 @@ import (
 	"fmt"
 	"io"
 	"strconv"
-	"strings"
 
 	"github.com/k0kubun/pp"
 	"github.com/openconfig/goyang/pkg/indent"
-	"github.com/slankdev/vtyang/pkg/util"
 )
 
 type DBNodeType string
@@ -80,7 +78,7 @@ func (v DBValue) ToJsonValue() string {
 	case YString:
 		return fmt.Sprintf("\"%s\"", v.String)
 	}
-	panic("unsupported")
+	panic(fmt.Sprintf("unsupported \"%s\"", v.Type))
 }
 
 func (v *DBValue) SetFromString(s string) error {
@@ -108,78 +106,338 @@ type DB struct {
 	root   DBNode
 }
 
-func (dbm DatabaseManager) GetNode(mod, xpath string) (*DBNode, error) {
-	root := &dbm.db.root
-	words := strings.FieldsFunc(xpath, func(c rune) bool {
-		return c == '/'
-	})
+func (dbm DatabaseManager) GetNode(mod string, xpath XPath) (*DBNode, error) {
+	n := &dbm.db.root
+	xwords := xpath.words
 
-	n, err := dbm.DigContainer(words, root)
-	if err != nil {
-		return nil, err
-	}
-	return n, nil
-}
-
-func (dbm DatabaseManager) DigContainer(words []string, n *DBNode) (*DBNode, error) {
-	if len(words) == 0 {
-		return n, nil
-	}
-	// fmt.Printf("DEBUG %s(%s), %+v\n", n.Name, n.Type, words[0])
-
-	name := func(s string) string {
-		ret := util.SplitMultiSep(s, []string{"'", "[", "]", "="})
-		return ret[0]
-	}
-	key := func(s string) string {
-		ret := util.SplitMultiSep(s, []string{"'", "[", "]", "="})
-		if len(ret) != 3 {
-			panic(s)
-		}
-		return ret[1]
-	}
-	val := func(s string) string {
-		ret := util.SplitMultiSep(s, []string{"'", "[", "]", "="})
-		if len(ret) != 3 {
-			panic(s)
-		}
-		return ret[2]
-	}
-
-	switch n.Type {
-	case Container:
-		for idx := range n.Childs {
-			child := &n.Childs[idx]
-			if n.Childs[idx].Name == name(words[0]) {
-				switch n.Childs[idx].Type {
-				case Leaf:
-					fallthrough
-				case Container:
-					return dbm.DigContainer(words[1:], &n.Childs[idx])
-				case List:
-					k := key(words[0])
-					v := val(words[0])
-					for idx2 := range child.Childs {
-						child2 := &child.Childs[idx2]
-						for idx3 := range child.Childs[idx2].Childs {
-							child3 := &child.Childs[idx2].Childs[idx3]
-							if child3.Name == k && child3.Value.String == v {
-								return dbm.DigContainer(words[1:], child2)
+	for ; len(xwords) != 0; xwords = xwords[1:] {
+		xword := xwords[0]
+		switch n.Type {
+		case Container:
+			found := false
+			for idx := range n.Childs {
+				child := &n.Childs[idx]
+				if child.Name == xword.word {
+					switch child.Type {
+					case Leaf:
+						fallthrough
+					case Container:
+						n = child
+						found = true
+						goto end
+					case List:
+						for idx2 := range child.Childs {
+							child2 := &child.Childs[idx2]
+							for idx3 := range child2.Childs {
+								child3 := &child2.Childs[idx3]
+								if xword.keys == nil {
+									panic("database is broken")
+								}
+								for k, v := range xword.keys {
+									if child3.Name == k && child3.Value.String == v {
+										n = child2
+										found = true
+										goto end
+									}
+								}
 							}
 						}
 					}
+				}
+			}
+			if !found {
+				return nil, nil
+			}
+		default:
+			panic("UNSUPPORTED")
+		}
+	end:
+	}
+
+	return n, nil
+}
+
+func (dbm DatabaseManager) DeleteNode(mod string, xpath XPath) error {
+	n := &dbm.db.root
+	xwords := xpath.words
+
+	for ; len(xwords) != 0; xwords = xwords[1:] {
+		if n.Type != Container {
+			panic(fmt.Sprintf("ASSERT(%s)", n.Type))
+		}
+
+		xword := xwords[0]
+		found := false
+		for idx := range n.Childs {
+			child := &n.Childs[idx]
+			if child.Name == xword.word {
+				found = true
+				switch child.Type {
+				case Container:
+					n = child
+					if len(xwords) == 1 {
+						n.Childs = append(n.Childs[:idx], n.Childs[idx+1:]...)
+						return nil
+					}
+				case List:
+					if xword.keys == nil {
+						panic("database is broken")
+					}
+					cidx := lookupChildIdx(child, xword.keys)
+					if cidx < 0 {
+						return fmt.Errorf("not found (1)")
+					}
+					if len(xwords) == 1 {
+						child.Childs = append(child.Childs[:cidx], child.Childs[cidx+1:]...)
+						return nil
+					}
+					n = EnsureListNode(child, xword.keys)
+				case Leaf:
+					if len(xwords) != 1 {
+						panic("ASSERT")
+					}
+					n.Childs = append(n.Childs[:idx], n.Childs[idx+1:]...)
+					return nil
 				default:
-					panic("UNSUPPORTED")
+					panic(fmt.Sprintf("ASSERT(%s)", child.Type))
 				}
 			}
 		}
-	case List:
-		panic("UNSUPPORTED")
+		if !found {
+			return fmt.Errorf("node not found (2)")
+		}
+	}
+	return fmt.Errorf("node not found (3)")
+}
 
-	default:
-		panic("UNSUPPORTED")
+func (dbm DatabaseManager) SetNode(mod string, xpath XPath, val string) (
+	*DBNode, error) {
+
+	n := &dbm.db.root
+	xwords := xpath.words
+
+	for ; len(xwords) != 0; xwords = xwords[1:] {
+		if n.Type != Container {
+			panic(fmt.Sprintf("ASSERT(%s)", n.Type))
+		}
+
+		xword := xwords[0]
+		found := false
+		for idx := range n.Childs {
+			child := &n.Childs[idx]
+			if child.Name == xword.word {
+				found = true
+				switch child.Type {
+				case Container:
+					n = child
+				case List:
+					if xword.keys == nil {
+						panic("database is broken")
+					}
+					listElement := EnsureListNode(child, xword.keys)
+					if listElement == nil {
+						panic("ASSERTION")
+					}
+					n = listElement
+				case Leaf:
+					if len(xwords) != 1 {
+						panic("ASSERT")
+					}
+					if val != "" {
+						(&(child.Value)).SetFromString(val)
+					}
+					return child, nil
+				default:
+					panic(fmt.Sprintf("ASSERT(%s)", child.Type))
+				}
+			}
+			if found {
+				break
+			}
+		}
+
+		// not found case
+		if !found {
+			newnode := DBNode{Name: xword.word}
+			newnode.Type = xword.dbtype
+			if xword.keys != nil {
+				for k, v := range xword.keys {
+					newnode.Childs = []DBNode{
+						{
+							Type: Container,
+							Childs: []DBNode{
+								{
+									Name: k,
+									Type: Leaf,
+									Value: DBValue{
+										Type:   YString,
+										String: v,
+									},
+								},
+							},
+						},
+					}
+				}
+			}
+			if xword.dbtype == Leaf {
+				newnode.Value = DBValue{}
+				newnode.Value.Type = xword.dbvaluetype
+				(&newnode.Value).SetFromString(val)
+				//pp.Println(newnode.Value)
+			}
+
+			n.Childs = append(n.Childs, newnode)
+			n = &n.Childs[len(n.Childs)-1]
+		}
 	}
 
-	// println("NOTFOUND!!")
-	return nil, nil
+	return n, nil
+}
+
+func (xpath XPath) CreateDBNodeTree() (*DBNode, error) {
+	root := DBNode{
+		Name: "<root>",
+		Type: Container,
+	}
+
+	var tail *DBNode = &root
+	for _, xword := range xpath.words {
+		n := new(DBNode)
+		n.Name = xword.word
+		n.Type = Container
+
+		if xword.keys != nil {
+			n.Type = List
+			n.Childs = []DBNode{
+				{Type: Container},
+			}
+			for k, v := range xword.keys {
+				n.Childs[0].Childs = []DBNode{
+					{
+						Name: k,
+						Type: Leaf,
+						Value: DBValue{
+							Type:   YString,
+							String: v,
+						},
+					},
+				}
+			}
+		}
+
+		tail.Childs = append(tail.Childs, *n)
+		tail = &tail.Childs[len(tail.Childs)-1]
+	}
+
+	//root.Write(os.Stdout)
+	return &root, nil
+}
+
+func MergeDBNode(org, new DBNode) (DBNode, error) {
+	result := DBNode{
+		Name: "<root>",
+		Type: Container,
+		Childs: []DBNode{
+			{
+				Name: "users",
+				Type: Container,
+				Childs: []DBNode{
+					{
+						Name: "user",
+						Type: List,
+						Childs: []DBNode{
+							{
+								Type: Container,
+								Childs: []DBNode{
+									{
+										Name: "name",
+										Type: Leaf,
+										Value: DBValue{
+											Type:   YString,
+											String: "hoge",
+										},
+									},
+								},
+							},
+							{
+								Type: Container,
+								Childs: []DBNode{
+									{
+										Name: "name",
+										Type: Leaf,
+										Value: DBValue{
+											Type:   YString,
+											String: "fuga",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	return result, nil
+}
+
+func EnsureListNode(listNode *DBNode, kv map[string]string) *DBNode {
+	if listNode.Type != List {
+		panic("ASSERTION")
+	}
+
+	for idx := range listNode.Childs {
+		elementRoot := &listNode.Childs[idx]
+		if matchChild(elementRoot, kv) {
+			return elementRoot
+		}
+	}
+
+	newElement := DBNode{Type: Container}
+	for k, v := range kv {
+		n := DBNode{
+			Name: k,
+			Type: Leaf,
+			Value: DBValue{
+				Type:   YString,
+				String: v,
+			},
+		}
+		newElement.Childs = append(newElement.Childs, n)
+	}
+
+	listNode.Childs = append(listNode.Childs, newElement)
+	return &listNode.Childs[len(listNode.Childs)-1]
+}
+
+func matchChild(root *DBNode, kv map[string]string) bool {
+	nMatch := 0
+	for idx := range root.Childs {
+		child := &root.Childs[idx]
+		for k, v := range kv {
+			if child.Name == k && child.Value.String == v {
+				nMatch++
+			}
+		}
+	}
+	return len(kv) == nMatch
+}
+
+func lookupChildIdx(root *DBNode, kv map[string]string) int {
+	for idx := range root.Childs {
+		child := &root.Childs[idx]
+		for idx2 := range child.Childs {
+			child2 := &child.Childs[idx2]
+			nMatch := 0
+			for k, v := range kv {
+				if child2.Name == k && child2.Value.String == v {
+					nMatch++
+				}
+			}
+			if len(kv) == nMatch {
+				return idx
+			}
+		}
+	}
+	return -1
 }

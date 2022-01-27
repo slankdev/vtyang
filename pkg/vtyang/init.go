@@ -1,9 +1,6 @@
 package vtyang
 
 import (
-	"encoding/json"
-	"fmt"
-
 	"github.com/k0kubun/pp"
 )
 
@@ -16,42 +13,6 @@ var (
 )
 
 func InitVTYang() {
-	js := `
-	{
-		"users": {
-			"user": [
-				{
-					"age": 26,
-					"name": "hiroki",
-					"projects": [
-						{
-							"finished": true,
-							"name": "tennis"
-						}
-					]
-				},
-				{
-					"age": 36,
-					"name": "slankdev",
-					"projects": [
-						{
-							"finished": false,
-							"name": "kloudnfv"
-						}
-					]
-				}
-			]
-		}
-	}
-	`
-
-	m := map[string]interface{}{}
-	err := json.Unmarshal([]byte(js), &m)
-	ErrorOnDie(err)
-	n, err := Interface2DBNode(m)
-	ErrorOnDie(err)
-	fmt.Println(n.String())
-
 	// ExecuteCommand("show running-config")
 	// pp.Println(dbm.SetNode(mod, x(mod, "/users/user['name'='hiroki']/age"), "10"))
 	// pp.Println(dbm.SetNode(mod, x(mod, "/users/user['name'='hiroki']/age"), "10"))

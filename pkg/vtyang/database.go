@@ -47,9 +47,49 @@ func (n *DBNode) ToMap() interface{} {
 	return m
 }
 
-func Map2DBNode(m map[string]interface{}) (*DBNode, error) {
+func Interface2DBNode(i interface{}) (*DBNode, error) {
 	n := &DBNode{}
-	n.Type = Container
+	switch g := i.(type) {
+	case map[string]interface{}:
+		for k, v := range g {
+			child, err := Interface2DBNode(v)
+			if err != nil {
+				return nil, err
+			}
+			n.Type = Container
+			child.Name = k
+			n.Childs = append(n.Childs, *child)
+		}
+	case []interface{}:
+		for _, v := range g {
+			child, err := Interface2DBNode(v)
+			if err != nil {
+				return nil, err
+			}
+			n.Type = List
+			n.Childs = append(n.Childs, *child)
+		}
+	case bool:
+		n.Type = Leaf
+		n.Value = DBValue{
+			Type:    YBoolean,
+			Boolean: g,
+		}
+	case float64:
+		n.Type = Leaf
+		n.Value = DBValue{
+			Type:    YInteger,
+			Integer: int(g),
+		}
+	case string:
+		n.Type = Leaf
+		n.Value = DBValue{
+			Type:   YString,
+			String: g,
+		}
+	default:
+		panic(fmt.Sprintf("ASSERT(%T)", g))
+	}
 	return n, nil
 }
 

@@ -11,7 +11,7 @@ var (
 )
 
 func InitVTYang() {
-	ExecuteCommand("show running-config")
+	// ExecuteCommand("show running-config")
 	// pp.Println(dbm.SetNode(mod, x(mod, "/users/user['name'='hiroki']/age"), "10"))
 	// pp.Println(dbm.SetNode(mod, x(mod, "/users/user['name'='hiroki']/age"), "10"))
 	// ExecuteCommand("set account users user taro age 10")

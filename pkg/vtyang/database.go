@@ -1,11 +1,11 @@
 package vtyang
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"strconv"
 
-	"github.com/k0kubun/pp"
 	"github.com/openconfig/goyang/pkg/indent"
 )
 
@@ -27,7 +27,9 @@ type DBNode struct {
 }
 
 func (n *DBNode) String() string {
-	return pp.Sprintln(n)
+	buf := new(bytes.Buffer)
+	n.Write(buf)
+	return buf.String()
 }
 
 func (n *DBNode) Write(w io.Writer) {

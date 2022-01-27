@@ -1,8 +1,6 @@
 package vtyang
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"strconv"
 )
@@ -47,20 +45,6 @@ func (n *DBNode) ToMap() interface{} {
 		panic(fmt.Sprintf("ASSERT(%s)", n.Type))
 	}
 	return m
-}
-
-func js(i interface{}) string {
-	b, err := json.Marshal(&i)
-	if err != nil {
-		fmt.Printf("Error: %s\n", err.Error())
-		return "{}"
-	}
-	var out bytes.Buffer
-	if err = json.Indent(&out, b, "", "  "); err != nil {
-		fmt.Printf("Error: %s\n", err.Error())
-		return "{}"
-	}
-	return out.String()
 }
 
 type DBValueType string

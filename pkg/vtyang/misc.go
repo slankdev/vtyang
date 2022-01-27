@@ -1,6 +1,10 @@
 package vtyang
 
 import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+
 	"github.com/openconfig/goyang/pkg/yang"
 	"github.com/slankdev/vtyang/pkg/util"
 )
@@ -42,4 +46,18 @@ func val(s string) string {
 		panic(s)
 	}
 	return ret[2]
+}
+
+func js(i interface{}) string {
+	b, err := json.Marshal(&i)
+	if err != nil {
+		fmt.Printf("Error: %s\n", err.Error())
+		return "{}"
+	}
+	var out bytes.Buffer
+	if err = json.Indent(&out, b, "", "  "); err != nil {
+		fmt.Printf("Error: %s\n", err.Error())
+		return "{}"
+	}
+	return out.String()
 }

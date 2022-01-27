@@ -47,7 +47,7 @@ func (n *DBNode) ToMap() interface{} {
 	return m
 }
 
-func Interface2DBNode(i interface{}) (*DBNode, error) {
+func Map2DBNode(m map[string]interface{}) (*DBNode, error) {
 	n := &DBNode{}
 	n.Type = Container
 	return n, nil

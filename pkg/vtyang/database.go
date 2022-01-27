@@ -4,10 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"strconv"
-
-	"github.com/openconfig/goyang/pkg/indent"
 )
 
 type DBNodeType string
@@ -28,31 +25,7 @@ type DBNode struct {
 }
 
 func (n *DBNode) String() string {
-	buf := new(bytes.Buffer)
-	n.Write(buf)
-	return buf.String()
-}
-
-func (n *DBNode) Write(w io.Writer) {
-	switch n.Type {
-	case Container:
-		if n.Name != "" {
-			fmt.Fprintf(w, "\"%s\": ", n.Name)
-		}
-		fmt.Fprintf(w, "{\n")
-		for _, child := range n.Childs {
-			child.Write(indent.NewWriter(w, "  "))
-		}
-		fmt.Fprintf(w, "}\n")
-	case List:
-		fmt.Fprintf(w, "\"%s\": [\n", n.Name)
-		for _, child := range n.Childs {
-			child.Write(indent.NewWriter(w, "  "))
-		}
-		fmt.Fprintf(w, "]\n")
-	case Leaf:
-		fmt.Fprintf(w, "\"%s\": %s\n", n.Name, n.Value.ToJsonValue())
-	}
+	return n.JSONString()
 }
 
 func (n *DBNode) JSONString() string {

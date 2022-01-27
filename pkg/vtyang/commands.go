@@ -2,12 +2,11 @@ package vtyang
 
 import (
 	"fmt"
-	"os"
 )
 
 func InstallCommands() {
 	InstallCommand("show running-config", func(args []string) {
-		fmt.Println(dbm.db.root.JSONString())
+		fmt.Println(dbm.db.root.String())
 	})
 
 	InstallCommand("show operational-data", func(args []string) {
@@ -31,7 +30,7 @@ func InstallCommands() {
 			fmt.Printf("Not Found\n")
 			return
 		}
-		node.Write(os.Stdout)
+		fmt.Println(node.String())
 	})
 
 	InstallCommand("set", func(args []string) {

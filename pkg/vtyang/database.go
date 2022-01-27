@@ -25,12 +25,7 @@ type DBNode struct {
 }
 
 func (n *DBNode) String() string {
-	return n.JSONString()
-}
-
-func (n *DBNode) JSONString() string {
-	m := n.ToMap()
-	return js(&m)
+	return js(n.ToMap())
 }
 
 func (n *DBNode) ToMap() interface{} {

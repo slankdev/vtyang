@@ -46,13 +46,10 @@ func InstallCommands() {
 			return
 		}
 
-		node, err := dbm.SetNode(mod, xpath, valueStr)
-		if err != nil {
+		if _, err := dbm.SetNode(mod, xpath, valueStr); err != nil {
 			fmt.Printf("Error: %s\n", err.Error())
 			return
 		}
-		_ = node
-		// pp.Println(node)
 	})
 
 	InstallCommand("delete", func(args []string) {

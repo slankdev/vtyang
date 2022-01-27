@@ -56,10 +56,33 @@ func (n *DBNode) Write(w io.Writer) {
 }
 
 func (n *DBNode) JSONString() string {
-	m := map[string]interface{}{}
-	m["hoge"] = 10
+	m := n.ToMap()
+	return js(&m)
+}
 
-	b, err := json.Marshal(&m)
+func (n *DBNode) ToMap() interface{} {
+	m := map[string]interface{}{}
+	switch n.Type {
+	case Container:
+		for _, child := range n.Childs {
+			m[child.Name] = child.ToMap()
+		}
+	case List:
+		array := []interface{}{}
+		for _, child := range n.Childs {
+			array = append(array, child.ToMap())
+		}
+		return array
+	case Leaf:
+		return n.Value.ToValue()
+	default:
+		panic(fmt.Sprintf("ASSERT(%s)", n.Type))
+	}
+	return m
+}
+
+func js(i interface{}) string {
+	b, err := json.Marshal(&i)
 	if err != nil {
 		fmt.Printf("Error: %s\n", err.Error())
 		return "{}"
@@ -87,6 +110,19 @@ type DBValue struct {
 	Integer int
 	String  string
 	Boolean bool
+}
+
+func (v DBValue) ToValue() interface{} {
+	switch v.Type {
+	case YInteger:
+		return v.Integer
+	case YBoolean:
+		return v.Boolean
+	case YString:
+		return v.String
+	default:
+		panic(fmt.Sprintf("ASSERT(%s)", v.Type))
+	}
 }
 
 func (v DBValue) ToJsonValue() string {

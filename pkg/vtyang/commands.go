@@ -23,13 +23,13 @@ func InstallCommands() {
 			return
 		}
 
-		mod, xpath, _, err := ParseXPathArgs(args[2:], false)
+		xpath, _, err := ParseXPathArgs(args[2:], false)
 		if err != nil {
 			fmt.Printf("Error: %s\n", err.Error())
 			return
 		}
 
-		node, err := dbm.GetNode(mod, xpath)
+		node, err := dbm.GetNode(xpath)
 		if err != nil {
 			fmt.Printf("Error: %s\n", err.Error())
 			return
@@ -48,13 +48,13 @@ func InstallCommands() {
 		}
 
 		args = args[1:]
-		mod, xpath, valueStr, err := ParseXPathArgs(args, true)
+		xpath, valueStr, err := ParseXPathArgs(args, true)
 		if err != nil {
 			fmt.Printf("Error: %s\n", err.Error())
 			return
 		}
 
-		if _, err := dbm.SetNode(mod, xpath, valueStr); err != nil {
+		if _, err := dbm.SetNode(xpath, valueStr); err != nil {
 			fmt.Printf("Error: %s\n", err.Error())
 			return
 		}
@@ -67,13 +67,13 @@ func InstallCommands() {
 		}
 
 		args = args[1:]
-		mod, xpath, _, err := ParseXPathArgs(args, false)
+		xpath, _, err := ParseXPathArgs(args, false)
 		if err != nil {
 			fmt.Printf("Error: %s\n", err.Error())
 			return
 		}
 
-		if err := dbm.DeleteNode(mod, xpath); err != nil {
+		if err := dbm.DeleteNode(xpath); err != nil {
 			fmt.Printf("Error: %s\n", err.Error())
 			return
 		}

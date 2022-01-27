@@ -19,36 +19,29 @@ type XPath struct {
 	words []XWord
 }
 
-func NewXPath(mod, s string) (XPath, error) {
+func NewXPath(s string) (XPath, error) {
 	xp := XPath{}
-	if err := ParseXPath(&xp, mod, s); err != nil {
+	if err := ParseXPath(&xp, s); err != nil {
 		return XPath{}, err
 	}
 	return xp, nil
 }
 
-func NewXPathOrDie(mod, s string) XPath {
-	xp, err := NewXPath(mod, s)
+func NewXPathOrDie(s string) XPath {
+	xp, err := NewXPath(s)
 	ErrorOnDie(err)
 	return xp
 }
 
-func ParseXPath(xpath *XPath, mod, s string) error {
+func ParseXPath(xpath *XPath, s string) error {
 	words := strings.FieldsFunc(s, func(c rune) bool {
 		return c == '/'
 	})
 
-	// Check module
-	entries := dbm.DumpEntries()
-	var module *yang.Entry = nil
-	for _, e := range entries {
-		if e.Name == mod {
-			module = e
-			break
-		}
-	}
-	if module == nil {
-		return fmt.Errorf("module \"%s\" not found", mod)
+	module := &yang.Entry{}
+	module.Dir = map[string]*yang.Entry{}
+	for _, ent := range dbm.DumpEntries() {
+		module.Dir[ent.Name] = ent
 	}
 
 	for len(words) != 0 {
@@ -104,24 +97,14 @@ func (x XPath) String() string {
 	return s
 }
 
-func ParseXPathArgs(args []string, setmode bool) (
-	string, XPath, string, error) {
-
-	var mod string = ""
-	var module *yang.Entry = nil
-	ents := dbm.DumpEntries()
-	for _, e := range ents {
-		if e.Name == args[0] {
-			module = e
-			mod = e.Name
-			break
-		}
-	}
-	if module == nil {
-		return "", XPath{}, "", fmt.Errorf("module \"%s\" not found", args[0])
+func ParseXPathArgs(args []string, setmode bool) (XPath, string, error) {
+	module := &yang.Entry{}
+	module.Dir = map[string]*yang.Entry{}
+	for _, ent := range dbm.DumpEntries() {
+		module.Dir[ent.Name] = ent
 	}
 
-	words := args[1:]
+	words := args
 	xpath := XPath{}
 	valueStr := ""
 	for len(words) != 0 {
@@ -136,7 +119,7 @@ func ParseXPathArgs(args []string, setmode bool) (
 			}
 		}
 		if foundNode == nil {
-			return "", XPath{}, "", fmt.Errorf("entry %s is not found", words[0])
+			return XPath{}, "", fmt.Errorf("entry %s is not found", words[0])
 		}
 
 		argumentExist := false
@@ -146,7 +129,7 @@ func ParseXPathArgs(args []string, setmode bool) (
 		case foundNode.IsLeaf():
 			if setmode {
 				if len(words) < 2 {
-					return "", XPath{}, "", fmt.Errorf("invalid args len")
+					return XPath{}, "", fmt.Errorf("invalid args len")
 				}
 				valueStr = words[1]
 				argumentExist = true
@@ -155,7 +138,7 @@ func ParseXPathArgs(args []string, setmode bool) (
 			xword.dbvaluetype = YangTypeKind2YType(foundNode.Type.Kind)
 		case foundNode.IsList():
 			if len(words) < 2 {
-				return "", XPath{}, "", fmt.Errorf("invalid args len")
+				return XPath{}, "", fmt.Errorf("invalid args len")
 			}
 			xword.dbtype = List
 			xword.keys = map[string]string{}
@@ -173,5 +156,5 @@ func ParseXPathArgs(args []string, setmode bool) (
 		module = foundNode
 	}
 
-	return mod, xpath, valueStr, nil
+	return xpath, valueStr, nil
 }

@@ -78,20 +78,18 @@ func TestDBNodeGet(t *testing.T) {
 	dbm.LoadYangModuleOrDie("./testdata")
 
 	testcases := []struct {
-		mod string
 		in  string
 		ptr *DBNode
 	}{
 		{
-			mod: "account",
 			in:  "/users/user['name'='alice']",
 			ptr: &testDummyDBRoot.Childs[0].Childs[0].Childs[0],
 		},
 	}
 
 	for _, tc := range testcases {
-		xpath := NewXPathOrDie(mod, tc.in)
-		node, err := dbm.GetNode(mod, xpath)
+		xpath := NewXPathOrDie(tc.in)
+		node, err := dbm.GetNode(xpath)
 		ErrorOnDie(err)
 		if node == nil {
 			t.Errorf("not found")
@@ -107,12 +105,10 @@ func TestDBNodeGet(t *testing.T) {
 
 func TestDBNodeCreate(t *testing.T) {
 	testcases := []struct {
-		mod  string
 		in   []string
 		root DBNode
 	}{
 		{
-			mod: "account",
 			in: []string{
 				"/users/user['name'='hoge']",
 			},
@@ -151,7 +147,7 @@ func TestDBNodeCreate(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		xpath := NewXPathOrDie(mod, tc.in[0])
+		xpath := NewXPathOrDie(tc.in[0])
 		root, err := xpath.CreateDBNodeTree()
 		ErrorOnDie(err)
 

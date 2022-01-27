@@ -73,7 +73,10 @@ func (m *DatabaseManager) LoadYangModule(path string) error {
 func (m *DatabaseManager) DumpEntries() []*yang.Entry {
 	entries := []*yang.Entry{}
 	for _, m := range m.modules.Modules {
-		entries = append(entries, yang.ToEntry(m))
+		ent := yang.ToEntry(m)
+		for _, e := range ent.Dir {
+			entries = append(entries, e)
+		}
 	}
 	return entries
 }

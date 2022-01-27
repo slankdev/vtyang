@@ -15,13 +15,11 @@ func init() {
 
 func TestXPathParse(t *testing.T) {
 	testcases := []struct {
-		mod   string
 		in    string
 		xpath XPath
 	}{
 		{
-			mod: "account",
-			in:  "/users/user['name'='eva']",
+			in: "/users/user['name'='eva']",
 			xpath: XPath{
 				words: []XWord{
 					{
@@ -41,7 +39,7 @@ func TestXPathParse(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		xpath := NewXPathOrDie(tc.mod, tc.in)
+		xpath := NewXPathOrDie(tc.in)
 		if !reflect.DeepEqual(xpath, tc.xpath) {
 			pp.Println("in", tc.xpath)
 			pp.Println("out", xpath)
@@ -55,15 +53,13 @@ func TestXPathParse(t *testing.T) {
 
 func TestXPathParseCli(t *testing.T) {
 	testcases := []struct {
-		mod   string
 		in    string
 		val   string
 		set   bool
 		xpath XPath
 	}{
 		{
-			mod: "account",
-			in:  "account users user eva age 200",
+			in:  "users user eva age 200",
 			val: "200",
 			set: true,
 			xpath: XPath{
@@ -91,8 +87,7 @@ func TestXPathParseCli(t *testing.T) {
 
 	for _, tc := range testcases {
 		args := strings.Fields(tc.in)
-
-		mod, xpath, val, err := ParseXPathArgs(args, tc.set)
+		xpath, val, err := ParseXPathArgs(args, tc.set)
 		ErrorOnDie(err)
 
 		if !reflect.DeepEqual(xpath, tc.xpath) {
@@ -103,9 +98,6 @@ func TestXPathParseCli(t *testing.T) {
 
 		if val != tc.val {
 			t.Errorf("missmatch val in=%s out=%s", tc.val, val)
-		}
-		if mod != tc.mod {
-			t.Errorf("missmatch mod in=%s out=%s", tc.mod, mod)
 		}
 	}
 }

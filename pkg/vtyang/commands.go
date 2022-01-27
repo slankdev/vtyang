@@ -6,6 +6,10 @@ import (
 )
 
 func InstallCommands() {
+	InstallCommand("show running-config", func(args []string) {
+		fmt.Println(dbm.db.root.JSONString())
+	})
+
 	InstallCommand("show operational-data", func(args []string) {
 		if len(args) < 3 {
 			fmt.Printf("usage:\n")

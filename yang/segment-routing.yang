@@ -1,0 +1,54 @@
+module segment-routing {
+  namespace "http://frrouting.org/segment-routing";
+	prefix segment-routing;
+
+  import ietf-inet-types {
+    prefix inet;
+  }
+  // import tailf-common {
+  //   prefix tailf;
+  // }
+
+  container slankdev {
+    leaf msg2 {
+      type string;
+      default "hoge2";
+    }
+  }
+
+  container slankdev2 {
+    leaf msg2 {
+      type string;
+      default "hoge2";
+    }
+  }
+
+	container segment-routing {
+	  // tailf:cli-add-mode;
+	  container srv6 {
+			// tailf:cli-add-mode;
+		  container locators {
+				// tailf:cli-add-mode;
+				container locators {
+				  // tailf:cli-drop-node-name;
+				  list locator {
+					  key "name";
+						container prefix {
+						  leaf prefix {
+							  // tailf:cli-drop-node-name;
+							  type string;
+							}
+							leaf prefix-length {
+							  tailf:cli-drop-node-name;
+							  type uint32;
+							}
+						}
+						leaf name {
+						  type string;
+						}
+					}
+				}
+			}
+		}
+	}
+}

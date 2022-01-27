@@ -49,7 +49,6 @@ func InitVTYang() {
 	err := json.Unmarshal([]byte(js), &m)
 	ErrorOnDie(err)
 	//pp.Println(m)
-
 	n, err := Interface2DBNode(m)
 	ErrorOnDie(err)
 	fmt.Println(n.String())

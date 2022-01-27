@@ -8,7 +8,6 @@ package vtyang
 // set account users user slankdev projects wide
 
 var DummyDBRoot = DBNode{
-	Name: "<root>",
 	Type: Container,
 	Childs: []DBNode{
 		{

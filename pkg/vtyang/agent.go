@@ -262,7 +262,7 @@ func agentMain(cmd *cobra.Command, args []string) error {
 
 			switch {
 			case match(args, "show running-config"):
-				pp.Println(dbm.db.root)
+				fmt.Println(dbm.db.root.String())
 			case match(args, "show yang-modules"):
 				dbm.Dump()
 			case match(args, "show cli-tree"):

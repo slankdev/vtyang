@@ -2,6 +2,7 @@ package vtyang
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"strconv"
@@ -52,6 +53,23 @@ func (n *DBNode) Write(w io.Writer) {
 	case Leaf:
 		fmt.Fprintf(w, "\"%s\": %s\n", n.Name, n.Value.ToJsonValue())
 	}
+}
+
+func (n *DBNode) JSONString() string {
+	m := map[string]interface{}{}
+	m["hoge"] = 10
+
+	b, err := json.Marshal(&m)
+	if err != nil {
+		fmt.Printf("Error: %s\n", err.Error())
+		return "{}"
+	}
+	var out bytes.Buffer
+	if err = json.Indent(&out, b, "", "  "); err != nil {
+		fmt.Printf("Error: %s\n", err.Error())
+		return "{}"
+	}
+	return out.String()
 }
 
 type DBValueType string

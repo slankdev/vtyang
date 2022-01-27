@@ -13,12 +13,14 @@ func YangTypeKind2YType(t yang.TypeKind) DBValueType {
 	switch t {
 	case yang.Yint32:
 		return YInteger
+	case yang.Yuint32:
+		return YInteger
 	case yang.Ystring:
 		return YString
 	case yang.Ybool:
 		return YBoolean
 	default:
-		panic("TODO")
+		panic(fmt.Sprintf("TODO(%s)", t))
 	}
 }
 

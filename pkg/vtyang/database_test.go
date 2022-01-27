@@ -1,12 +1,14 @@
 package vtyang
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/k0kubun/pp"
+	"github.com/slankdev/vtyang/pkg/util"
 )
 
 var testDummyDBRoot = DBNode{
@@ -292,6 +294,51 @@ func TestDBNodeMerge(t *testing.T) {
 			fmt.Println(tc.result.String())
 			diff := cmp.Diff(result, tc.result)
 			t.Errorf("Hogefunc differs: (-got +want)\n%s", diff)
+		}
+	}
+}
+
+func TestDBNodeJson(t *testing.T) {
+	j1 := `
+	{
+		"users": {
+			"user": [
+				{
+					"age": 26,
+					"name": "hiroki",
+					"projects": [
+						{
+							"finished": true,
+							"name": "tennis"
+						}
+					]
+				}
+			]
+		}
+	}
+	`
+
+	testcases := []struct {
+		in string
+	}{
+		{
+			in: j1,
+		},
+	}
+
+	for _, tc := range testcases {
+		m := map[string]interface{}{}
+		err := json.Unmarshal([]byte(tc.in), &m)
+		ErrorOnDie(err)
+		n, err := Interface2DBNode(m)
+		ErrorOnDie(err)
+		out := n.String()
+		same, err := util.DeepEqualJSON(tc.in, out)
+		ErrorOnDie(err)
+		if !same {
+			println(tc.in)
+			println(out)
+			t.Errorf("mismatch json")
 		}
 	}
 }

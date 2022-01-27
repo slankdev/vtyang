@@ -108,7 +108,7 @@ type DB struct {
 	root   DBNode
 }
 
-func (dbm DatabaseManager) GetNode(mod string, xpath XPath) (*DBNode, error) {
+func (dbm *DatabaseManager) GetNode(mod string, xpath XPath) (*DBNode, error) {
 	n := &dbm.db.root
 	xwords := xpath.words
 
@@ -159,7 +159,7 @@ func (dbm DatabaseManager) GetNode(mod string, xpath XPath) (*DBNode, error) {
 	return n, nil
 }
 
-func (dbm DatabaseManager) DeleteNode(mod string, xpath XPath) error {
+func (dbm *DatabaseManager) DeleteNode(mod string, xpath XPath) error {
 	n := &dbm.db.root
 	xwords := xpath.words
 
@@ -176,11 +176,11 @@ func (dbm DatabaseManager) DeleteNode(mod string, xpath XPath) error {
 				found = true
 				switch child.Type {
 				case Container:
-					n = child
 					if len(xwords) == 1 {
 						n.Childs = append(n.Childs[:idx], n.Childs[idx+1:]...)
 						return nil
 					}
+					n = child
 				case List:
 					if xword.keys == nil {
 						panic("database is broken")
@@ -212,7 +212,7 @@ func (dbm DatabaseManager) DeleteNode(mod string, xpath XPath) error {
 	return fmt.Errorf("node not found (3)")
 }
 
-func (dbm DatabaseManager) SetNode(mod string, xpath XPath, val string) (
+func (dbm *DatabaseManager) SetNode(mod string, xpath XPath, val string) (
 	*DBNode, error) {
 
 	n := &dbm.db.root

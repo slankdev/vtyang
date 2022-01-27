@@ -299,30 +299,29 @@ func TestDBNodeMerge(t *testing.T) {
 }
 
 func TestDBNodeJson(t *testing.T) {
-	j1 := `
-	{
-		"users": {
-			"user": [
-				{
-					"age": 26,
-					"name": "hiroki",
-					"projects": [
-						{
-							"finished": true,
-							"name": "tennis"
-						}
-					]
-				}
-			]
-		}
-	}
-	`
 
 	testcases := []struct {
 		in string
 	}{
 		{
-			in: j1,
+			in: `
+{
+	"users": {
+		"user": [
+			{
+				"age": 26,
+				"name": "hiroki",
+				"projects": [
+					{
+						"finished": true,
+						"name": "tennis"
+					}
+				]
+			}
+		]
+	}
+}
+`,
 		},
 	}
 

@@ -15,14 +15,6 @@ const (
 	QUESTION_MARK rune = 63
 )
 
-type CliMode int
-
-const (
-	CliModeView CliMode = iota
-	CliModeConfigure
-)
-
-var cliMode CliMode = CliModeView
 var exit bool = false
 
 func getPrompt() string {
@@ -71,7 +63,8 @@ func agentMain(cmd *cobra.Command, args []string) error {
 			case matchArgs(args, "show cli-tree"):
 				pp.Println(tree)
 			default:
-				ExecuteCommand(cat(args))
+				cn := GetCommandNodeCurrent()
+				cn.ExecuteCommand(cat(args))
 			}
 
 		} else if err == liner.ErrPromptAborted {

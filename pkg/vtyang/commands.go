@@ -27,6 +27,17 @@ func InstallCommands() {
 		})
 
 	InstallCommand(CliModeView,
+		"show yang modules",
+		[]string{
+			"Display information",
+			"Display yang information",
+			"Display yang modules",
+		},
+		func(args []string) {
+			dbm.Dump()
+		})
+
+	InstallCommand(CliModeView,
 		"show startup-config",
 		[]string{
 			"Display information",

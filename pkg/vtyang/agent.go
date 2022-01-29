@@ -59,8 +59,6 @@ func agentMain(cmd *cobra.Command, args []string) error {
 			}
 
 			switch {
-			case matchArgs(args, "show yang-modules"):
-				dbm.Dump()
 			default:
 				cn := GetCommandNodeCurrent()
 				cn.ExecuteCommand(cat(args))

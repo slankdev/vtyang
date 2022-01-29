@@ -37,16 +37,9 @@ func GetCommandNode(mode CliMode) *CommandNode {
 	if !ok {
 		ncn := CommandNode{}
 		ncn.mode = mode
+		ncn.tree = CompletionTree{}
 		commandnodes[mode] = &ncn
 		cn = commandnodes[mode]
-
-		// TODO(slankdev):
-		switch mode {
-		case CliModeView:
-			cn.tree = viewTree
-		case CliModeConfigure:
-			cn.tree = configureTree
-		}
 	}
 	return cn
 }

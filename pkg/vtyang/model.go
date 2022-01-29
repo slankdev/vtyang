@@ -25,7 +25,9 @@ func NewDatabaseManager() *DatabaseManager {
 	m.modules = yang.NewModules()
 	m.db.active = true
 	root, err := ReadFromJsonFile(config.GlobalOptDBPath)
-	ErrorOnDie(err)
+	if err != nil {
+		panic("READ FILE")
+	}
 	m.db.root = *root
 	return &m
 }

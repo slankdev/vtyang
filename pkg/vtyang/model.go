@@ -22,14 +22,11 @@ var dbm *DatabaseManager
 
 func NewDatabaseManager() *DatabaseManager {
 	m := DatabaseManager{}
-
-	// Initialize Yang Modulwe
 	m.modules = yang.NewModules()
-
-	// Initialize Database
 	m.db.active = true
-	m.db.root = DummyDBRoot
-
+	root, err := ReadFromJsonFile(config.GlobalOptDBPath)
+	ErrorOnDie(err)
+	m.db.root = *root
 	return &m
 }
 

@@ -7,6 +7,17 @@ var tree = CompletionTree{
 		Level:       -1,
 		Childs: []CompletionNode{
 			{
+				Name:        "write",
+				Description: "Write system parameter",
+				Childs: []CompletionNode{
+					{
+						Name:        "memory",
+						Description: "Write system parameter to memory",
+						Childs:      []CompletionNode{{Name: "<cr>"}},
+					},
+				},
+			},
+			{
 				Name:        "delete",
 				Description: "Delete system parameter",
 				Level:       0,

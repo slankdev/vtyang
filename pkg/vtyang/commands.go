@@ -13,6 +13,12 @@ type Command struct {
 var commands []Command
 
 func InstallCommands() {
+	InstallCommand("write memory", func(args []string) {
+		if err := dbm.db.root.WriteToJsonFile(config.GlobalOptDBPath); err != nil {
+			fmt.Printf("Error: %s\n", err.Error())
+		}
+	})
+
 	InstallCommand("show running-config", func(args []string) {
 		fmt.Println(dbm.db.root.String())
 	})

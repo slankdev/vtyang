@@ -8,8 +8,9 @@ import (
 )
 
 var config = struct {
-	GlobalOptDebug bool
-	GlobalOptPaths []string
+	GlobalOptDebug  bool
+	GlobalOptPaths  []string
+	GlobalOptDBPath string
 }{}
 
 func NewCommand() *cobra.Command {
@@ -20,6 +21,7 @@ func NewCommand() *cobra.Command {
 	fs := rootCmd.PersistentFlags()
 	fs.BoolVar(&config.GlobalOptDebug, "debug", false, "Enable debug output")
 	fs.StringArrayVarP(&config.GlobalOptPaths, "path", "p", []string{}, "Module paths")
+	fs.StringVarP(&config.GlobalOptDBPath, "dbpath", "d", "/etc/vtyang/config.json", "Database paths")
 	rootCmd.AddCommand(newCommandCompletion(rootCmd))
 	rootCmd.AddCommand(newCommandAgent())
 	rootCmd.AddCommand(newCommandDump())

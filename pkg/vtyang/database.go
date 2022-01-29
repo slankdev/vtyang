@@ -1,7 +1,9 @@
 package vtyang
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"strconv"
 
 	"github.com/slankdev/vtyang/pkg/util"
@@ -47,6 +49,28 @@ func (n *DBNode) ToMap() interface{} {
 		panic(fmt.Sprintf("ASSERT(%s)", n.Type))
 	}
 	return m
+}
+
+func (n *DBNode) WriteToJsonFile(filename string) error {
+	s := dbm.db.root.String()
+	if err := ioutil.WriteFile(filename, []byte(s), 0644); err != nil {
+		return err
+	}
+	return nil
+}
+
+func ReadFromJsonFile(filename string) (*DBNode, error) {
+	raw, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	m := map[string]interface{}{}
+	if err := json.Unmarshal(raw, &m); err != nil {
+		return nil, err
+	}
+
+	return Interface2DBNode(m)
 }
 
 func Interface2DBNode(i interface{}) (*DBNode, error) {

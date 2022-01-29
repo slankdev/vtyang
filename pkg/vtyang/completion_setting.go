@@ -92,3 +92,13 @@ func setCompletionTreeForCommandSet() {
 		root.Childs = append(root.Childs, do2(e))
 	}
 }
+
+func setCompletionTreeForCommandDo() {
+	viewRoot := GetCommandNode(CliModeView).tree.Root
+	confRoot := GetCommandNode(CliModeConfigure).tree.Root
+	for _, child := range confRoot.Childs {
+		if child.Name == "do" {
+			child.Childs = append(child.Childs, viewRoot.Childs...)
+		}
+	}
+}

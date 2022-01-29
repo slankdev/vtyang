@@ -40,6 +40,7 @@ func agentMain(cmd *cobra.Command, args []string) error {
 	setCompletionTreeForCommandShowOperationalData()
 	setCompletionTreeForCommandSet()
 	setCompletionTreeForCommandDelete()
+	setCompletionTreeForCommandDo()
 	InitVTYang()
 
 	line := liner.NewLiner()

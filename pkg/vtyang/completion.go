@@ -14,7 +14,6 @@ type CompletionNode struct {
 	Name        string
 	Description string
 	Childs      []CompletionNode
-	Level       int
 }
 
 func (n CompletionNode) String() string {
@@ -22,7 +21,7 @@ func (n CompletionNode) String() string {
 	if n.Name != "" {
 		name = n.Name
 	}
-	return fmt.Sprintf("%d:%s", n.Level, name)
+	return fmt.Sprintf("%s", name)
 }
 
 func (t CompletionTree) Completion(line string, pos int) []CompletionNode {

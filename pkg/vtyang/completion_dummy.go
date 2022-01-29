@@ -6,38 +6,12 @@ var viewTree = CompletionTree{
 		Description: "",
 		Childs: []CompletionNode{
 			{
-				Name:        "configure",
-				Description: "Enable swconfigure mode",
-				Childs:      []CompletionNode{{Name: "<cr>"}},
-			},
-			{
-				Name:        "write",
-				Description: "Write system parameter",
-				Childs: []CompletionNode{
-					{
-						Name:        "memory",
-						Description: "Write system parameter to memory",
-						Childs:      []CompletionNode{{Name: "<cr>"}},
-					},
-				},
-			},
-			{
 				Name:        "show",
 				Description: "Display information",
 				Childs: []CompletionNode{
 					{
-						Name:        "running-config",
-						Description: "Display current configuration",
-						Childs:      []CompletionNode{{Name: "<cr>"}},
-					},
-					{
 						Name:        "startup-config",
 						Description: "Display startup configuration",
-						Childs:      []CompletionNode{{Name: "<cr>"}},
-					},
-					{
-						Name:        "operational-data",
-						Description: "Display operational data",
 						Childs:      []CompletionNode{{Name: "<cr>"}},
 					},
 					{
@@ -67,11 +41,6 @@ var viewTree = CompletionTree{
 						Childs:      []CompletionNode{{Name: "<cr>"}},
 					},
 				},
-			},
-			{
-				Name:        "quit",
-				Description: "Quit system",
-				Childs:      []CompletionNode{{Name: "<cr>"}},
 			},
 		},
 	},

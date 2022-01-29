@@ -34,10 +34,12 @@ func agentMain(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	InstallCommands()
+	InstallCommandsDefault(CliModeView)
+	InstallCommandsDefault(CliModeConfigure)
 	setCompletionTreeForCommandShowOperationalData()
 	setCompletionTreeForCommandSet()
 	setCompletionTreeForCommandDelete()
-	InstallCommands()
 	InitVTYang()
 
 	line := liner.NewLiner()

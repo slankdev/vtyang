@@ -39,9 +39,6 @@ func GetCommandNode(mode CliMode) *CommandNode {
 		ncn.mode = mode
 		commandnodes[mode] = &ncn
 		cn = commandnodes[mode]
-		InstallCommand(mode, "list", listCallback)
-		InstallCommand(mode, "quit", quitCallback)
-		InstallCommand(mode, "show cli-tree", showCliTreeCallback)
 
 		// TODO(slankdev):
 		switch mode {
@@ -69,9 +66,45 @@ func (cn *CommandNode) ExecuteCommand(cli string) {
 	}
 }
 
-func InstallCommand(mode CliMode, match string, f func(args []string)) {
+func InstallCommandsDefault(mode CliMode) {
+	InstallCommand(mode, "list", []string{"List cli nodes"}, listCallback)
+	InstallCommand(mode, "quit", []string{"Quit system"}, quitCallback)
+	InstallCommand(mode, "show cli-tree", []string{
+		"Display information",
+		"Display completion tree",
+	}, showCliTreeCallback)
+}
+
+func InstallCommand(mode CliMode, match string, helps []string,
+	f func(args []string)) {
 	cn := GetCommandNode(mode)
 	cn.commands = append(cn.commands, Command{m: match, f: f})
+
+	args := strings.Fields(match)
+	if len(args) != len(helps) {
+		panic(fmt.Sprintf("ERROR %s len(helps)=%d", match, len(helps)))
+	}
+
+	node := &cn.tree.Root
+	nn := CompletionNode{}
+	for ; len(args) != 0; args, helps = args[1:], helps[1:] {
+		for idx := range node.Childs {
+			child := &node.Childs[idx]
+			if child.Name == args[0] {
+				node = child
+				goto end
+			}
+		}
+
+		nn.Name = args[0]
+		nn.Description = helps[0]
+		if len(args) == 1 {
+			nn.Childs = []CompletionNode{{Name: "<cr>"}}
+		}
+		node.Childs = append(node.Childs, nn)
+		node = &node.Childs[len(node.Childs)-1]
+	end:
+	}
 }
 
 func GetCommandNodeCurrent() *CommandNode {

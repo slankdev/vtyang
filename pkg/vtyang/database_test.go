@@ -182,6 +182,14 @@ func TestDBNodeJson(t *testing.T) {
 }
 `,
 		},
+		{
+			in: `{"users": {"user": [{"name": "hiroki"}]}}`,
+		},
+
+		// TODO(slankdev): bellow's data will be crash...
+		// {
+		// 	in: `{"users": {}}`,
+		// },
 	}
 
 	for _, tc := range testcases {

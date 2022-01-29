@@ -146,4 +146,14 @@ func InstallCommands() {
 				return
 			}
 		})
+
+	InstallCommand(CliModeConfigure,
+		"do",
+		[]string{
+			"Run an operational-mode command",
+		},
+		func(args []string) {
+			cn := GetCommandNode(CliModeView)
+			cn.ExecuteCommand(cat(args[1:]))
+		})
 }

@@ -1,6 +1,7 @@
 package vtyang
 
 import (
+	"fmt"
 	"log"
 	"strings"
 
@@ -13,6 +14,26 @@ const (
 	// Question mark '?'
 	QUESTION_MARK rune = 63
 )
+
+type CliMode int
+
+const (
+	CliModeView CliMode = iota
+	CliModeConfigure
+)
+
+var cliMode CliMode = CliModeView
+
+func getPrompt() string {
+	switch cliMode {
+	case CliModeView:
+		return "vtyang# "
+	case CliModeConfigure:
+		return "vtyang(config)# "
+	default:
+		panic(fmt.Sprintf("CLIMODE(%v)", cliMode))
+	}
+}
 
 func agentMain(cmd *cobra.Command, args []string) error {
 	dbm = NewDatabaseManager()
@@ -35,7 +56,7 @@ func agentMain(cmd *cobra.Command, args []string) error {
 	line.SetBinder(QUESTION_MARK, completionLister)
 
 	for {
-		if name, err := line.Prompt("vtyang# "); err == nil {
+		if name, err := line.Prompt(getPrompt()); err == nil {
 			line.AppendHistory(name)
 			name = strings.TrimSpace(name)
 			args := strings.Fields(name)

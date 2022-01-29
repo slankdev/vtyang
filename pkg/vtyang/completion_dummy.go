@@ -9,7 +9,7 @@ var viewTree = CompletionTree{
 			{
 				Name:        "configure",
 				Description: "Enable swconfigure mode",
-				Level:       0,
+				Childs:      []CompletionNode{{Name: "<cr>"}},
 			},
 			{
 				Name:        "write",

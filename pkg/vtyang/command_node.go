@@ -32,10 +32,11 @@ func GetCommandNode(mode CliMode) *CommandNode {
 
 	cn, ok := commandnodes[mode]
 	if !ok {
-		newcn := CommandNode{}
-		newcn.mode = mode
-		cn = &newcn
-		commandnodes[mode] = &newcn
+		ncn := CommandNode{}
+		ncn.mode = mode
+		commandnodes[mode] = &ncn
+		cn = commandnodes[mode]
+		InstallCommand(mode, "list", listCallback)
 	}
 	return cn
 }
@@ -62,4 +63,11 @@ func InstallCommand(mode CliMode, match string, f func(args []string)) {
 
 func GetCommandNodeCurrent() *CommandNode {
 	return GetCommandNode(cliMode)
+}
+
+func listCallback(arg []string) {
+	cn := GetCommandNodeCurrent()
+	for _, cmd := range cn.commands {
+		fmt.Printf("%s\n", cmd.m)
+	}
 }

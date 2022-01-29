@@ -38,6 +38,7 @@ func GetCommandNode(mode CliMode) *CommandNode {
 		ncn := CommandNode{}
 		ncn.mode = mode
 		ncn.tree = CompletionTree{}
+		ncn.tree.Root = &CompletionNode{}
 		commandnodes[mode] = &ncn
 		cn = commandnodes[mode]
 	}
@@ -78,24 +79,25 @@ func InstallCommand(mode CliMode, match string, helps []string,
 		panic(fmt.Sprintf("ERROR %s len(helps)=%d", match, len(helps)))
 	}
 
-	node := &cn.tree.Root
-	nn := CompletionNode{}
+	node := cn.tree.Root
+	var nn *CompletionNode
 	for ; len(args) != 0; args, helps = args[1:], helps[1:] {
 		for idx := range node.Childs {
-			child := &node.Childs[idx]
+			child := node.Childs[idx]
 			if child.Name == args[0] {
 				node = child
 				goto end
 			}
 		}
 
+		nn = new(CompletionNode)
 		nn.Name = args[0]
 		nn.Description = helps[0]
 		if len(args) == 1 {
-			nn.Childs = []CompletionNode{{Name: "<cr>"}}
+			nn.Childs = []*CompletionNode{{Name: "<cr>"}}
 		}
 		node.Childs = append(node.Childs, nn)
-		node = &node.Childs[len(node.Childs)-1]
+		node = node.Childs[len(node.Childs)-1]
 	end:
 	}
 }

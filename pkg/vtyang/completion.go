@@ -7,16 +7,16 @@ import (
 )
 
 type CompletionTree struct {
-	Root CompletionNode
+	Root *CompletionNode
 }
 
 type CompletionNode struct {
 	Name        string
 	Description string
-	Childs      []CompletionNode
+	Childs      []*CompletionNode
 }
 
-func (n CompletionNode) String() string {
+func (n *CompletionNode) String() string {
 	name := "<root>"
 	if n.Name != "" {
 		name = n.Name
@@ -24,7 +24,7 @@ func (n CompletionNode) String() string {
 	return fmt.Sprintf("%s", name)
 }
 
-func (t CompletionTree) Completion(line string, pos int) []CompletionNode {
+func (t *CompletionTree) Completion(line string, pos int) []*CompletionNode {
 	line = line[:pos]
 	args := strings.Fields(line)
 	if len(args) == 0 {
@@ -35,8 +35,8 @@ func (t CompletionTree) Completion(line string, pos int) []CompletionNode {
 	log.Printf("DEBUG: line=\"%s\" pos=%d, args=%d:%+v", line, pos, len(args),
 		args)
 
-	search := func(nodes []CompletionNode, str string) []CompletionNode {
-		result := []CompletionNode{}
+	search := func(nodes []*CompletionNode, str string) []*CompletionNode {
+		result := []*CompletionNode{}
 		for _, node := range nodes {
 			switch node.Name {
 			case "NAME":
@@ -61,7 +61,7 @@ func (t CompletionTree) Completion(line string, pos int) []CompletionNode {
 	}
 
 	tree := GetCommandNodeCurrent().tree
-	var pivot *CompletionNode = &tree.Root
+	var pivot *CompletionNode = tree.Root
 	last := len(args) - 1
 	for i, arg := range args {
 		if i == last {
@@ -83,9 +83,9 @@ func (t CompletionTree) Completion(line string, pos int) []CompletionNode {
 		case n == 0:
 			return nil
 		case n == 1:
-			pivot = &candidates[0]
+			pivot = candidates[0]
 		case n >= 1:
-			pivot = &candidates[0]
+			pivot = candidates[0]
 		}
 	}
 
@@ -98,7 +98,7 @@ func DigNode(node *CompletionNode, query []string) *CompletionNode {
 	}
 
 	for idx, _ := range node.Childs {
-		child := &node.Childs[idx]
+		child := node.Childs[idx]
 		if child.Name == query[0] {
 			return DigNode(child, query[1:])
 		}

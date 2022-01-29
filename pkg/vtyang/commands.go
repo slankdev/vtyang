@@ -54,6 +54,7 @@ func InstallCommands() {
 			"Display current configuration",
 		},
 		func(args []string) {
+			// pp.Println(dbm.db.root)
 			fmt.Println(dbm.db.root.String())
 		})
 

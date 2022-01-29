@@ -7,7 +7,7 @@ import (
 	"github.com/openconfig/goyang/pkg/yang"
 )
 
-func do2(e *yang.Entry) CompletionNode {
+func do2(e *yang.Entry) *CompletionNode {
 	logstr := fmt.Sprintf("DO2 TRANSLATE FROM YANG %s", e.Name)
 	switch {
 	case e.IsList():
@@ -18,15 +18,15 @@ func do2(e *yang.Entry) CompletionNode {
 
 	log.Println(logstr)
 
-	node := CompletionNode{}
+	node := &CompletionNode{}
 	node.Name = e.Name
 
 	switch {
 
 	case e.IsList():
-		crNode := CompletionNode{}
+		crNode := &CompletionNode{}
 		crNode.Name = "<cr>"
-		wildcardNode := CompletionNode{}
+		wildcardNode := &CompletionNode{}
 		wildcardNode.Name = "NAME"
 		wildcardNode.Childs = append(wildcardNode.Childs, crNode)
 		for _, child := range e.Dir {
@@ -37,9 +37,9 @@ func do2(e *yang.Entry) CompletionNode {
 		node.Childs = append(node.Childs, wildcardNode)
 
 	case e.IsLeaf():
-		crNode := CompletionNode{}
+		crNode := &CompletionNode{}
 		crNode.Name = "<cr>"
-		wildcardNode := CompletionNode{}
+		wildcardNode := &CompletionNode{}
 		wildcardNode.Name = "NAME"
 		wildcardNode.Childs = append(wildcardNode.Childs, crNode)
 		node.Childs = append(node.Childs, wildcardNode)
@@ -56,7 +56,7 @@ func do2(e *yang.Entry) CompletionNode {
 
 func setCompletionTreeForCommandShowOperationalData() {
 	tree := GetCommandNode(CliModeView).tree
-	root := DigNode(&tree.Root, []string{"show", "operational-data"})
+	root := DigNode(tree.Root, []string{"show", "operational-data"})
 	if root == nil {
 		panic("OKASHII")
 	}
@@ -69,7 +69,7 @@ func setCompletionTreeForCommandShowOperationalData() {
 
 func setCompletionTreeForCommandDelete() {
 	tree := GetCommandNode(CliModeConfigure).tree
-	root := DigNode(&tree.Root, []string{"delete"})
+	root := DigNode(tree.Root, []string{"delete"})
 	if root == nil {
 		panic("OKASHII")
 	}
@@ -82,7 +82,7 @@ func setCompletionTreeForCommandDelete() {
 
 func setCompletionTreeForCommandSet() {
 	tree := GetCommandNode(CliModeConfigure).tree
-	root := DigNode(&tree.Root, []string{"set"})
+	root := DigNode(tree.Root, []string{"set"})
 	if root == nil {
 		panic("OKASHII")
 	}

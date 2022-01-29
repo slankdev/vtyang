@@ -3,9 +3,7 @@ build:
 test:
 	go test ./...
 run: build
-	./vtyang agent
-r: build
-	./vtyang -p ./yang
+	./vtyang agent --dbpath ./tmp/config.json
 kill:
 	killall vtyang
 log:

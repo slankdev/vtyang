@@ -8,10 +8,166 @@ import (
 	"github.com/k0kubun/pp"
 )
 
+var xpathTestDBRoot = DBNode{
+	Type: Container,
+	Childs: []DBNode{
+		{
+			Name: "users",
+			Type: Container,
+			Childs: []DBNode{
+				{
+					Name: "user",
+					Type: List,
+					Childs: []DBNode{
+						{
+							Type: Container,
+							Childs: []DBNode{
+								{
+									Name: "name",
+									Type: Leaf,
+									Value: DBValue{
+										Type:   YString,
+										String: "hiroki",
+									},
+								},
+								{
+									Name: "age",
+									Type: Leaf,
+									Value: DBValue{
+										Type:    YInteger,
+										Integer: 26,
+									},
+								},
+								{
+									Name: "projects",
+									Type: List,
+									Childs: []DBNode{
+										{
+											Type: Container,
+											Childs: []DBNode{
+												{
+													Name: "name",
+													Type: Leaf,
+													Value: DBValue{
+														Type:   YString,
+														String: "tennis",
+													},
+												},
+												{
+													Name: "finished",
+													Type: Leaf,
+													Value: DBValue{
+														Type:    YBoolean,
+														Boolean: true,
+													},
+												},
+											},
+										},
+										{
+											Type: Container,
+											Childs: []DBNode{
+												{
+													Name: "name",
+													Type: Leaf,
+													Value: DBValue{
+														Type:   YString,
+														String: "driving",
+													},
+												},
+												{
+													Name: "finished",
+													Type: Leaf,
+													Value: DBValue{
+														Type:    YBoolean,
+														Boolean: false,
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+						{
+							Type: Container,
+							Childs: []DBNode{
+								{
+									Name: "name",
+									Type: Leaf,
+									Value: DBValue{
+										Type:   YString,
+										String: "slankdev",
+									},
+								},
+								{
+									Name: "age",
+									Type: Leaf,
+									Value: DBValue{
+										Type:    YInteger,
+										Integer: 36,
+									},
+								},
+								{
+									Name: "projects",
+									Type: List,
+									Childs: []DBNode{
+										{
+											Type: Container,
+											Childs: []DBNode{
+												{
+													Name: "name",
+													Type: Leaf,
+													Value: DBValue{
+														Type:   YString,
+														String: "kloudnfv",
+													},
+												},
+												{
+													Name: "finished",
+													Type: Leaf,
+													Value: DBValue{
+														Type:    YBoolean,
+														Boolean: false,
+													},
+												},
+											},
+										},
+										{
+											Type: Container,
+											Childs: []DBNode{
+												{
+													Name: "name",
+													Type: Leaf,
+													Value: DBValue{
+														Type:   YString,
+														String: "wide",
+													},
+												},
+												{
+													Name: "finished",
+													Type: Leaf,
+													Value: DBValue{
+														Type:    YBoolean,
+														Boolean: false,
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	},
+}
+
 func init() {
 	dbm = NewDatabaseManager()
 	dbm.LoadYangModuleOrDie("./testdata")
-	dbm.LoadDatabaseFromData(&DummyDBRoot)
+	dbm.LoadDatabaseFromData(&xpathTestDBRoot)
 }
 
 func TestXPathParse(t *testing.T) {

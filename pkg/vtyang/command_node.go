@@ -37,6 +37,7 @@ func GetCommandNode(mode CliMode) *CommandNode {
 		commandnodes[mode] = &ncn
 		cn = commandnodes[mode]
 		InstallCommand(mode, "list", listCallback)
+		InstallCommand(mode, "quit", quitCallback)
 	}
 	return cn
 }
@@ -69,5 +70,14 @@ func listCallback(arg []string) {
 	cn := GetCommandNodeCurrent()
 	for _, cmd := range cn.commands {
 		fmt.Printf("%s\n", cmd.m)
+	}
+}
+
+func quitCallback(arg []string) {
+	switch cliMode {
+	case CliModeView:
+		exit = true
+	case CliModeConfigure:
+		cliMode = CliModeView
 	}
 }

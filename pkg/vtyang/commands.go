@@ -9,17 +9,6 @@ func InstallCommands() {
 		cliMode = CliModeConfigure
 	})
 
-	quit := func(args []string) {
-		switch cliMode {
-		case CliModeView:
-			exit = true
-		case CliModeConfigure:
-			cliMode = CliModeView
-		}
-	}
-	InstallCommand(CliModeView, "quit", quit)
-	InstallCommand(CliModeConfigure, "quit", quit)
-
 	InstallCommand(CliModeView, "write memory", func(args []string) {
 		if err := dbm.db.root.WriteToJsonFile(config.GlobalOptDBPath); err != nil {
 			fmt.Printf("Error: %s\n", err.Error())

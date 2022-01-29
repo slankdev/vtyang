@@ -3,6 +3,8 @@ package vtyang
 import (
 	"fmt"
 	"strings"
+
+	"github.com/k0kubun/pp"
 )
 
 type CliMode int
@@ -20,6 +22,7 @@ type Command struct {
 type CommandNode struct {
 	mode     CliMode
 	commands []Command
+	tree     CompletionTree
 }
 
 var cliMode CliMode = CliModeView
@@ -38,6 +41,15 @@ func GetCommandNode(mode CliMode) *CommandNode {
 		cn = commandnodes[mode]
 		InstallCommand(mode, "list", listCallback)
 		InstallCommand(mode, "quit", quitCallback)
+		InstallCommand(mode, "show cli-tree", showCliTreeCallback)
+
+		// TODO(slankdev):
+		switch mode {
+		case CliModeView:
+			cn.tree = viewTree
+		case CliModeConfigure:
+			cn.tree = configureTree
+		}
 	}
 	return cn
 }
@@ -80,4 +92,9 @@ func quitCallback(arg []string) {
 	case CliModeConfigure:
 		cliMode = CliModeView
 	}
+}
+
+func showCliTreeCallback(arg []string) {
+	tree := GetCommandNodeCurrent().tree
+	pp.Println(tree)
 }

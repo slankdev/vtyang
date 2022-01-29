@@ -5,7 +5,6 @@ import (
 	"log"
 	"strings"
 
-	"github.com/k0kubun/pp"
 	"github.com/slankdev/vtyang/pkg/liner"
 	"github.com/spf13/cobra"
 )
@@ -60,8 +59,6 @@ func agentMain(cmd *cobra.Command, args []string) error {
 			switch {
 			case matchArgs(args, "show yang-modules"):
 				dbm.Dump()
-			case matchArgs(args, "show cli-tree"):
-				pp.Println(tree)
 			default:
 				cn := GetCommandNodeCurrent()
 				cn.ExecuteCommand(cat(args))

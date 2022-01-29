@@ -55,6 +55,7 @@ func do2(e *yang.Entry) CompletionNode {
 }
 
 func setCompletionTreeForCommandShowOperationalData() {
+	tree := GetCommandNode(CliModeView).tree
 	root := DigNode(&tree.Root, []string{"show", "operational-data"})
 	if root == nil {
 		panic("OKASHII")
@@ -67,6 +68,7 @@ func setCompletionTreeForCommandShowOperationalData() {
 }
 
 func setCompletionTreeForCommandDelete() {
+	tree := GetCommandNode(CliModeConfigure).tree
 	root := DigNode(&tree.Root, []string{"delete"})
 	if root == nil {
 		panic("OKASHII")
@@ -79,6 +81,7 @@ func setCompletionTreeForCommandDelete() {
 }
 
 func setCompletionTreeForCommandSet() {
+	tree := GetCommandNode(CliModeConfigure).tree
 	root := DigNode(&tree.Root, []string{"set"})
 	if root == nil {
 		panic("OKASHII")

@@ -61,6 +61,7 @@ func (t CompletionTree) Completion(line string, pos int) []CompletionNode {
 		return result
 	}
 
+	tree := GetCommandNodeCurrent().tree
 	var pivot *CompletionNode = &tree.Root
 	last := len(args) - 1
 	for i, arg := range args {
@@ -108,6 +109,7 @@ func DigNode(node *CompletionNode, query []string) *CompletionNode {
 }
 
 func completer(line string, pos int) (string, []string, string) {
+	tree := GetCommandNodeCurrent().tree
 	nodes := tree.Completion(line, pos)
 	if len(nodes) == 0 {
 		return line[:pos], nil, line[pos:]
@@ -147,6 +149,7 @@ func completer(line string, pos int) (string, []string, string) {
 }
 
 func completionLister(line string, pos int) {
+	tree := GetCommandNodeCurrent().tree
 	nodes := tree.Completion(line, pos)
 	if len(nodes) == 0 {
 		fmt.Printf("\n%% Invalid input detected\n")

@@ -1,6 +1,6 @@
 package vtyang
 
-var tree = CompletionTree{
+var viewTree = CompletionTree{
 	Root: CompletionNode{
 		Name:        "",
 		Description: "",
@@ -21,16 +21,6 @@ var tree = CompletionTree{
 						Childs:      []CompletionNode{{Name: "<cr>"}},
 					},
 				},
-			},
-			{
-				Name:        "delete",
-				Description: "Delete system parameter",
-				Level:       0,
-			},
-			{
-				Name:        "set",
-				Description: "Set system parameter",
-				Level:       0,
 			},
 			{
 				Name:        "show",
@@ -93,6 +83,25 @@ var tree = CompletionTree{
 				Description: "Quit system",
 				Level:       0,
 				Childs:      []CompletionNode{{Name: "<cr>"}},
+			},
+		},
+	},
+}
+var configureTree = CompletionTree{
+	Root: CompletionNode{
+		Name:        "",
+		Description: "",
+		Level:       -1,
+		Childs: []CompletionNode{
+			{
+				Name:        "delete",
+				Description: "Delete system parameter",
+				Level:       0,
+			},
+			{
+				Name:        "set",
+				Description: "Set system parameter",
+				Level:       0,
 			},
 		},
 	},

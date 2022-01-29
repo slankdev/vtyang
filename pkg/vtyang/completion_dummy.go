@@ -7,6 +7,11 @@ var tree = CompletionTree{
 		Level:       -1,
 		Childs: []CompletionNode{
 			{
+				Name:        "configure",
+				Description: "Enable swconfigure mode",
+				Level:       0,
+			},
+			{
 				Name:        "write",
 				Description: "Write system parameter",
 				Childs: []CompletionNode{

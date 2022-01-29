@@ -13,6 +13,19 @@ type Command struct {
 var commands []Command
 
 func InstallCommands() {
+	InstallCommand("configure", func(args []string) {
+		cliMode = CliModeConfigure
+	})
+
+	InstallCommand("quit", func(args []string) {
+		switch cliMode {
+		case CliModeView:
+			exit = true
+		case CliModeConfigure:
+			cliMode = CliModeView
+		}
+	})
+
 	InstallCommand("write memory", func(args []string) {
 		if err := dbm.db.root.WriteToJsonFile(config.GlobalOptDBPath); err != nil {
 			fmt.Printf("Error: %s\n", err.Error())

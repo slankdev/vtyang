@@ -23,6 +23,7 @@ const (
 )
 
 var cliMode CliMode = CliModeView
+var exit bool = false
 
 func getPrompt() string {
 	switch cliMode {
@@ -78,6 +79,10 @@ func agentMain(cmd *cobra.Command, args []string) error {
 			break
 		} else {
 			log.Print("error reading line: ", err)
+		}
+
+		if exit {
+			break
 		}
 	}
 

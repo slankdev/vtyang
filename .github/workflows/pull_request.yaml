@@ -1,0 +1,32 @@
+name: test
+
+on: 
+  push:
+    branches:
+    - "**"
+  pull_request: {}
+
+jobs:
+  build:
+    name: all
+    runs-on: ubuntu-latest
+    steps:
+    - name: set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.17
+      id: go
+    - name: checkout
+      uses: actions/checkout@v2
+    - name: download modules
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: go get
+    - name: Running golangci-lint
+      env:
+        GO111MODULE: on
+        GOPATH: /home/runner/work/
+      run: |
+          go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
+          ${GOPATH}/bin/golangci-lint run
+    - name: test
+      run: go test ./... -v

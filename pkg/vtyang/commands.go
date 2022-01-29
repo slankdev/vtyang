@@ -27,6 +27,16 @@ func InstallCommands() {
 		})
 
 	InstallCommand(CliModeView,
+		"show startup-config",
+		[]string{
+			"Display information",
+			"Display startup configuration",
+		},
+		func(args []string) {
+			fmt.Println("not implemented")
+		})
+
+	InstallCommand(CliModeView,
 		"show running-config",
 		[]string{
 			"Display information",
@@ -34,6 +44,17 @@ func InstallCommands() {
 		},
 		func(args []string) {
 			fmt.Println(dbm.db.root.String())
+		})
+
+	InstallCommand(CliModeView,
+		"show commit history",
+		[]string{
+			"Display information",
+			"Display commit configuration",
+			"Display commit history",
+		},
+		func(args []string) {
+			fmt.Println("not implemented")
 		})
 
 	InstallCommand(CliModeView,

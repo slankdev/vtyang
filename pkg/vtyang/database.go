@@ -1,183 +1,96 @@
 package vtyang
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"strconv"
+	"log"
+	"strings"
 
+	"github.com/openconfig/goyang/pkg/yang"
 	"github.com/slankdev/vtyang/pkg/util"
 )
 
-type DBNodeType string
+type DatabaseManager struct {
+	modules *yang.Modules
+	root    DBNode
 
-const (
-	Container DBNodeType = "container"
-	List      DBNodeType = "list"
-	Leaf      DBNodeType = "leaf"
-	LeafList  DBNodeType = "leaf-list"
-)
-
-type DBNode struct {
-	Name       string
-	Type       DBNodeType
-	Childs     []DBNode
-	ListChilds [][]DBNode
-	Value      DBValue
+	// candidateRoot is the top of candidate config
+	candidateRoot *DBNode
 }
 
-func (n *DBNode) String() string {
-	return js(n.ToMap())
+var dbm *DatabaseManager
+
+func NewDatabaseManager() *DatabaseManager {
+	m := DatabaseManager{}
+	m.modules = yang.NewModules()
+	m.candidateRoot = nil
+	return &m
 }
 
-func (n *DBNode) ToMap() interface{} {
-	m := map[string]interface{}{}
-	switch n.Type {
-	case Container:
-		for _, child := range n.Childs {
-			m[child.Name] = child.ToMap()
-		}
-	case List:
-		array := []interface{}{}
-		for _, child := range n.Childs {
-			array = append(array, child.ToMap())
-		}
-		return array
-	case Leaf:
-		return n.Value.ToValue()
-	default:
-		panic(fmt.Sprintf("ASSERT(%s)", n.Type))
-	}
-	return m
+func (m *DatabaseManager) LoadDatabaseFromData(n *DBNode) error {
+	m.root = *n
+	return nil
 }
 
-func (n *DBNode) WriteToJsonFile(filename string) error {
-	s := dbm.db.root.String()
-	if err := ioutil.WriteFile(filename, []byte(s), 0644); err != nil {
+func (m *DatabaseManager) LoadDatabaseFromFile(f string) error {
+	root, err := ReadFromJsonFile(config.GlobalOptDBPath)
+	if err != nil {
 		return err
 	}
+	m.root = *root
 	return nil
 }
 
-func ReadFromJsonString(jsonstr string) (*DBNode, error) {
-	m := map[string]interface{}{}
-	if err := json.Unmarshal([]byte(jsonstr), &m); err != nil {
-		return nil, err
+func (m *DatabaseManager) LoadYangModuleOrDie(path string) {
+	if err := m.LoadYangModule(path); err != nil {
+		panic(err)
 	}
-	return Interface2DBNode(m)
 }
 
-func ReadFromJsonFile(filename string) (*DBNode, error) {
-	raw, err := ioutil.ReadFile(filename)
+func (m *DatabaseManager) LoadYangModule(path string) error {
+	files, err := ioutil.ReadDir(path)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return ReadFromJsonString(string(raw))
-}
 
-func Interface2DBNode(i interface{}) (*DBNode, error) {
-	n := &DBNode{}
-	switch g := i.(type) {
-	case map[string]interface{}:
-		for k, v := range g {
-			child, err := Interface2DBNode(v)
-			if err != nil {
-				return nil, err
-			}
-			n.Type = Container
-			child.Name = k
-			n.Childs = append(n.Childs, *child)
+	for _, file := range files {
+		if file.IsDir() {
+			continue
 		}
-	case []interface{}:
-		for _, v := range g {
-			child, err := Interface2DBNode(v)
-			if err != nil {
-				return nil, err
-			}
-			n.Type = List
-			n.Childs = append(n.Childs, *child)
+		if !strings.HasSuffix(file.Name(), ".yang") {
+			continue
 		}
-	case bool:
-		n.Type = Leaf
-		n.Value = DBValue{
-			Type:    YBoolean,
-			Boolean: g,
-		}
-	case float64:
-		n.Type = Leaf
-		n.Value = DBValue{
-			Type:    YInteger,
-			Integer: int(g),
-		}
-	case string:
-		n.Type = Leaf
-		n.Value = DBValue{
-			Type:   YString,
-			String: g,
-		}
-	default:
-		panic(fmt.Sprintf("ASSERT(%T)", g))
-	}
-	return n, nil
-}
-
-type DBValueType string
-
-const (
-	YString  DBValueType = "string"
-	YInteger DBValueType = "integer"
-	YBoolean DBValueType = "boolean"
-)
-
-type DBValue struct {
-	Type DBValueType
-
-	// Union
-	Integer int
-	String  string
-	Boolean bool
-}
-
-func (v DBValue) ToValue() interface{} {
-	switch v.Type {
-	case YInteger:
-		return v.Integer
-	case YBoolean:
-		return v.Boolean
-	case YString:
-		return v.String
-	default:
-		panic(fmt.Sprintf("ASSERT(%s)", v.Type))
-	}
-}
-
-func (v *DBValue) SetFromString(s string) error {
-	switch v.Type {
-	case YInteger:
-		i, err := strconv.Atoi(s)
-		if err != nil {
+		fullname := fmt.Sprintf("%s/%s", path, file.Name())
+		log.Printf("loading yang module '%s'\n", fullname)
+		if err := m.modules.Read(fullname); err != nil {
 			return err
 		}
-		v.Integer = i
-	case YBoolean:
-		b, err := strconv.ParseBool(s)
-		if err != nil {
-			return err
-		}
-		v.Boolean = b
-	case YString:
-		v.String = s
 	}
+
+	errs := m.modules.Process()
+	if len(errs) > 0 {
+		for _, err := range errs {
+			log.Printf("%s", err.Error())
+		}
+		return errs[0]
+	}
+
 	return nil
 }
 
-type DB struct {
-	active bool
-	root   DBNode
+func (m *DatabaseManager) DumpEntries() []*yang.Entry {
+	entries := []*yang.Entry{}
+	for _, m := range m.modules.Modules {
+		ent := yang.ToEntry(m)
+		for _, e := range ent.Dir {
+			entries = append(entries, e)
+		}
+	}
+	return entries
 }
 
 func (dbm *DatabaseManager) GetNode(xpath XPath) (*DBNode, error) {
-	n := &dbm.db.root
+	n := &dbm.root
 	xwords := xpath.words
 
 	for ; len(xwords) != 0; xwords = xwords[1:] {
@@ -228,7 +141,7 @@ func (dbm *DatabaseManager) GetNode(xpath XPath) (*DBNode, error) {
 }
 
 func (dbm *DatabaseManager) DeleteNode(xpath XPath) error {
-	n := &dbm.db.root
+	n := dbm.candidateRoot
 	xwords := xpath.words
 
 	for ; len(xwords) != 0; xwords = xwords[1:] {
@@ -282,8 +195,7 @@ func (dbm *DatabaseManager) DeleteNode(xpath XPath) error {
 
 func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 	*DBNode, error) {
-
-	n := &dbm.db.root
+	n := dbm.candidateRoot
 	xwords := xpath.words
 
 	for ; len(xwords) != 0; xwords = xwords[1:] {

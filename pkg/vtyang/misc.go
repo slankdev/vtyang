@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"strings"
 
+	"github.com/olekukonko/tablewriter"
 	"github.com/openconfig/goyang/pkg/yang"
 	"github.com/slankdev/vtyang/pkg/util"
 )
@@ -66,6 +68,14 @@ func js(i interface{}) string {
 	return out.String()
 }
 
+func jsonstring2map(s string) (interface{}, error) {
+	m := map[string]interface{}{}
+	if err := json.Unmarshal([]byte(s), &m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func cat(args []string) string {
 	s := ""
 	for _, a := range args {
@@ -90,4 +100,20 @@ func matchArgs(args []string, matchStr string) bool {
 
 	log.Printf("Match %s v.s. %s\n", args, matchStr)
 	return true
+}
+
+func newTable() *tablewriter.Table {
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetAutoWrapText(false)
+	table.SetAutoFormatHeaders(true)
+	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetCenterSeparator("")
+	table.SetColumnSeparator("")
+	table.SetRowSeparator("")
+	table.SetHeaderLine(false)
+	table.SetBorder(false)
+	table.SetTablePadding("  ")
+	table.SetNoWhiteSpace(true)
+	return table
 }

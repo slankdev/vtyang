@@ -3,6 +3,7 @@ package vtyang
 import (
 	"fmt"
 	"log"
+	"os"
 	"strings"
 
 	"github.com/slankdev/vtyang/pkg/liner"
@@ -41,7 +42,14 @@ func agentMain(cmd *cobra.Command, args []string) error {
 	setCompletionTreeForCommandSet()
 	setCompletionTreeForCommandDelete()
 	setCompletionTreeForCommandDo()
+	initCommitHistories()
 	InitVTYang()
+
+	if config.GlobalOptRunFilePath != "" {
+		if err := os.MkdirAll(config.GlobalOptRunFilePath, 0777); err != nil {
+			return err
+		}
+	}
 
 	line := liner.NewLiner()
 	defer line.Close()

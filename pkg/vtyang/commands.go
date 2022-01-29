@@ -6,29 +6,53 @@ import (
 
 func InstallCommands() {
 	InstallCommand(CliModeView,
-		"configure",
-		[]string{
+		"configure", []string{
 			"Enable configure mode",
 		},
 		func(args []string) {
+			if cliMode == CliModeConfigure {
+				fmt.Printf("Already in configure mode\n")
+				return
+			}
 			cliMode = CliModeConfigure
+			dbm.candidateRoot = dbm.root.DeepCopy()
 		})
 
+	InstallCommand(CliModeConfigure,
+		"show configuration diff", []string{
+			"Display information",
+			"Display configuration information",
+			"Display configuration diff",
+		},
+		func(args []string) {
+			diff := DBNodeDiff(&dbm.root, dbm.candidateRoot)
+			fmt.Println(diff)
+		})
+
+	InstallCommand(CliModeConfigure,
+		"commit", []string{
+			"Commit current set of changes",
+		}, ccbCommitCallback)
+
+	InstallCommand(CliModeConfigure,
+		"rollback configuration", []string{
+			"Roll back database to last committed version",
+			"Roll back database to last committed version",
+		}, ccbRollbackConfiguration)
+
 	InstallCommand(CliModeView,
-		"write memory",
-		[]string{
+		"write memory", []string{
 			"Write system parameter",
 			"Write system parameter to memory",
 		},
 		func(args []string) {
-			if err := dbm.db.root.WriteToJsonFile(config.GlobalOptDBPath); err != nil {
+			if err := dbm.root.WriteToJsonFile(config.GlobalOptDBPath); err != nil {
 				fmt.Printf("Error: %s\n", err.Error())
 			}
 		})
 
 	InstallCommand(CliModeView,
-		"show yang modules",
-		[]string{
+		"show yang modules", []string{
 			"Display information",
 			"Display yang information",
 			"Display yang modules",
@@ -38,8 +62,7 @@ func InstallCommands() {
 		})
 
 	InstallCommand(CliModeView,
-		"show startup-config",
-		[]string{
+		"show startup-config", []string{
 			"Display information",
 			"Display startup configuration",
 		},
@@ -48,30 +71,32 @@ func InstallCommands() {
 		})
 
 	InstallCommand(CliModeView,
-		"show running-config",
-		[]string{
+		"show running-config", []string{
 			"Display information",
 			"Display current configuration",
 		},
 		func(args []string) {
-			// pp.Println(dbm.db.root)
-			fmt.Println(dbm.db.root.String())
+			fmt.Println(dbm.root.String())
 		})
 
 	InstallCommand(CliModeView,
-		"show commit history",
-		[]string{
+		"show configuration commit list", []string{
 			"Display information",
-			"Display commit configuration",
+			"Display configuration",
+			"Display configuration commit",
 			"Display commit history",
-		},
-		func(args []string) {
-			fmt.Println("not implemented")
-		})
+		}, ccbShowConfigurationCommitList)
 
 	InstallCommand(CliModeView,
-		"show operational-data",
-		[]string{
+		"show configuration commit diff", []string{
+			"Display information",
+			"Display configuration",
+			"Display configuration commit",
+			"Display configuration diff with history",
+		}, ccbShowConfigurationCommitDiff)
+
+	InstallCommand(CliModeView,
+		"show operational-data", []string{
 			"Display information",
 			"Display operational data",
 		},
@@ -100,8 +125,7 @@ func InstallCommands() {
 		})
 
 	InstallCommand(CliModeConfigure,
-		"set",
-		[]string{
+		"set", []string{
 			"Set system parameter",
 		},
 		func(args []string) {
@@ -124,8 +148,7 @@ func InstallCommands() {
 		})
 
 	InstallCommand(CliModeConfigure,
-		"delete",
-		[]string{
+		"delete", []string{
 			"Delete system parameter",
 		},
 		func(args []string) {
@@ -148,8 +171,7 @@ func InstallCommands() {
 		})
 
 	InstallCommand(CliModeConfigure,
-		"do",
-		[]string{
+		"do", []string{
 			"Run an operational-mode command",
 		},
 		func(args []string) {

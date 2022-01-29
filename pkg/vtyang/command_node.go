@@ -119,6 +119,7 @@ func quitCallback(arg []string) {
 		exit = true
 	case CliModeConfigure:
 		cliMode = CliModeView
+		dbm.candidateRoot = nil
 	}
 }
 

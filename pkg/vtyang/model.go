@@ -3,91 +3,12 @@ package vtyang
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
-	"log"
 	"os"
 	"sort"
-	"strings"
 
 	"github.com/openconfig/goyang/pkg/indent"
 	"github.com/openconfig/goyang/pkg/yang"
 )
-
-type DatabaseManager struct {
-	modules *yang.Modules
-	db      DB
-}
-
-var dbm *DatabaseManager
-
-func NewDatabaseManager() *DatabaseManager {
-	m := DatabaseManager{}
-	m.modules = yang.NewModules()
-	m.db.active = true
-	return &m
-}
-
-func (m *DatabaseManager) LoadDatabaseFromData(n *DBNode) error {
-	m.db.root = *n
-	return nil
-}
-
-func (m *DatabaseManager) LoadDatabaseFromFile(f string) error {
-	root, err := ReadFromJsonFile(config.GlobalOptDBPath)
-	if err != nil {
-		return err
-	}
-	m.db.root = *root
-	return nil
-}
-
-func (m *DatabaseManager) LoadYangModuleOrDie(path string) {
-	if err := m.LoadYangModule(path); err != nil {
-		panic(err)
-	}
-}
-
-func (m *DatabaseManager) LoadYangModule(path string) error {
-	files, err := ioutil.ReadDir(path)
-	if err != nil {
-		return err
-	}
-
-	for _, file := range files {
-		if file.IsDir() {
-			continue
-		}
-		if !strings.HasSuffix(file.Name(), ".yang") {
-			continue
-		}
-		fullname := fmt.Sprintf("%s/%s", path, file.Name())
-		log.Printf("loading yang module '%s'\n", fullname)
-		if err := m.modules.Read(fullname); err != nil {
-			return err
-		}
-	}
-
-	errs := m.modules.Process()
-	if len(errs) > 0 {
-		for _, err := range errs {
-			log.Printf("%s", err.Error())
-		}
-		return errs[0]
-	}
-
-	return nil
-}
-
-func (m *DatabaseManager) DumpEntries() []*yang.Entry {
-	entries := []*yang.Entry{}
-	for _, m := range m.modules.Modules {
-		ent := yang.ToEntry(m)
-		for _, e := range ent.Dir {
-			entries = append(entries, e)
-		}
-	}
-	return entries
-}
 
 func (m *DatabaseManager) Dump() {
 	entries := m.DumpEntries()

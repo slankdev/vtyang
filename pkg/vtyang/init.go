@@ -13,6 +13,15 @@ var (
 )
 
 func InitVTYang() {
+	CMD := func(l string) { GetCommandNodeCurrent().ExecuteCommand(l) }
+	CMD("configure")
+	// CMD("delete users user hiroki age")
+	// CMD("commit")
+	// CMD("set users user hiroki age 20")
+	// CMD("commit")
+	// CMD("set users user hiroki age 30")
+	// CMD("commit")
+	// CMD("do show configuration commit list")
 	// ExecuteCommand("show running-config")
 	// pp.Println(dbm.SetNode(mod, x(mod, "/users/user['name'='hiroki']/age"), "10"))
 	// pp.Println(dbm.SetNode(mod, x(mod, "/users/user['name'='hiroki']/age"), "10"))

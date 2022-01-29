@@ -24,12 +24,21 @@ func NewDatabaseManager() *DatabaseManager {
 	m := DatabaseManager{}
 	m.modules = yang.NewModules()
 	m.db.active = true
+	return &m
+}
+
+func (m *DatabaseManager) LoadDatabaseFromData(n *DBNode) error {
+	m.db.root = *n
+	return nil
+}
+
+func (m *DatabaseManager) LoadDatabaseFromFile(f string) error {
 	root, err := ReadFromJsonFile(config.GlobalOptDBPath)
 	if err != nil {
-		panic("READ FILE")
+		return err
 	}
 	m.db.root = *root
-	return &m
+	return nil
 }
 
 func (m *DatabaseManager) LoadYangModuleOrDie(path string) {

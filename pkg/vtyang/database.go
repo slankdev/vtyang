@@ -59,18 +59,20 @@ func (n *DBNode) WriteToJsonFile(filename string) error {
 	return nil
 }
 
+func ReadFromJsonString(jsonstr string) (*DBNode, error) {
+	m := map[string]interface{}{}
+	if err := json.Unmarshal([]byte(jsonstr), &m); err != nil {
+		return nil, err
+	}
+	return Interface2DBNode(m)
+}
+
 func ReadFromJsonFile(filename string) (*DBNode, error) {
 	raw, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
-
-	m := map[string]interface{}{}
-	if err := json.Unmarshal(raw, &m); err != nil {
-		return nil, err
-	}
-
-	return Interface2DBNode(m)
+	return ReadFromJsonString(string(raw))
 }
 
 func Interface2DBNode(i interface{}) (*DBNode, error) {

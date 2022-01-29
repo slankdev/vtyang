@@ -17,6 +17,10 @@ const (
 func agentMain(cmd *cobra.Command, args []string) error {
 	dbm = NewDatabaseManager()
 	dbm.LoadYangModuleOrDie("./yang")
+	if err := dbm.LoadDatabaseFromFile(config.GlobalOptDBPath); err != nil {
+		return err
+	}
+
 	setCompletionTreeForCommandShowOperationalData()
 	setCompletionTreeForCommandSet()
 	setCompletionTreeForCommandDelete()

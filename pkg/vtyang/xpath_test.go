@@ -11,6 +11,7 @@ import (
 func init() {
 	dbm = NewDatabaseManager()
 	dbm.LoadYangModuleOrDie("./testdata")
+	dbm.LoadDatabaseFromData(&DummyDBRoot)
 }
 
 func TestXPathParse(t *testing.T) {

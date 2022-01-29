@@ -74,8 +74,8 @@ var testDummyDBRoot = DBNode{
 
 func TestDBNodeGet(t *testing.T) {
 	dbm := NewDatabaseManager()
-	dbm.db.root = testDummyDBRoot
 	dbm.LoadYangModuleOrDie("./testdata")
+	dbm.LoadDatabaseFromData(&testDummyDBRoot)
 
 	testcases := []struct {
 		in  string
@@ -91,9 +91,6 @@ func TestDBNodeGet(t *testing.T) {
 		xpath := NewXPathOrDie(tc.in)
 		node, err := dbm.GetNode(xpath)
 		ErrorOnDie(err)
-		if node == nil {
-			t.Errorf("not found")
-		}
 
 		if !reflect.DeepEqual(node, tc.ptr) {
 			pp.Println(node)

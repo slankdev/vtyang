@@ -132,23 +132,7 @@ func InstallCommands() {
 		}, yangCompletionForOperationalData)
 
 	InstallCommandYang(CliModeConfigure,
-		"set", []string{
-			"Set system parameter",
-		}, func(args []string) {
-			xpath, valueStr, err := ParseXPathArgs(args[1:], true)
-			if err != nil {
-				fmt.Printf("Error: %s\n", err.Error())
-				return
-			}
-			if _, err := dbm.SetNode(xpath, valueStr); err != nil {
-				fmt.Printf("Error: %s\n", err.Error())
-				return
-			}
-
-		}, yangCompletionForConfigurationData)
-
-	InstallCommandYang(CliModeConfigure,
-		"delete", []string{
+		"no", []string{
 			"Delete system parameter",
 		},
 		func(args []string) {
@@ -163,21 +147,45 @@ func InstallCommands() {
 			}
 		}, yangCompletionForConfigurationData)
 
-	InstallCommandCompletion(CliModeConfigure,
-		"do", []string{
-			"Run an operational-mode command",
-		},
+	InstallSpecialCommands()
+}
+
+func InstallSpecialCommands() {
+	// Install set commands
+	cn := GetCommandNode(CliModeConfigure)
+	for _, e := range dbm.YangEntries() {
+		cn.commands = append(cn.commands, Command{m: e.Name, f: func(args []string) {
+			xpath, valueStr, err := ParseXPathArgs(args, true)
+			if err != nil {
+				fmt.Printf("Error: %s\n", err.Error())
+				return
+			}
+			if _, err := dbm.SetNode(xpath, valueStr); err != nil {
+				fmt.Printf("Error: %s\n", err.Error())
+				return
+			}
+		}})
+	}
+	root := GetCommandNode(CliModeConfigure).tree.Root
+	for _, e := range dbm.YangEntries() {
+		n := yangCompletionForConfigurationData(e)
+		if n != nil {
+			root.Childs = append(root.Childs, n)
+		}
+	}
+
+	// Install do command
+	InstallCommand(CliModeConfigure, "do",
+		[]string{"Run an operational-mode command"},
 		func(args []string) {
 			cn := GetCommandNode(CliModeView)
 			cn.ExecuteCommand(cat(args[1:]))
-		},
-		func() {
-			viewRoot := GetCommandNode(CliModeView).tree.Root
-			confRoot := GetCommandNode(CliModeConfigure).tree.Root
-			for _, child := range confRoot.Childs {
-				if child.Name == "do" {
-					child.Childs = append(child.Childs, viewRoot.Childs...)
-				}
-			}
 		})
+	viewRoot := GetCommandNode(CliModeView).tree.Root
+	confRoot := GetCommandNode(CliModeConfigure).tree.Root
+	for _, child := range confRoot.Childs {
+		if child.Name == "do" {
+			child.Childs = append(child.Childs, viewRoot.Childs...)
+		}
+	}
 }

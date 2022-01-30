@@ -140,10 +140,3 @@ func InstallCommandYang(mode CliMode, match string, helps []string,
 		}
 	}
 }
-
-func InstallCommandCompletion(mode CliMode, match string, helps []string,
-	callbackFunc func(args []string),
-	completionFunc func()) {
-	InstallCommand(mode, match, helps, callbackFunc)
-	completionFunc()
-}

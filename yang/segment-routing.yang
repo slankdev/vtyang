@@ -1,0 +1,27 @@
+module segment-routing {
+  namespace "http://frrouting.org/segment-routing";
+  prefix segment-routing;
+
+  container segment-routing {
+    container srv6 {
+      container locators {
+        container locators {
+          list locator {
+            key "name";
+            container prefix {
+              leaf prefix {
+                type string;
+              }
+              leaf prefix-length {
+                type uint32;
+              }
+            }
+            leaf name {
+              type string;
+            }
+          }
+        }
+      }
+    }
+  }
+}

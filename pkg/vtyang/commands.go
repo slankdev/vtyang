@@ -106,16 +106,15 @@ func InstallCommands() {
 		}, ccbShowConfigurationCommitDiff)
 
 	InstallCommandYang(CliModeView,
-		"show operational-data", []string{
-			"Display information",
+		"show", []string{
 			"Display operational data",
 		},
 		func(args []string) {
-			if len(args) < 3 {
+			if len(args) < 2 {
 				fmt.Printf("usage:\n")
 				return
 			}
-			xpath, _, err := ParseXPathArgs(args[2:], false)
+			xpath, _, err := ParseXPathArgs(args[1:], false)
 			if err != nil {
 				fmt.Printf("Error: %s\n", err.Error())
 				return

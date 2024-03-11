@@ -1,18 +1,77 @@
 package vtyang
 
 import (
+	"reflect"
+	"testing"
+
 	"github.com/k0kubun/pp"
 )
 
-var (
-	x   = NewXPathOrDie
-	mod = "account"
-	_   = x
-	_   = mod
-	_   = pp.Println
-)
+func TestInstallCompletionTree(t *testing.T) {
+	root := &CompletionNode{
+		Name: "",
+		Childs: []*CompletionNode{
+			{
+				Name: "show",
+				Childs: []*CompletionNode{
+					{
+						Name: "configuration",
+						Childs: []*CompletionNode{
+							newCR(),
+						},
+					},
+				},
+			},
+		},
+	}
+	inputRoot := &CompletionNode{
+		Childs: []*CompletionNode{
+			{
+				Name: "show",
+				Childs: []*CompletionNode{
+					{
+						Name: "running-config",
+						Childs: []*CompletionNode{
+							newCR(),
+						},
+					},
+				},
+			},
+		},
+	}
+	expect := &CompletionNode{
+		Name: "",
+		Childs: []*CompletionNode{
+			{
+				Name: "show",
+				Childs: []*CompletionNode{
+					{
+						Name: "configuration",
+						Childs: []*CompletionNode{
+							newCR(),
+						},
+					},
+					{
+						Name: "running-config",
+						Childs: []*CompletionNode{
+							newCR(),
+						},
+					},
+				},
+			},
+		},
+	}
+	if err := installCompletionTree(root, inputRoot); err != nil {
+		t.Error(err)
+	}
+	if !reflect.DeepEqual(root, expect) {
+		pp.Println("expect", expect)
+		pp.Println("result", root)
+		t.Errorf("missmatch")
+	}
+}
 
-func InitVTYang() {
+func TestInterraction(t *testing.T) {
 	// CMD := func(l string) { GetCommandNodeCurrent().ExecuteCommand(l) }
 	// CMD("configure")
 	// CMD("delete users user hiroki age")
@@ -35,7 +94,7 @@ func InitVTYang() {
 	// pp.Println(dbm.SetNode(mod, x(mod, "/users/user['name'='hiroki']/age"), "10"))
 	// pp.Println(dbm.SetNode(mod, x(mod, "/users/user['name'='yuta']/age"), "100"))
 	// pp.Println(dbm.SetNode(mod, x(mod,
-	// 	"/users/user['name'='hoge']/projects['name'='p1']/finished",
+	//      "/users/user['name'='hoge']/projects['name'='p1']/finished",
 	// ), "true"))
 
 	//dbm.SetNode("accounting", NewXPathOrDie("/users/user['name'='hoge']"), nil)
@@ -53,7 +112,7 @@ func InitVTYang() {
 
 	// node, err := dbm.GetNode("account", "/users/user['name'='eva']")
 	// if err != nil {
-	// 	panic(err)
+	//      panic(err)
 	// }
 	// pp.Println(node)
 }

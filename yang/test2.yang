@@ -1,0 +1,21 @@
+module test2 {
+  prefix test2;
+  namespace "http://slank.dev/vtyang";
+
+  rpc uptime {
+    tailf:actionpoint uptime-callback;
+    description "uptime cli";
+  }
+  rpc uname {
+    vtyang:actionpoint uname-callback;
+    input {
+      leaf release {
+        type boolean;
+      }
+      leaf machine {
+        type boolean;
+      }
+
+    }
+  }
+}

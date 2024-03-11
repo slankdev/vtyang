@@ -1,0 +1,18 @@
+module test1 {
+  prefix test1;
+  namespace "http://slank.dev/vtyang";
+
+  container system-state {
+    config false;
+    container state {
+      leaf active {
+        type boolean;
+      }
+    }
+  }
+
+  rpc reboot {
+    tailf:actionpoint uptime-callback;
+    description "reboot cli";
+  }
+}

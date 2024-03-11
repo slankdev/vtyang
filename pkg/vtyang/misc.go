@@ -57,12 +57,12 @@ func val(s string) string {
 func js(i interface{}) string {
 	b, err := json.Marshal(&i)
 	if err != nil {
-		fmt.Printf("Error: %s\n", err.Error())
+		fmt.Fprintf(stdout, "Error: %s\n", err.Error())
 		return "{}"
 	}
 	var out bytes.Buffer
 	if err = json.Indent(&out, b, "", "  "); err != nil {
-		fmt.Printf("Error: %s\n", err.Error())
+		fmt.Fprintf(stdout, "Error: %s\n", err.Error())
 		return "{}"
 	}
 	return out.String()
@@ -116,4 +116,25 @@ func newTable() *tablewriter.Table {
 	table.SetTablePadding("  ")
 	table.SetNoWhiteSpace(true)
 	return table
+}
+
+func slicesContainsInt(s []int, v int) bool {
+	for _, t := range s {
+		if t == v {
+			return true
+		}
+	}
+	return false
+}
+
+func newCR() *CompletionNode {
+	return &CompletionNode{
+		Name: "<cr>",
+	}
+}
+
+func setStdoutWithBuffer() *bytes.Buffer {
+	buf := bytes.NewBufferString("")
+	stdout = buf
+	return buf
 }

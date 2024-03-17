@@ -1,0 +1,47 @@
+name: pull-request container-image
+
+on:
+  pull_request:
+    branches:
+    - main
+    types:
+    - opened
+    - synchronize
+
+concurrency:
+  group: image-pr-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  docker-build:
+    name: ${{ matrix.artifact_name }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+        - artifact_name: vtyang
+
+    steps:
+    - name: clone repo
+      uses: actions/checkout@v2
+    - name: login ghcr
+      id: login_docker
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: push with branch name
+      id: run_docker_push_with_branch_name
+      run: |
+        docker build \
+          --build-arg GIT_SHA=$(git rev-parse HEAD) \
+          --build-arg GIT_BRANCH=$(git symbolic-ref HEAD | sed -e 's#refs/heads/##g') \
+          --build-arg GIT_TAG=none \
+          --build-arg BUILD_DATE=$(date '+%Y/%m/%d-%H:%M:%S-%Z') \
+          --tag ghcr.io/slankdev/vtyang-${{ matrix.artifact_name }}:pr-${{ github.event.number }} \
+          --file cmd/${{ matrix.artifact_name }}/Dockerfile .
+        docker push ghcr.io/slankdev/vtyang-${{ matrix.artifact_name }}:pr-${{ github.event.number }}
+      env:
+        BUILDKIT: 1

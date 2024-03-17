@@ -1,0 +1,17 @@
+syntax = "proto3";
+option go_package = "pkg/grpc";
+package myapp;
+
+service GreetingService {
+	rpc Hello (HelloRequest) returns (HelloResponse);
+	rpc HelloStream (stream HelloRequest) returns (stream HelloResponse);
+}
+
+message HelloRequest {
+	string name = 1;
+}
+
+message HelloResponse {
+	string message = 1;
+	string data = 2;
+}

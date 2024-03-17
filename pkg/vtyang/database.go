@@ -1,12 +1,21 @@
 package vtyang
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
+	"os"
+	"sort"
+	"strconv"
 	"strings"
 
+	"github.com/nsf/jsondiff"
+	"github.com/openconfig/goyang/pkg/indent"
 	"github.com/openconfig/goyang/pkg/yang"
+	"github.com/pkg/errors"
+
 	"github.com/slankdev/vtyang/pkg/util"
 )
 
@@ -17,8 +26,6 @@ type DatabaseManager struct {
 	// candidateRoot is the top of candidate config
 	candidateRoot *DBNode
 }
-
-var dbm *DatabaseManager
 
 func NewDatabaseManager() *DatabaseManager {
 	m := DatabaseManager{}
@@ -33,9 +40,15 @@ func (m *DatabaseManager) LoadDatabaseFromData(n *DBNode) error {
 }
 
 func (m *DatabaseManager) LoadDatabaseFromFile(f string) error {
-	root, err := ReadFromJsonFile(config.GlobalOptDBPath)
+	if !util.FileExists(f) {
+		if err := os.WriteFile(f, []byte("{}"), 0644); err != nil {
+			return errors.Wrap(err, "writefile")
+		}
+	}
+
+	root, err := ReadFromJsonFile(f)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "readfile")
 	}
 	m.root = *root
 	return nil
@@ -76,10 +89,6 @@ func (m *DatabaseManager) LoadYangModule(path string) error {
 	}
 
 	return nil
-}
-
-func (m *DatabaseManager) YangEntries() []*yang.Entry {
-	return dbm.DumpEntries()
 }
 
 func (m *DatabaseManager) DumpEntries() []*yang.Entry {
@@ -383,4 +392,280 @@ func lookupChildIdx(root *DBNode, kv map[string]string) int {
 		}
 	}
 	return -1
+}
+
+func (m *DatabaseManager) Dump() {
+	entries := m.DumpEntries()
+	for _, e := range entries {
+		dump(os.Stdout, e)
+	}
+}
+
+func getTypeName(e *yang.Entry) string {
+	if e == nil || e.Type == nil {
+		return ""
+	}
+	return e.Type.Root.Name
+}
+
+func dump(w io.Writer, e *yang.Entry) {
+	if e.Description != "" {
+		fmt.Fprintln(w)
+		fmt.Fprintln(indent.NewWriter(w, "// "), e.Description)
+	}
+
+	if len(e.Exts) > 0 {
+		fmt.Fprintf(w, "extensions: {\n")
+		for _, ext := range e.Exts {
+			if n := ext.NName(); n != "" {
+				fmt.Fprintf(w, "  %s %s;\n", ext.Kind(), n)
+			} else {
+				fmt.Fprintf(w, "  %s;\n", ext.Kind())
+			}
+		}
+		fmt.Fprintln(w, "}")
+	}
+
+	if e.RPC != nil {
+		return
+	}
+
+	switch {
+
+	case e.ReadOnly():
+		fmt.Fprintf(w, "RO: ")
+	default:
+		fmt.Fprintf(w, "rw: ")
+	}
+
+	if e.Type != nil {
+		fmt.Fprintf(w, "%s ", getTypeName(e))
+	}
+	name := e.Name
+	if e.Prefix != nil {
+		name = e.Prefix.Name + ":" + name
+	}
+	switch {
+	case e.Dir == nil && e.ListAttr != nil:
+		fmt.Fprintf(w, "[]%s\n", name)
+		return
+	case e.Dir == nil:
+		fmt.Fprintf(w, "%s\n", name)
+		return
+	case e.ListAttr != nil:
+		fmt.Fprintf(w, "[%s]%s {\n", e.Key, name) //}
+	default:
+		fmt.Fprintf(w, "%s {\n", name) //}
+	}
+	if r := e.RPC; r != nil {
+		if r.Input != nil {
+			dump(indent.NewWriter(w, "  "), r.Input)
+		}
+		if r.Output != nil {
+			dump(indent.NewWriter(w, "  "), r.Output)
+		}
+	}
+	var names []string
+	for k := range e.Dir {
+		names = append(names, k)
+	}
+	sort.Strings(names)
+	for _, k := range names {
+		dump(indent.NewWriter(w, "  "), e.Dir[k])
+	}
+	// { to match the brace below to keep brace matching working
+	fmt.Fprintln(w, "}")
+}
+
+type DBNodeType string
+
+const (
+	Container DBNodeType = "container"
+	List      DBNodeType = "list"
+	Leaf      DBNodeType = "leaf"
+	LeafList  DBNodeType = "leaf-list"
+)
+
+type DBNode struct {
+	Name       string
+	Type       DBNodeType
+	Childs     []DBNode
+	ListChilds [][]DBNode
+	Value      DBValue
+}
+
+type DBValueType string
+
+const (
+	YString  DBValueType = "string"
+	YInteger DBValueType = "integer"
+	YBoolean DBValueType = "boolean"
+)
+
+type DBValue struct {
+	Type DBValueType
+
+	// Union
+	Integer int
+	String  string
+	Boolean bool
+}
+
+func (n *DBNode) DeepCopy() *DBNode {
+	m := n.ToMap()
+	copy, _ := Interface2DBNode(m)
+	return copy
+}
+
+func (n *DBNode) String() string {
+	if m := n.ToMap(); m == nil {
+		return "{}"
+	}
+	return js(n.ToMap())
+}
+
+func (n *DBNode) ToMap() interface{} {
+	m := map[string]interface{}{}
+	switch n.Type {
+	case Container:
+		for _, child := range n.Childs {
+			m[child.Name] = child.ToMap()
+		}
+	case List:
+		array := []interface{}{}
+		for _, child := range n.Childs {
+			array = append(array, child.ToMap())
+		}
+		return array
+	case Leaf:
+		return n.Value.ToValue()
+	case "":
+		return nil
+	default:
+		panic(fmt.Sprintf("ASSERT(%s)", n.Type))
+	}
+	return m
+}
+
+func (n *DBNode) WriteToJsonFile(filename string) error {
+	s := dbm.root.String()
+	if err := ioutil.WriteFile(filename, []byte(s), 0644); err != nil {
+		return err
+	}
+	return nil
+}
+
+func ReadFromJsonString(jsonstr string) (*DBNode, error) {
+	m := map[string]interface{}{}
+	if err := json.Unmarshal([]byte(jsonstr), &m); err != nil {
+		return nil, err
+	}
+	return Interface2DBNode(m)
+}
+
+func ReadFromJsonFile(filename string) (*DBNode, error) {
+	raw, err := os.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+	return ReadFromJsonString(string(raw))
+}
+
+func Interface2DBNode(i interface{}) (*DBNode, error) {
+	n := &DBNode{}
+	switch g := i.(type) {
+	case map[string]interface{}:
+		for k, v := range g {
+			child, err := Interface2DBNode(v)
+			if err != nil {
+				return nil, err
+			}
+			n.Type = Container
+			child.Name = k
+			n.Childs = append(n.Childs, *child)
+		}
+	case []interface{}:
+		for _, v := range g {
+			child, err := Interface2DBNode(v)
+			if err != nil {
+				return nil, err
+			}
+			n.Type = List
+			n.Childs = append(n.Childs, *child)
+		}
+	case bool:
+		n.Type = Leaf
+		n.Value = DBValue{
+			Type:    YBoolean,
+			Boolean: g,
+		}
+	case int:
+		n.Type = Leaf
+		n.Value = DBValue{
+			Type:    YInteger,
+			Integer: g,
+		}
+	case float64:
+		n.Type = Leaf
+		n.Value = DBValue{
+			Type:    YInteger,
+			Integer: int(g),
+		}
+	case string:
+		n.Type = Leaf
+		n.Value = DBValue{
+			Type:   YString,
+			String: g,
+		}
+	case nil:
+		n.Type = Container
+	default:
+		panic(fmt.Sprintf("ASSERT(%T)", g))
+	}
+	return n, nil
+}
+
+func (v DBValue) ToValue() interface{} {
+	switch v.Type {
+	case YInteger:
+		return v.Integer
+	case YBoolean:
+		return v.Boolean
+	case YString:
+		return v.String
+	default:
+		panic(fmt.Sprintf("ASSERT(%s)", v.Type))
+	}
+}
+
+func (v *DBValue) SetFromString(s string) error {
+	switch v.Type {
+	case YInteger:
+		i, err := strconv.Atoi(s)
+		if err != nil {
+			return err
+		}
+		v.Integer = i
+	case YBoolean:
+		b, err := strconv.ParseBool(s)
+		if err != nil {
+			return err
+		}
+		v.Boolean = b
+	case YString:
+		v.String = s
+	}
+	return nil
+}
+
+func DBNodeDiff(na, nb *DBNode) string {
+	a := []byte(na.String())
+	b := []byte(nb.String())
+	opts := jsondiff.DefaultConsoleOptions()
+	opts.Indent = "  "
+	opt, diff := jsondiff.Compare(a, b, &opts)
+	if opt == jsondiff.FullMatch {
+		return ""
+	}
+	return diff
 }

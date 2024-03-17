@@ -3,7 +3,9 @@ build:
 test:
 	go test ./...
 run: build
-	./vtyang agent --dbpath ./tmp/config.json --run-path /usr/local/var/run/vtyang
+	./vtyang agent --run-path /usr/local/var/run/vtyang
+godoc:
+	godoc -http=:6060
 kill:
 	killall vtyang
 log:

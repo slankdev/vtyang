@@ -19,21 +19,21 @@ type XPath struct {
 	words []XWord
 }
 
-func NewXPath(s string) (XPath, error) {
+func NewXPath(dbm *DatabaseManager, s string) (XPath, error) {
 	xp := XPath{}
-	if err := ParseXPath(&xp, s); err != nil {
+	if err := ParseXPath(dbm, &xp, s); err != nil {
 		return XPath{}, err
 	}
 	return xp, nil
 }
 
-func NewXPathOrDie(s string) XPath {
-	xp, err := NewXPath(s)
+func NewXPathOrDie(dbm *DatabaseManager, s string) XPath {
+	xp, err := NewXPath(dbm, s)
 	ErrorOnDie(err)
 	return xp
 }
 
-func ParseXPath(xpath *XPath, s string) error {
+func ParseXPath(dbm *DatabaseManager, xpath *XPath, s string) error {
 	words := strings.FieldsFunc(s, func(c rune) bool {
 		return c == '/'
 	})
@@ -97,7 +97,7 @@ func (x XPath) String() string {
 	return s
 }
 
-func ParseXPathArgs(args []string, setmode bool) (XPath, string, error) {
+func ParseXPathArgs(dbm *DatabaseManager, args []string, setmode bool) (XPath, string, error) {
 	module := &yang.Entry{}
 	module.Dir = map[string]*yang.Entry{}
 	for _, ent := range dbm.DumpEntries() {
@@ -112,7 +112,6 @@ func ParseXPathArgs(args []string, setmode bool) (XPath, string, error) {
 
 		var foundNode *yang.Entry = nil
 		for n := range module.Dir {
-			//fmt.Printf("vs %s %s\n", n, words[0])
 			if n == words[0] {
 				foundNode = module.Dir[n]
 				break

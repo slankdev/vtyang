@@ -1,78 +1,146 @@
 package vtyang
 
 import (
+	"fmt"
+	"io"
 	"log"
 	"os"
+	"strings"
 
+	"github.com/openconfig/goyang/pkg/yang"
+	"github.com/slankdev/vtyang/pkg/liner"
+	"github.com/slankdev/vtyang/pkg/util"
 	"github.com/spf13/cobra"
 )
 
-var config = struct {
-	GlobalOptDebug       bool
-	GlobalOptPaths       []string
-	GlobalOptDBPath      string
+var (
 	GlobalOptRunFilePath string
-}{}
+
+	actionCBs = map[string]func(args []string) error{
+		"uptime-callback": func(args []string) error {
+			fmt.Fprintf(stdout, "UPTIME")
+			return nil
+		},
+		"date-callback": func(args []string) error {
+			fmt.Fprint(stdout, "DATE")
+			return nil
+		},
+	}
+	_ = actionCBs
+
+	exit            bool      = false
+	stdout          io.Writer = os.Stdout
+	cliMode         CliMode   = CliModeView
+	dbm             *DatabaseManager
+	commitHistories []CommitHistory
+	commandnodes    map[CliMode]*CommandNode
+	yangmodules     *yang.Modules
+)
+
+const (
+	QUESTION_MARK rune = 63 // '?'
+)
+
+func getDatabasePath() string {
+	return fmt.Sprintf("%s/config.json", GlobalOptRunFilePath)
+}
+
+func getPrompt() string {
+	switch cliMode {
+	case CliModeView:
+		return "vtyang# "
+	case CliModeConfigure:
+		return "vtyang(config)# "
+	default:
+		panic(fmt.Sprintf("CLIMODE(%v)", cliMode))
+	}
+}
 
 func NewCommand() *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use: "vtyang",
 	}
-
-	fs := rootCmd.PersistentFlags()
-	fs.BoolVar(&config.GlobalOptDebug, "debug", false, "Enable debug output")
-	fs.StringArrayVarP(&config.GlobalOptPaths, "path", "p", []string{}, "Module paths")
-	fs.StringVarP(&config.GlobalOptDBPath, "dbpath", "d", "/etc/vtyang/config.json", "Database path")
-	fs.StringVarP(&config.GlobalOptRunFilePath, "run-path", "r", "", "Runtime file path")
-	rootCmd.AddCommand(newCommandCompletion(rootCmd))
+	rootCmd.AddCommand(util.NewCommandCompletion(rootCmd))
 	rootCmd.AddCommand(newCommandAgent())
-	rootCmd.AddCommand(newCommandDump())
 	return rootCmd
+}
+
+func InitAgent(runtimePath, yangPath string) error {
+	if runtimePath != "" {
+		if err := os.MkdirAll(runtimePath, 0777); err != nil {
+			return err
+		}
+	}
+
+	GlobalOptRunFilePath = runtimePath
+	dbm = NewDatabaseManager()
+	dbm.LoadYangModuleOrDie(yangPath)
+	if err := dbm.LoadDatabaseFromFile(getDatabasePath()); err != nil {
+		return err
+	}
+
+	var err error
+	yangmodules, err = yangModulesPath(yangPath)
+	if err != nil {
+		return err
+	}
+
+	cliMode = CliModeView
+	installCommandsDefault(CliModeView)
+	installCommandsDefault(CliModeConfigure)
+	installCommands()
+	initCommitHistories()
+	installCommandsPostProcess()
+
+	if GlobalOptRunFilePath != "" {
+		if err := os.MkdirAll(GlobalOptRunFilePath, 0777); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func newCommandAgent() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:  "agent",
-		RunE: agentMain,
-	}
-	return cmd
-}
+		Use: "agent",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// XXX
+			if err := InitAgent(GlobalOptRunFilePath, "./yang"); err != nil {
+				return err
+			}
 
-func newCommandDump() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:  "dump",
-		RunE: dumpMain,
-	}
-	return cmd
-}
+			line := liner.NewLiner()
+			defer line.Close()
+			line.SetCtrlCAborts(true)
+			line.SetWordCompleter(completer)
+			line.SetTabCompletionStyle(liner.TabPrints)
+			line.SetBinder(QUESTION_MARK, completionLister)
 
-func newCommandCompletion(rootCmd *cobra.Command) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "completion [sub operation]",
-		Short: "Display completion snippet",
-		Args:  cobra.MinimumNArgs(1),
-	}
-
-	cmd.AddCommand(&cobra.Command{
-		Use:   "bash",
-		Short: "Display bash-completion snippet",
-		Args:  cobra.MinimumNArgs(0),
-		Run: func(cmd *cobra.Command, args []string) {
-			rootCmd.GenBashCompletion(os.Stdout)
+			for {
+				if name, err := line.Prompt(getPrompt()); err == nil {
+					line.AppendHistory(name)
+					name = strings.TrimSpace(name)
+					args := strings.Fields(name)
+					if len(args) == 0 {
+						continue
+					}
+					cn := getCommandNodeCurrent()
+					cn.executeCommand(cat(args))
+				} else if err == liner.ErrPromptAborted {
+					log.Print("aborted")
+					break
+				} else {
+					log.Print("error reading line: ", err)
+				}
+				if exit {
+					break
+				}
+			}
+			return nil
 		},
-		SilenceUsage: true,
-	})
-
-	cmd.AddCommand(&cobra.Command{
-		Use:   "zsh",
-		Short: "Display zsh-completion snippet",
-		Args:  cobra.MinimumNArgs(0),
-		Run: func(cmd *cobra.Command, args []string) {
-			rootCmd.GenZshCompletion(os.Stdout)
-		},
-		SilenceUsage: true,
-	})
-
+	}
+	fs := cmd.Flags()
+	fs.StringVarP(&GlobalOptRunFilePath, "run-path", "r", "", "Runtime file path")
 	return cmd
 }
 

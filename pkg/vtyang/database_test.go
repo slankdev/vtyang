@@ -88,7 +88,7 @@ func TestDBNodeGet(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		xpath := NewXPathOrDie(tc.in)
+		xpath := NewXPathOrDie(dbm, tc.in)
 		node, err := dbm.GetNode(xpath)
 		ErrorOnDie(err)
 
@@ -101,6 +101,10 @@ func TestDBNodeGet(t *testing.T) {
 }
 
 func TestDBNodeCreate(t *testing.T) {
+	dbm := NewDatabaseManager()
+	dbm.LoadYangModuleOrDie("./testdata")
+	dbm.LoadDatabaseFromData(&testDummyDBRoot)
+
 	testcases := []struct {
 		in   []string
 		root DBNode
@@ -144,7 +148,7 @@ func TestDBNodeCreate(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		xpath := NewXPathOrDie(tc.in[0])
+		xpath := NewXPathOrDie(dbm, tc.in[0])
 		root, err := xpath.CreateDBNodeTree()
 		ErrorOnDie(err)
 
@@ -158,7 +162,6 @@ func TestDBNodeCreate(t *testing.T) {
 }
 
 func TestDBNodeJson(t *testing.T) {
-
 	testcases := []struct {
 		in string
 	}{

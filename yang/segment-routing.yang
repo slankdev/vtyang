@@ -5,20 +5,16 @@ module segment-routing {
   container segment-routing {
     container srv6 {
       container locators {
-        container locators {
-          list locator {
-            key "name";
-            container prefix {
-              leaf prefix {
-                type string;
-              }
-              leaf prefix-length {
-                type uint32;
-              }
-            }
-            leaf name {
-              type string;
-            }
+        list locator {
+          key "name";
+          leaf name {
+            type string;
+          }
+          leaf prefix {
+            type string;
+          }
+          leaf prefix-length {
+            type uint32;
           }
         }
       }

@@ -164,13 +164,11 @@ var xpathTestDBRoot = DBNode{
 	},
 }
 
-func init() {
-	dbm = NewDatabaseManager()
+func TestXPathParse(t *testing.T) {
+	dbm := NewDatabaseManager()
 	dbm.LoadYangModuleOrDie("./testdata")
 	dbm.LoadDatabaseFromData(&xpathTestDBRoot)
-}
 
-func TestXPathParse(t *testing.T) {
 	testcases := []struct {
 		in    string
 		xpath XPath
@@ -196,7 +194,7 @@ func TestXPathParse(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		xpath := NewXPathOrDie(tc.in)
+		xpath := NewXPathOrDie(dbm, tc.in)
 		if !reflect.DeepEqual(xpath, tc.xpath) {
 			pp.Println("in", tc.xpath)
 			pp.Println("out", xpath)
@@ -209,6 +207,10 @@ func TestXPathParse(t *testing.T) {
 }
 
 func TestXPathParseCli(t *testing.T) {
+	dbm := NewDatabaseManager()
+	dbm.LoadYangModuleOrDie("./testdata")
+	dbm.LoadDatabaseFromData(&xpathTestDBRoot)
+
 	testcases := []struct {
 		in    string
 		val   string
@@ -244,7 +246,7 @@ func TestXPathParseCli(t *testing.T) {
 
 	for _, tc := range testcases {
 		args := strings.Fields(tc.in)
-		xpath, val, err := ParseXPathArgs(args, tc.set)
+		xpath, val, err := ParseXPathArgs(dbm, args, tc.set)
 		ErrorOnDie(err)
 
 		if !reflect.DeepEqual(xpath, tc.xpath) {

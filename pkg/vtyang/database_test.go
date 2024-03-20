@@ -92,9 +92,9 @@ func TestDBNodeGet(t *testing.T) {
 
 	for _, tc := range testcases {
 		xpath, err := ParseXPathString(dbm, tc.in)
-		ErrorOnDie(err)
+		util.PanicOnErr(err)
 		node, err := dbm.GetNode(xpath)
-		ErrorOnDie(err)
+		util.PanicOnErr(err)
 
 		if !reflect.DeepEqual(node, tc.ptr) {
 			pp.Println(node)
@@ -153,9 +153,9 @@ func TestDBNodeCreate(t *testing.T) {
 
 	for _, tc := range testcases {
 		xpath, err := ParseXPathString(dbm, tc.in[0])
-		ErrorOnDie(err)
+		util.PanicOnErr(err)
 		root, err := xpath.CreateDBNodeTree()
-		ErrorOnDie(err)
+		util.PanicOnErr(err)
 
 		if !reflect.DeepEqual(root, &tc.root) {
 			fmt.Println(root.String())
@@ -203,12 +203,12 @@ func TestDBNodeJson(t *testing.T) {
 	for _, tc := range testcases {
 		m := map[string]interface{}{}
 		err := json.Unmarshal([]byte(tc.in), &m)
-		ErrorOnDie(err)
+		util.PanicOnErr(err)
 		n, err := Interface2DBNode(m)
-		ErrorOnDie(err)
+		util.PanicOnErr(err)
 		out := n.String()
 		same, err := util.DeepEqualJSON(tc.in, out)
-		ErrorOnDie(err)
+		util.PanicOnErr(err)
 		if !same {
 			println(tc.in)
 			println(out)

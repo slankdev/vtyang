@@ -306,7 +306,7 @@ func TestPrototype(t *testing.T) {
 		YangPath:    "./testdata/yang/basic",
 		OutputFile:  "./testdata/output/TestPrototype.txt",
 		Inputs: []string{
-			"show system-info",
+			"hidden-command-test1",
 		},
 	})
 }

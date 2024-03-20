@@ -10,3 +10,9 @@ func GetSortedKeys(m map[string]interface{}) []string {
 	sort.Strings(keys)
 	return keys
 }
+
+func PanicOnErr(err error) {
+	if err != nil {
+		panic(err)
+	}
+}

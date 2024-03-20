@@ -42,7 +42,8 @@ jobs:
     - name: build
       run: |
         REPO=github.com/slankdev/vtyang
-        go build -o ${{ matrix.artifact_name }} -ldflags "\
+        GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} \
+          go build -o ${{ matrix.artifact_name }} -ldflags "\
           -X $REPO/pkg/util.gitSHA=$(git rev-parse HEAD) \
           -X $REPO/pkg/util.gitBranch=none \
           -X $REPO/pkg/util.gitTag=$(git describe --tags --abbrev=0) \

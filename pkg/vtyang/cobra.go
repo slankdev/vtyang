@@ -1,16 +1,26 @@
 package vtyang
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"os"
 	"strings"
 
+	"github.com/k0kubun/pp"
 	"github.com/openconfig/goyang/pkg/yang"
+	"github.com/spf13/cobra"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/peer"
+	"google.golang.org/grpc/reflection"
+
+	vtyangapi "github.com/slankdev/vtyang/pkg/grpc/api"
 	"github.com/slankdev/vtyang/pkg/liner"
 	"github.com/slankdev/vtyang/pkg/util"
-	"github.com/spf13/cobra"
 )
 
 var (
@@ -61,7 +71,9 @@ func NewCommand() *cobra.Command {
 		Use: "vtyang",
 	}
 	rootCmd.AddCommand(util.NewCommandCompletion(rootCmd))
+	rootCmd.AddCommand(util.NewCommandVersion())
 	rootCmd.AddCommand(newCommandAgent())
+	rootCmd.AddCommand(newCommandWatch())
 	return rootCmd
 }
 
@@ -100,6 +112,45 @@ func InitAgent(runtimePath, yangPath string) error {
 	return nil
 }
 
+func newCommandWatch() *cobra.Command {
+	cmd := &cobra.Command{
+		Use: "watch",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			conn, err := grpc.Dial(
+				"localhost:8080",
+				grpc.WithTransportCredentials(insecure.NewCredentials()),
+				grpc.WithBlock(),
+			)
+			if err != nil {
+				return err
+			}
+			defer conn.Close()
+			client := vtyangapi.NewGreetingServiceClient(conn)
+			stream, err := client.HelloStream(context.Background())
+			if err != nil {
+				return err
+			}
+			loop := true
+			for loop {
+				res, err := stream.Recv()
+				if err != nil {
+					fmt.Println(err.Error())
+					loop = false
+					continue
+				}
+				m := map[string]interface{}{}
+				if err := json.Unmarshal([]byte(res.Data), &m); err != nil {
+					return err
+				}
+				pp.Println(m)
+			}
+
+			return nil
+		},
+	}
+	return cmd
+}
+
 func newCommandAgent() *cobra.Command {
 	cmd := &cobra.Command{
 		Use: "agent",
@@ -116,6 +167,7 @@ func newCommandAgent() *cobra.Command {
 			line.SetTabCompletionStyle(liner.TabPrints)
 			line.SetBinder(QUESTION_MARK, completionLister)
 
+			go startRPCServer()
 			for {
 				if name, err := line.Prompt(getPrompt()); err == nil {
 					line.AppendHistory(name)
@@ -158,4 +210,106 @@ func ErrorOnDie(err error) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func startRPCServer() {
+	port := 8080
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+	if err != nil {
+		panic(err)
+	}
+	s := grpc.NewServer()
+	vtyangapi.RegisterGreetingServiceServer(s, &myServer{})
+	reflection.Register(s)
+	s.Serve(listener)
+	// TODO(slankdev): terminating process
+}
+
+type myServer struct {
+	vtyangapi.UnimplementedGreetingServiceServer
+}
+
+func (s *myServer) HelloStream(
+	stream vtyangapi.GreetingService_HelloStreamServer) error {
+	// Init loop stopper
+	loop := true
+	go func() {
+		for loop {
+			if _, err := stream.Recv(); err != nil {
+				if err == io.EOF {
+					pp.Println("EOF")
+				} else {
+					pp.Println(err.Error())
+				}
+				loop = false
+			}
+		}
+	}()
+
+	// Once Flush current running-config
+	xpath, _, err := ParseXPathArgs(dbm, []string{}, false)
+	if err != nil {
+		return err
+	}
+	node, err := dbm.GetNode(xpath)
+	if err != nil {
+		return err
+	}
+	if err := stream.Send(&vtyangapi.HelloResponse{
+		Data: node.String(),
+	}); err != nil {
+		return err
+	}
+
+	// Get remote ip
+	p, ok := peer.FromContext(stream.Context())
+	if !ok {
+		return fmt.Errorf("peer.FromContext is not ok")
+	}
+
+	// Watch Configuration change and notify it
+	confChan := make(chan Configuration)
+	confChans[p.Addr.String()] = confChan
+	pp.Println("Starting subscribe")
+	for loop {
+		conf := <-confChan
+		if err := stream.Send(&vtyangapi.HelloResponse{
+			Message: "HELLO",
+			Data:    conf.Data,
+		}); err != nil {
+			pp.Println(err.Error())
+			loop = false
+		}
+	}
+	pp.Println("Stopping subscribe")
+	delete(confChans, p.Addr.String())
+	return nil
+}
+
+type Configuration struct {
+	Revision int
+	Data     string
+}
+
+var (
+	confChans = map[string]chan Configuration{}
+)
+
+func nofityRunningConfigToSubscribers() error {
+	xpath, _, err := ParseXPathArgs(dbm, []string{}, false)
+	if err != nil {
+		return err
+	}
+	node, err := dbm.GetNode(xpath)
+	if err != nil {
+		fmt.Fprintf(stdout, "Error: %s\n", err.Error())
+		return err
+	}
+	fmt.Fprintln(stdout, node.String())
+	for _, confChan := range confChans {
+		confChan <- Configuration{
+			Data: node.String(),
+		}
+	}
+	return nil
 }

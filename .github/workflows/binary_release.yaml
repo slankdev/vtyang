@@ -1,0 +1,59 @@
+name: release binary
+
+on:
+  push:
+    tags:
+    - 'v*'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.distribution }}
+    strategy:
+      matrix:
+        include:
+        - distribution: ubuntu-22.04
+          os: linux
+          arch: amd64
+          artifact_name: vtyang
+          go_version: 1.17
+        - distribution: ubuntu-22.04
+          os: linux
+          arch: arm64
+          artifact_name: vtyang
+          go_version: 1.17
+        - distribution: ubuntu-22.04
+          os: darwin
+          arch: arm64
+          artifact_name: vtyang
+          go_version: 1.17
+
+    steps:
+    - name: set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: ${{ matrix.go_version }}
+      id: go
+    - name: checkout
+      uses: actions/checkout@v2
+    - name: download modules
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: go mod download
+
+
+    - name: build
+      run: |
+        REPO=github.com/slankdev/vtyang
+        go build -o ${{ matrix.artifact_name }} -ldflags "\
+          -X $REPO/pkg/util.gitSHA=$(git rev-parse HEAD) \
+          -X $REPO/pkg/util.gitBranch=none \
+          -X $REPO/pkg/util.gitTag=$(git describe --tags --abbrev=0) \
+          -X $REPO/pkg/util.buildDate=$(date '+%Y/%m/%d-%H:%M:%S-%Z') \
+          " cmd/${{ matrix.artifact_name }}/main.go
+
+    - name: upload
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: ${{ matrix.artifact_name }}
+        asset_name: ${{ matrix.artifact_name }}.${{ matrix.os }}-${{ matrix.arch }}.go${{ matrix.go_version }}
+        tag: ${{ github.ref }}

@@ -572,6 +572,10 @@ func ccbCommitCallback(args []string) {
 	if err := dbm.root.WriteToJsonFile(getDatabasePath()); err != nil {
 		fmt.Fprintf(stdout, "Error: %s\n", err.Error())
 	}
+
+	if err := nofityRunningConfigToSubscribers(); err != nil {
+		fmt.Fprintf(stdout, "Error: %s\n", err.Error())
+	}
 }
 
 func ccbShowConfigurationCommitList(args []string) {

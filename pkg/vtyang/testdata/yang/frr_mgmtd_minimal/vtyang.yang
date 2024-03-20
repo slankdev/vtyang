@@ -1,0 +1,17 @@
+module vtyang-frr-deviations {
+  namespace "http://slank.dev/vtyang";
+  prefix vtyang-frr-deviations;
+
+  import frr-interface {
+    prefix frr-interface;
+  }
+
+  augment /frr-interface:lib/frr-interface:interface {
+    leaf slankdev {
+      type string;
+    }
+  }
+  deviation /frr-interface:lib/interface/slankdev {
+    deviate not-supported;
+  }
+}

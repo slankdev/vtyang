@@ -117,6 +117,13 @@ func installCommandsDefault(mode CliMode) {
 		fmt.Fprintln(stdout, dumpCompletionTreeJson(getCommandNodeCurrent().tree.Root))
 	})
 
+	installCommand(mode, "show system-info", []string{
+		"Display information",
+		"Display system information",
+	}, func(arg []string) {
+		fmt.Fprintln(stdout, "I'm fine, thank you")
+	})
+
 	installCommand(mode, "save cli-tree", []string{
 		"Save information",
 		"Save completion tree",

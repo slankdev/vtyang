@@ -11,13 +11,13 @@ module frr-zebra {
     prefix inet;
   }
 
-  // import frr-affinity-map {
-  //   prefix frr-affinity-map;
-  // }
+  import frr-affinity-map {
+    prefix frr-affinity-map;
+  }
 
-  // import frr-route-map {
-  //   prefix frr-route-map;
-  // }
+  import frr-route-map {
+    prefix frr-route-map;
+  }
 
   import frr-route-types {
     prefix frr-route-types;
@@ -2775,12 +2775,12 @@ module frr-zebra {
           description
             "The protocol to filter.";
         }
-        // leaf route-map {
-        //   type frr-route-map:route-map-ref;
-        //   mandatory true;
-        //   description
-        //     "A route-map to filter routes.";
-        // }
+        leaf route-map {
+          type frr-route-map:route-map-ref;
+          mandatory true;
+          description
+            "A route-map to filter routes.";
+        }
       }
 
       list filter-nht {
@@ -2800,12 +2800,12 @@ module frr-zebra {
           description
             "The protocol to filter.";
         }
-        // leaf route-map {
-        //   type frr-route-map:route-map-ref;
-        //   mandatory true;
-        //   description
-        //     "A route-map to filter nexthops.";
-        // }
+        leaf route-map {
+          type frr-route-map:route-map-ref;
+          mandatory true;
+          description
+            "A route-map to filter nexthops.";
+        }
       }
 
       leaf resolve-via-default {
@@ -2935,11 +2935,11 @@ module frr-zebra {
         description
           "The admin distance to use for imported routes.";
       }
-      // leaf route-map {
-      //   type frr-route-map:route-map-ref;
-      //   description
-      //     "A route-map to filter imported routes.";
-      // }
+      leaf route-map {
+        type frr-route-map:route-map-ref;
+        description
+          "A route-map to filter imported routes.";
+      }
     }
     leaf allow-external-route-update {
       type empty;

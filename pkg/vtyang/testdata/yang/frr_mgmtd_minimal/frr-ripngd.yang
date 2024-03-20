@@ -10,9 +10,9 @@ module frr-ripngd {
   import ietf-yang-types {
     prefix yang;
   }
-  // import frr-if-rmap {
-  //   prefix frr-if-rmap;
-  // }
+  import frr-if-rmap {
+    prefix frr-if-rmap;
+  }
   import frr-filter {
     prefix frr-filter;
   }
@@ -22,9 +22,9 @@ module frr-ripngd {
   import frr-vrf {
     prefix frr-vrf;
   }
-  // import frr-route-map {
-  //   prefix frr-route-map;
-  // }
+  import frr-route-map {
+    prefix frr-route-map;
+  }
   import frr-route-types {
     prefix frr-route-types;
   }
@@ -187,13 +187,13 @@ module frr-ripngd {
           description
             "Routing protocol.";
         }
-        // leaf route-map {
-        //   type frr-route-map:route-map-ref;
-        //   description
-        //     "Applies the conditions of the specified route-map to
-        //      routes that are redistributed into the RIPng routing
-        //      instance.";
-        // }
+        leaf route-map {
+          type frr-route-map:route-map-ref;
+          description
+            "Applies the conditions of the specified route-map to
+             routes that are redistributed into the RIPng routing
+             instance.";
+        }
         leaf metric {
           type uint8 {
             range "0..16";
@@ -208,7 +208,7 @@ module frr-ripngd {
         }
       }
 
-      // uses frr-if-rmap:if-route-maps-group;
+      uses frr-if-rmap:if-route-maps-group;
 
       leaf-list static-route {
         type inet:ipv6-prefix;

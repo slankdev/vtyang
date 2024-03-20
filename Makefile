@@ -5,3 +5,4 @@ godoc:
 generate:
 	go generate ./...
 include ./cmd/*/sub.mk
+-include local.mk

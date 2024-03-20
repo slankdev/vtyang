@@ -422,9 +422,11 @@ func TestFilterDbWithModule(t *testing.T) {
 	}
 
 	// Initializing Agent
-	if err := InitAgent(GlobalOptRunFilePath,
-		"./testdata/yang/frr_isisd_minimal",
-		"/tmp/testlog.log"); err != nil {
+	if err := InitAgent(AgentOpts{
+		RuntimePath: GlobalOptRunFilePath,
+		YangPath:    "./testdata/yang/frr_isisd_minimal",
+		LogFile:     "/tmp/testlog.log",
+	}); err != nil {
 		t.Fatal(err)
 	}
 

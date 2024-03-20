@@ -11,8 +11,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/nsf/jsondiff"
 	"github.com/openconfig/goyang/pkg/yang"
 	"github.com/pkg/errors"
+
+	"github.com/slankdev/vtyang/pkg/mgmtd"
+	"github.com/slankdev/vtyang/pkg/util"
 )
 
 type CliMode int
@@ -84,6 +88,25 @@ func installCommandsDefault(mode CliMode) {
 		case CliModeConfigure:
 			cliMode = CliModeView
 			dbm.candidateRoot = nil
+
+			if agentOpts.BackendMgmtd != nil {
+				// Un-Lock mgmtd datastores
+				for _, dsId := range []*mgmtd.DatastoreId{
+					mgmtd.DatastoreId_RUNNING_DS.Enum(),
+					mgmtd.DatastoreId_CANDIDATE_DS.Enum(),
+				} {
+					if err := mgmtdClient.LockReq(&mgmtd.FeLockDsReq{
+						SessionId: mgmtdClient.GetSessionId(),
+						ReqId:     util.NewUint64Pointer(0),
+						DsId:      dsId,
+						Lock:      util.NewBoolPointer(false),
+					}); err != nil {
+						err := errors.Wrap(err, "LockReq(Lock=false)")
+						fmt.Fprintf(stdout, "Error %v\n", err)
+						return
+					}
+				}
+			}
 		}
 	})
 
@@ -200,6 +223,97 @@ func installCommands() {
 			}
 			cliMode = CliModeConfigure
 			dbm.candidateRoot = dbm.root.DeepCopy()
+
+			if agentOpts.BackendMgmtd != nil {
+				// Lock mgmtd datastores
+				for _, dsId := range []*mgmtd.DatastoreId{
+					mgmtd.DatastoreId_RUNNING_DS.Enum(),
+					mgmtd.DatastoreId_CANDIDATE_DS.Enum(),
+				} {
+					if err := mgmtdClient.LockReq(&mgmtd.FeLockDsReq{
+						SessionId: mgmtdClient.GetSessionId(),
+						ReqId:     util.NewUint64Pointer(0),
+						DsId:      dsId,
+						Lock:      util.NewBoolPointer(true),
+					}); err != nil {
+						err := errors.Wrap(err, "LockReq(Lock=true)")
+						fmt.Fprintf(stdout, "Error %v\n", err)
+						return
+					}
+				}
+			}
+		})
+
+	installCommand(CliModeConfigure,
+		"show configuration running", []string{
+			"Display information",
+			"Display configuration information",
+			"Display running-configuration information",
+		},
+		func(args []string) {
+			dsId := mgmtd.DatastoreId_RUNNING_DS.Enum()
+			config, err := mgmtdClient.GetReq(&mgmtd.FeGetReq{
+				SessionId: mgmtdClient.GetSessionId(),
+				Config:    util.NewBoolPointer(true),
+				DsId:      dsId,
+				ReqId:     util.NewUint64Pointer(0),
+				Data: []*mgmtd.YangGetDataReq{
+					{
+						Data: &mgmtd.YangData{
+							Xpath: util.NewStringPointer("/"),
+						},
+						NextIndx: util.NewInt64Pointer(0),
+					},
+				},
+			})
+			if err != nil {
+				err := errors.Wrap(err, "mgmtd.GetReq")
+				fmt.Fprintf(stdout, "Error: %v", err)
+				return
+			}
+			configJson, err := frrConfigToJson(config)
+			if err != nil {
+				err := errors.Wrap(err, "frrConfigToJson")
+				fmt.Fprintf(stdout, "Error: %s\n", err)
+				return
+			}
+			fmt.Fprintf(stdout, "%s\n", configJson)
+		})
+
+	installCommand(CliModeConfigure,
+		"show configuration candidate", []string{
+			"Display information",
+			"Display configuration information",
+			"Display candidate-configuration information",
+		},
+		func(args []string) {
+			dsId := mgmtd.DatastoreId_CANDIDATE_DS.Enum()
+			config, err := mgmtdClient.GetReq(&mgmtd.FeGetReq{
+				SessionId: mgmtdClient.GetSessionId(),
+				Config:    util.NewBoolPointer(true),
+				DsId:      dsId,
+				ReqId:     util.NewUint64Pointer(0),
+				Data: []*mgmtd.YangGetDataReq{
+					{
+						Data: &mgmtd.YangData{
+							Xpath: util.NewStringPointer("/"),
+						},
+						NextIndx: util.NewInt64Pointer(0),
+					},
+				},
+			})
+			if err != nil {
+				err := errors.Wrap(err, "mgmtd.GetReq")
+				fmt.Fprintf(stdout, "Error: %s\n", err)
+				return
+			}
+			configJson, err := frrConfigToJson(config)
+			if err != nil {
+				err := errors.Wrap(err, "frrConfigToJson")
+				fmt.Fprintf(stdout, "Error: %s\n", err)
+				return
+			}
+			fmt.Fprintf(stdout, "%s\n", configJson)
 		})
 
 	installCommand(CliModeConfigure,
@@ -209,8 +323,16 @@ func installCommands() {
 			"Display configuration diff",
 		},
 		func(args []string) {
-			diff := DBNodeDiff(&dbm.root, dbm.candidateRoot)
-			fmt.Fprintln(stdout, diff)
+			if agentOpts.BackendMgmtd == nil {
+				diff := DBNodeDiff(&dbm.root, dbm.candidateRoot)
+				fmt.Fprintln(stdout, diff)
+			} else {
+				diff, err := frrConfigDiff()
+				if err != nil {
+					fmt.Fprintf(stdout, "Error: %s\n", err)
+				}
+				fmt.Fprintln(stdout, diff)
+			}
 		})
 
 	installCommand(CliModeConfigure,
@@ -599,6 +721,20 @@ func (h CommitHistory) WriteToFile(basepath string) error {
 }
 
 func ccbCommitCallback(args []string) {
+	if agentOpts.BackendMgmtd != nil {
+		if err := mgmtdClient.CommitConfig(&mgmtd.FeCommitConfigReq{
+			SessionId:    mgmtdClient.GetSessionId(),
+			ReqId:        util.NewUint64Pointer(0),
+			SrcDsId:      mgmtd.DatastoreId_CANDIDATE_DS.Enum(),
+			DstDsId:      mgmtd.DatastoreId_RUNNING_DS.Enum(),
+			ValidateOnly: util.NewBoolPointer(false),
+			Abort:        util.NewBoolPointer(false),
+		}); err != nil {
+			err := errors.Wrap(err, "mgmtd.WriteProtoBufMsg")
+			fmt.Fprintf(stdout, "Error: %s", err)
+		}
+	}
+
 	if dbm.candidateRoot == nil {
 		panic("OKASHII")
 	}
@@ -758,4 +894,67 @@ func yangModulesPath(path string) (*yang.Modules, error) {
 		return nil, errs[0]
 	}
 	return modules, nil
+}
+
+func frrConfigToJson(config []*mgmtd.YangData) ([]byte, error) {
+	yd := []YangData{}
+	for _, data := range config {
+		xp, err := ParseXPathString(dbm, *data.Xpath)
+		if err != nil {
+			return nil, errors.Wrap(err, "ParseXPathString")
+		}
+		yd = append(yd, YangData{
+			XPath: xp,
+			Value: data.Value.GetEncodedStrVal(),
+		})
+	}
+
+	out, err := CraftDBNode(yd)
+	if err != nil {
+		return nil, errors.Wrap(err, "CraftDBNode")
+	}
+	return []byte(out.String()), nil
+}
+
+func frrConfigDiff() (string, error) {
+	configs := [2][]*mgmtd.YangData{}
+	for idx, dsId := range []*mgmtd.DatastoreId{
+		mgmtd.DatastoreId_RUNNING_DS.Enum(),
+		mgmtd.DatastoreId_CANDIDATE_DS.Enum(),
+	} {
+		_, _ = idx, dsId
+		config, err := mgmtdClient.GetReq(&mgmtd.FeGetReq{
+			SessionId: mgmtdClient.GetSessionId(),
+			Config:    util.NewBoolPointer(true),
+			DsId:      dsId,
+			ReqId:     util.NewUint64Pointer(0),
+			Data: []*mgmtd.YangGetDataReq{
+				{
+					Data: &mgmtd.YangData{
+						Xpath: util.NewStringPointer("/"),
+					},
+					NextIndx: util.NewInt64Pointer(0),
+				},
+			},
+		})
+		if err != nil {
+			err := errors.Wrap(err, "mgmtd.GetReq")
+			return "", err
+		}
+		configs[idx] = config
+	}
+
+	jsonRunningConfig, err := frrConfigToJson(configs[0])
+	if err != nil {
+		return "", err
+	}
+	jsonCandidateConfig, err := frrConfigToJson(configs[1])
+	if err != nil {
+		return "", err
+	}
+	opts := jsondiff.DefaultConsoleOptions()
+	opts.Indent = "  "
+	_, diff := jsondiff.Compare(jsonRunningConfig,
+		jsonCandidateConfig, &opts)
+	return diff, nil
 }

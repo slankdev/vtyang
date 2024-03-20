@@ -21,6 +21,7 @@ import (
 
 	vtyangapi "github.com/slankdev/vtyang/pkg/grpc/api"
 	"github.com/slankdev/vtyang/pkg/liner"
+	"github.com/slankdev/vtyang/pkg/mgmtd"
 	"github.com/slankdev/vtyang/pkg/util"
 )
 
@@ -31,6 +32,7 @@ var (
 	GlobalOptYangPath    string
 	GlobalOptDumpCliTree string
 	GlobalOptCommands    []string
+	GlobalOptMgmtdSock   string
 
 	actionCBs = map[string]func(args []string) error{
 		"uptime-callback": func(args []string) error {
@@ -43,6 +45,9 @@ var (
 		},
 	}
 	_ = actionCBs
+
+	agentOpts   AgentOpts
+	mgmtdClient *mgmtd.Client
 
 	exit            bool      = false
 	stdout          io.Writer = os.Stdout
@@ -83,7 +88,24 @@ func NewCommand() *cobra.Command {
 	return rootCmd
 }
 
-func InitAgent(runtimePath, yangPath, logFile string) error {
+type AgentOptsBackendMgmtd struct {
+	UnixSockPath string
+}
+
+type AgentOpts struct {
+	RuntimePath string
+	YangPath    string
+	LogFile     string
+	// BackendMgmtd
+	BackendMgmtd *AgentOptsBackendMgmtd
+}
+
+func InitAgent(opts AgentOpts) error {
+	runtimePath := opts.RuntimePath
+	yangPath := opts.YangPath
+	logFile := opts.LogFile
+	agentOpts = opts
+
 	if logFile != "" {
 		logfile, err := os.OpenFile(logFile,
 			os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
@@ -92,6 +114,16 @@ func InitAgent(runtimePath, yangPath, logFile string) error {
 		}
 		log.SetOutput(logfile)
 		log.Printf("starting vtyang...\n")
+	}
+
+	if opts.BackendMgmtd != nil {
+		var err error
+		mgmtdClient, err = mgmtd.NewClient(
+			opts.BackendMgmtd.UnixSockPath,
+			"vtyang")
+		if err != nil {
+			return errors.Wrap(err, "mgmtd.NewClient")
+		}
 	}
 
 	if runtimePath != "" {
@@ -172,8 +204,17 @@ func newCommandAgent() *cobra.Command {
 	cmd := &cobra.Command{
 		Use: "agent",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := InitAgent(GlobalOptRunFilePath, GlobalOptYangPath,
-				GlobalOptLogFile); err != nil {
+			opts := AgentOpts{
+				RuntimePath: GlobalOptRunFilePath,
+				YangPath:    GlobalOptYangPath,
+				LogFile:     GlobalOptLogFile,
+			}
+			if GlobalOptMgmtdSock != "" {
+				opts.BackendMgmtd = &AgentOptsBackendMgmtd{
+					UnixSockPath: GlobalOptMgmtdSock,
+				}
+			}
+			if err := InitAgent(opts); err != nil {
 				return err
 			}
 
@@ -242,6 +283,7 @@ func newCommandAgent() *cobra.Command {
 	fs.StringVarP(&GlobalOptYangPath, "yang", "y", "./yang", "Runtime file path")
 	fs.StringVarP(&GlobalOptDumpCliTree, "dump", "d", "", "[configure,view]")
 	fs.StringArrayVarP(&GlobalOptCommands, "command", "c", []string{}, "")
+	fs.StringVar(&GlobalOptMgmtdSock, "mgmtd-sock", "", "/var/run/frr/mgmtd_fe.sock")
 	return cmd
 }
 

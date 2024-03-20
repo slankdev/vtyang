@@ -63,7 +63,6 @@ func TestAgentXPathCli(t *testing.T) {
 func TestAgentXPathCliFRR(t *testing.T) {
 	executeTestCase(t, &TestCase{
 		RuntimePath: "/tmp/run/vtyang",
-		LogFile:     "/tmp/run/vtyang/vtyang.log",
 		YangPath:    "./testdata/yang/frr_isisd_minimal",
 		OutputFile:  "./testdata/frr_isisd_test1_output.json",
 		Inputs: []string{
@@ -99,6 +98,17 @@ func TestLoadDatabaseFromFile(t *testing.T) {
 	})
 }
 
+func TestAccountingConfigXpath01(t *testing.T) {
+	executeTestCase(t, &TestCase{
+		RuntimePath: "/tmp/run/vtyang",
+		YangPath:    "./testdata/yang/accounting",
+		OutputFile:  "./testdata/TestAccountingConfigXpath01.txt",
+		Inputs: []string{
+			"eval-xpath /account:users/account:user[name='eva']",
+		},
+	})
+}
+
 func TestXpathParse1(t *testing.T) {
 	executeTestCase(t, &TestCase{
 		RuntimePath: "/tmp/run/vtyang",
@@ -106,6 +116,7 @@ func TestXpathParse1(t *testing.T) {
 		OutputFile:  "./testdata/xpath_parse1_output.txt",
 		Inputs: []string{
 			"show-xpath lib interface dum0 description dum0-comment",
+			"eval-xpath /frr-interface:lib/interface[name='dum10']/description",
 		},
 	})
 }
@@ -113,7 +124,6 @@ func TestXpathParse1(t *testing.T) {
 func TestXpathParse2(t *testing.T) {
 	executeTestCase(t, &TestCase{
 		RuntimePath: "/tmp/run/vtyang",
-		LogFile:     "/tmp/run/vtyang/vtyang.log",
 		YangPath:    "./testdata/yang/basic",
 		OutputFile:  "./testdata/xpath_parse2_output.txt",
 		Inputs: []string{
@@ -214,7 +224,6 @@ func TestXpathParse2(t *testing.T) {
 func TestXpathParse3(t *testing.T) {
 	executeTestCase(t, &TestCase{
 		RuntimePath: "/tmp/run/vtyang",
-		LogFile:     "/tmp/run/vtyang/vtyang.log",
 		YangPath:    "./testdata/yang/frr_mgmtd_minimal",
 		OutputFile:  "./testdata/xpath_parse3_output.txt",
 		Inputs: []string{
@@ -233,7 +242,6 @@ func TestXpathParse3(t *testing.T) {
 func TestXpathParse4(t *testing.T) {
 	executeTestCase(t, &TestCase{
 		RuntimePath: "/tmp/run/vtyang",
-		LogFile:     "/tmp/run/vtyang/vtyang.log",
 		YangPath:    "./testdata/yang/basic",
 		OutputFile:  "./testdata/xpath_parse4_output.txt",
 		Inputs: []string{
@@ -253,7 +261,6 @@ func TestXpathParse4(t *testing.T) {
 func TestChoiceCase1(t *testing.T) {
 	executeTestCase(t, &TestCase{
 		RuntimePath: "/tmp/run/vtyang",
-		LogFile:     "/tmp/run/vtyang/vtyang.log",
 		YangPath:    "./testdata/yang/choice_case",
 		OutputFile:  "./testdata/choice_case_output1.json",
 		Inputs: []string{
@@ -265,7 +272,6 @@ func TestChoiceCase1(t *testing.T) {
 func TestChoiceCase2(t *testing.T) {
 	executeTestCase(t, &TestCase{
 		RuntimePath: "/tmp/run/vtyang",
-		LogFile:     "/tmp/run/vtyang/vtyang.log",
 		YangPath:    "./testdata/yang/choice_case",
 		OutputFile:  "./testdata/choice_case_output2.txt",
 		Inputs: []string{

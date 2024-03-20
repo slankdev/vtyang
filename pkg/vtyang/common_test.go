@@ -9,6 +9,10 @@ import (
 	"github.com/slankdev/vtyang/pkg/util"
 )
 
+const (
+	agentTestDefaultLogFile = "/tmp/run/vtyang/vtyang.log"
+)
+
 type TestCase struct {
 	YangPath       string
 	RuntimePath    string
@@ -36,6 +40,11 @@ func executeTestCase(t *testing.T, tc *TestCase) {
 		if err := os.WriteFile(getDatabasePath(), in, 0644); err != nil {
 			t.Error(err)
 		}
+	}
+
+	// NOTE(slankdev): set as default
+	if tc.LogFile == "" {
+		tc.LogFile = agentTestDefaultLogFile
 	}
 
 	// Initializing Agent

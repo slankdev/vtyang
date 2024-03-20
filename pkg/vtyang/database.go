@@ -778,7 +778,10 @@ func (v *DBValue) ToYangNumber() (*yang.Number, error) {
 
 func (v *DBValue) ToString() string {
 	switch v.Type {
-	case yang.Ystring:
+	case yang.Ystring,
+		yang.Yidentityref,
+		yang.Yleafref,
+		yang.Yenum:
 		return v.String
 	case yang.Yint8:
 		return fmt.Sprintf("%d", v.Int8)
@@ -800,14 +803,15 @@ func (v *DBValue) ToString() string {
 		return fmt.Sprintf("%v", v.Boolean)
 	case yang.Ydecimal64:
 		return fmt.Sprintf("%f", v.Decimal64)
+	case yang.Yunion:
+		vv := *v
+		vv.Type = vv.UnionType
+		return vv.ToString()
 	// case yang.Ybinary:
 	// case yang.Ybits:
 	// case yang.Yempty:
 	// case yang.Yenum:
-	// case yang.Yidentityref:
 	// case yang.YinstanceIdentifier:
-	// case yang.Yleafref:
-	// case yang.Yunion:
 	default:
 		panic(fmt.Sprintf("OKASHI (%s)", v.Type))
 	}

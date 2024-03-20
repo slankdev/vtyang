@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/openconfig/goyang/pkg/yang"
+	"github.com/pkg/errors"
 )
 
 type CliMode int
@@ -110,6 +111,25 @@ func installCommandsDefault(mode CliMode) {
 			return
 		}
 		out, err := json.MarshalIndent(xpath, "", "  ")
+		if err != nil {
+			fmt.Fprintf(stdout, "Error: %s\n", err.Error())
+			return
+		}
+		fmt.Fprintf(stdout, "%s\n", string(out))
+	})
+
+	installCommandNoCompletion(mode, "eval-xpath", func(args []string) {
+		if len(args) != 2 {
+			err := errors.Errorf("Usage: %s <xpath>", args[0])
+			fmt.Fprintf(stdout, "Error: %s\n", err)
+			return
+		}
+		xp, err := ParseXPathString(dbm, args[1])
+		if err != nil {
+			fmt.Fprintf(stdout, "Error: %s\n", err)
+			return
+		}
+		out, err := json.MarshalIndent(xp, "", "  ")
 		if err != nil {
 			fmt.Fprintf(stdout, "Error: %s\n", err.Error())
 			return

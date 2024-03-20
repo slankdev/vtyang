@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/k0kubun/pp"
+	"github.com/nsf/jsondiff"
 	"github.com/openconfig/goyang/pkg/yang"
 
 	"github.com/slankdev/vtyang/pkg/util"
@@ -90,7 +91,8 @@ func TestDBNodeGet(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		xpath := NewXPathOrDie(dbm, tc.in)
+		xpath, err := ParseXPathString(dbm, tc.in)
+		ErrorOnDie(err)
 		node, err := dbm.GetNode(xpath)
 		ErrorOnDie(err)
 
@@ -150,7 +152,8 @@ func TestDBNodeCreate(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		xpath := NewXPathOrDie(dbm, tc.in[0])
+		xpath, err := ParseXPathString(dbm, tc.in[0])
+		ErrorOnDie(err)
 		root, err := xpath.CreateDBNodeTree()
 		ErrorOnDie(err)
 
@@ -400,5 +403,66 @@ func Test_DBValue_ToAbsoluteNumber(t *testing.T) {
 		if v != uint64(input.Abs) {
 			t.Errorf("OKASHII %v v.s. %v", v, input.Abs)
 		}
+	}
+}
+
+func Test_SetNode(t *testing.T) {
+	xpath := XPath{
+		Words: []XWord{
+			{
+				Module: "frr-interface",
+				Word:   "lib",
+				Dbtype: Container,
+			},
+			{
+				Module: "frr-interface",
+				Word:   "interface",
+				Dbtype: List,
+				Keys: map[string]DBValue{
+					"name": {
+						Type:   yang.Ystring,
+						String: "dum0",
+					},
+				},
+			},
+			{
+				Module:      "frr-interface",
+				Word:        "description",
+				Dbtype:      Leaf,
+				Dbvaluetype: yang.Ystring,
+			},
+		},
+	}
+	value := "hoge"
+	out, err := CraftDBNode([]YangData{
+		{
+			XPath: xpath,
+			Value: value,
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	const expect = `{
+  "lib": {
+    "interface": [
+      {
+        "description": "hoge",
+        "name": "dum0"
+      }
+    ]
+  }
+}`
+
+	// Compare as json string
+	opts := jsondiff.DefaultConsoleOptions()
+	opts.Indent = "  "
+	opt, diff := jsondiff.Compare([]byte(expect), []byte(out.String()), &opts)
+	if opt != jsondiff.FullMatch {
+		fmt.Printf("exp: \n%s\n", expect)
+		fmt.Printf("out: \n%s\n", out)
+		fmt.Printf("diff: \n%s\n", diff)
+		t.Fatal("unexpected output")
 	}
 }

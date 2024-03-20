@@ -1,0 +1,25 @@
+{
+  "isis": {
+    "instance": [
+      {
+        "area-address": [
+          "10.0000.0000.0000.0000.0000.0000.0000.0000.0000.00",
+          "20.0000.0000.0000.0000.0000.0000.0000.0000.0000.00"
+        ],
+        "area-tag": "1",
+        "description": "area1-default-hoge",
+        "vrf": "default"
+      },
+      {
+        "area-tag": "1",
+        "description": "area1-vrf0-fuga",
+        "vrf": "vrf0"
+      },
+      {
+        "area-tag": "2",
+        "description": "area2-vrf0-hoge",
+        "vrf": "vrf0"
+      }
+    ]
+  }
+}

@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"reflect"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 func SplitMultiSep(s string, sep []string) []string {
@@ -29,11 +31,11 @@ func SplitMultiSep(s string, sep []string) []string {
 func DeepEqualJSON(j1, j2 string) (bool, error) {
 	var d1 interface{}
 	if err := json.Unmarshal([]byte(j1), &d1); err != nil {
-		return false, err
+		return false, errors.Wrap(err, "json.Unmarshal(j1)")
 	}
 	var d2 interface{}
 	if err := json.Unmarshal([]byte(j2), &d2); err != nil {
-		return false, err
+		return false, errors.Wrap(err, "json.Unmarshal(j2)")
 	}
 	return reflect.DeepEqual(d1, d2), nil
 }

@@ -1,0 +1,78 @@
+{
+  "Words": [
+    {
+      "Word": "values",
+      "Keys": null,
+      "Dbtype": "container",
+      "Dbvaluetype": 0
+    },
+    {
+      "Word": "transport-proto",
+      "Keys": null,
+      "Dbtype": "container",
+      "Dbvaluetype": 0
+    },
+    {
+      "Word": "tcp-app",
+      "Keys": null,
+      "Dbtype": "leaf",
+      "Dbvaluetype": 18
+    }
+  ]
+}
+{
+  "Words": [
+    {
+      "Word": "items",
+      "Keys": null,
+      "Dbtype": "container",
+      "Dbvaluetype": 0
+    },
+    {
+      "Word": "items",
+      "Keys": {
+        "name": {
+          "Type": 18,
+          "Int8": 0,
+          "Int16": 0,
+          "Int32": 0,
+          "Int64": 0,
+          "Uint8": 0,
+          "Uint16": 0,
+          "Uint32": 0,
+          "Uint64": 0,
+          "String": "hoge",
+          "Boolean": false,
+          "Decimal64": 0
+        }
+      },
+      "Dbtype": "list",
+      "Dbvaluetype": 0
+    },
+    {
+      "Word": "ipv4-proto",
+      "Keys": null,
+      "Dbtype": "leaf",
+      "Dbvaluetype": 18
+    }
+  ]
+}
+{
+  "items": {
+    "items": [
+      {
+        "ipv4-proto": "icmp",
+        "name": "icmp4"
+      },
+      {
+        "ipv6-proto": "icmp",
+        "name": "icmp6"
+      }
+    ]
+  },
+  "values": {
+    "transport-proto": {
+      "udp-app": "dns"
+    }
+  }
+}

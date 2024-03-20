@@ -1,5 +1,5 @@
 test:
-	go test ./...
+	go test ./... -count=1 -v
 godoc:
 	godoc -http=:6060
 generate:

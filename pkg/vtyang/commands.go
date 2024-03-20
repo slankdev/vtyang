@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -91,13 +92,43 @@ func installCommandsDefault(mode CliMode) {
 	}, func(arg []string) {
 		fmt.Fprintln(stdout, dumpCompletionTreeJson(getCommandNodeCurrent().tree.Root))
 	})
+
+	installCommand(mode, "save cli-tree", []string{
+		"Save information",
+		"Save completion tree",
+	}, func(arg []string) {
+		content := dumpCompletionTreeJson(getCommandNodeCurrent().tree.Root)
+		if err := ioutil.WriteFile("/tmp/clitree.json", []byte(content), os.ModePerm); err != nil {
+			fmt.Fprintf(stdout, "ERROR: %s", err.Error())
+		}
+	})
+
+	installCommandNoCompletion(mode, "show-xpath", func(args []string) {
+		xpath, _, err := ParseXPathArgs(dbm, args[1:], true)
+		if err != nil {
+			fmt.Fprintf(stdout, "Error: %s\n", err.Error())
+			return
+		}
+		out, err := json.MarshalIndent(xpath, "", "  ")
+		if err != nil {
+			fmt.Fprintf(stdout, "Error: %s\n", err.Error())
+			return
+		}
+		fmt.Fprintf(stdout, "%s\n", string(out))
+	})
+}
+
+func installCommandNoCompletion(mode CliMode, match string,
+	f func(args []string)) {
+	cn := getCommandNode(mode)
+	cn.commands = append(cn.commands, Command{m: match, f: f})
 }
 
 func installCommand(mode CliMode, match string, helps []string,
 	f func(args []string)) {
-	cn := getCommandNode(mode)
-	cn.commands = append(cn.commands, Command{m: match, f: f})
+	installCommandNoCompletion(mode, match, f)
 
+	cn := getCommandNode(mode)
 	args := strings.Fields(match)
 	if len(args) != len(helps) {
 		panic(fmt.Sprintf("ERROR %s len(helps)=%d", match, len(helps)))

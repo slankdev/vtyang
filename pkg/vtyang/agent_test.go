@@ -98,25 +98,37 @@ func TestLoadDatabaseFromFile(t *testing.T) {
 	})
 }
 
-func TestAccountingConfigXpath01(t *testing.T) {
+func TestAccountingXpath01(t *testing.T) {
 	executeTestCase(t, &TestCase{
 		RuntimePath: "/tmp/run/vtyang",
 		YangPath:    "./testdata/yang/accounting",
-		OutputFile:  "./testdata/TestAccountingConfigXpath01.txt",
+		OutputFile:  "./testdata/output/TestAccountingXpath01.txt",
 		Inputs: []string{
 			"eval-xpath /account:users/account:user[name='eva']",
 		},
 	})
 }
 
-func TestXpathParse1(t *testing.T) {
+func TestBasicXpath01(t *testing.T) {
+	executeTestCase(t, &TestCase{
+		RuntimePath: "/tmp/run/vtyang",
+		YangPath:    "./testdata/yang/basic",
+		OutputFile:  "./testdata/output/TestBasicXpath01.txt",
+		Inputs: []string{
+			"eval-xpath /values/union-list[month='1']/month",
+		},
+	})
+}
+
+func TestFrrMgmtdMinimalXpath01(t *testing.T) {
 	executeTestCase(t, &TestCase{
 		RuntimePath: "/tmp/run/vtyang",
 		YangPath:    "./testdata/yang/frr_mgmtd_minimal",
-		OutputFile:  "./testdata/xpath_parse1_output.txt",
+		OutputFile:  "./testdata/output/TestFrrMgmtdMinimalXpath01.txt",
 		Inputs: []string{
 			"show-xpath lib interface dum0 description dum0-comment",
 			"eval-xpath /frr-interface:lib/interface[name='dum10']/description",
+			"eval-xpath /frr-routing:routing/control-plane-protocols/control-plane-protocol[type='frr-staticd:staticd'][name='staticd'][vrf='default']/frr-staticd:staticd/route-list[prefix='1.1.1.1/32'][afi-safi='frr-routing:ipv4-unicast']/prefix",
 		},
 	})
 }

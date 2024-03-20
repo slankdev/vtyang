@@ -16,6 +16,8 @@ type XWord struct {
 	Dbtype      DBNodeType
 	Dbvaluetype yang.TypeKind
 	Dbuniontype yang.TypeKind `json:"Dbuniontype,omitempty"`
+	// UnionTypes
+	UnionTypes []*yang.YangType `json:",omitempty"`
 }
 
 type XPath struct {
@@ -395,32 +397,68 @@ func ParseXPathString(dbm *DatabaseManager, s string) (XPath, error) {
 		}
 	}
 	if err != nil {
-		return XPath{}, err
+		return XPath{}, errors.Wrap(err, "ParseXPathStringImpl")
 	}
 	return xpath, nil
 }
 
+type dissectKV struct {
+	k string
+	v string
+}
+
+type dissectResult struct {
+	module string
+	word   string
+	kvs    []dissectKV
+}
+
+func dissect(s string) (dissectResult, error) {
+	re := regexp.MustCompile(`^([a-zA-Z0-9-]*:)?([a-zA-Z0-9-]*)(\[.*\])*$`)
+	match := re.FindStringSubmatch(s)
+	if len(match) != 4 {
+		return dissectResult{}, errors.Errorf("invalid (%s) match-len=%d", s, len(match))
+	}
+	module := strings.Replace(match[1], ":", "", -1)
+	word := match[2]
+	keys := []dissectKV{}
+	keysstr := match[3]
+	re2 := regexp.MustCompile(`\[([a-zA-Z0-9-]*)='([a-zA-Z0-9-\./:]*)'\]`)
+	match2 := re2.FindAllStringSubmatch(keysstr, -1)
+	for _, match := range match2 {
+		keys = append(keys, dissectKV{k: match[1], v: match[2]})
+	}
+	return dissectResult{module: module, word: word, kvs: keys}, nil
+}
+
+func xpathTokenize(s string) ([]dissectResult, error) {
+	re := regexp.MustCompile(`[a-zA-Z0-9-:]+(\[[a-zA-Z0-9-:]+='[a-zA-Z0-9-\.:/]*'\])*`)
+	matchs := re.FindAllStringSubmatch(s, -1)
+	words := []string{}
+	for _, m := range matchs {
+		words = append(words, m[0])
+	}
+	results := []dissectResult{}
+	for len(words) != 0 {
+		result, err := dissect(words[0])
+		if err != nil {
+			return nil, errors.Wrap(err, "dissect")
+		}
+		results = append(results, result)
+		words = words[1:]
+	}
+	return results, nil
+}
+
 func ParseXPathStringImpl(module *yang.Entry, s string) (XPath, error) {
-	words := strings.FieldsFunc(s, func(r rune) bool { return r == '/' })
+	words, err := xpathTokenize(s)
+	if err != nil {
+		return XPath{}, errors.Wrap(err, "xpathTokenize")
+	}
 	xpath := XPath{}
 	for len(words) != 0 {
-		word := words[0]
-		keys := []string{}
-		if strings.Contains(word, ":") {
-			word = strings.Split(word, ":")[1]
-		}
-		if strings.Contains(word, "[") {
-			tmp := strings.Split(word, "[")
-			word = tmp[0]
-			keys = tmp[1:]
-			for idx := range keys {
-				s := keys[idx]
-				s = strings.ReplaceAll(s, "]", "")
-				s = strings.ReplaceAll(s, "'", "")
-				keys[idx] = s
-			}
-		}
-
+		word := words[0].word
+		keys := words[0].kvs
 		xword := XWord{Word: word}
 		var foundNode *yang.Entry = nil
 		for n := range module.Dir {
@@ -473,9 +511,8 @@ func ParseXPathStringImpl(module *yang.Entry, s string) (XPath, error) {
 				// Parse list key-value
 				valueStr := ""
 				for _, key := range keys {
-					kv := strings.FieldsFunc(key, func(r rune) bool { return r == '=' })
-					if kv[0] == keyLeafNode.Name {
-						valueStr = kv[1]
+					if key.k == keyLeafNode.Name {
+						valueStr = key.v
 						break
 					}
 				}
@@ -483,6 +520,41 @@ func ParseXPathStringImpl(module *yang.Entry, s string) (XPath, error) {
 					return XPath{}, errors.Errorf("key(%s) value not found", w)
 				}
 				v := DBValue{Type: keyLeafNode.Type.Kind}
+				if v.Type == yang.Yunion {
+					unionType := yang.Ynone
+					ytypes := resolveUnionTypes(keyLeafNode.Type.Type)
+					for _, ytype := range ytypes {
+						switch ytype.Kind {
+						case yang.Ystring:
+							if err := validateStringValue(valueStr, ytype); err == nil {
+								unionType = ytype.Kind
+							}
+						case yang.Yenum:
+							if err := validateEnumValue(valueStr, ytype); err == nil {
+								unionType = ytype.Kind
+							}
+						case
+							yang.Yint8,
+							yang.Yint16,
+							yang.Yint32,
+							yang.Yint64,
+							yang.Yuint8,
+							yang.Yuint16,
+							yang.Yuint32,
+							yang.Yuint64,
+							yang.Ydecimal64:
+							if err := validateNumberValue(valueStr, ytype); err == nil {
+								unionType = ytype.Kind
+							}
+						default:
+							panic(fmt.Sprintf("PANIC %s", ytype.Kind.String()))
+						}
+					}
+					if unionType == yang.Ynone {
+						panic(fmt.Sprintf("OKASHII valueStr=%s", valueStr))
+					}
+					v.UnionType = unionType
+				}
 				if err := v.SetFromString(valueStr); err != nil {
 					return XPath{}, errors.Wrap(err, "SetFromstring")
 				}
@@ -491,6 +563,11 @@ func ParseXPathStringImpl(module *yang.Entry, s string) (XPath, error) {
 		case foundNode.IsLeaf():
 			xword.Dbtype = Leaf
 			xword.Dbvaluetype = foundNode.Type.Kind
+		}
+
+		if foundNode.IsLeaf() && foundNode.Type.Kind == yang.Yunion {
+			types := resolveUnionTypes(foundNode.Type.Type)
+			xword.UnionTypes = types
 		}
 
 		mod, err := foundNode.InstantiatingModule()

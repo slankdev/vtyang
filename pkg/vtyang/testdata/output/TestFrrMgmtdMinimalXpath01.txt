@@ -1,0 +1,216 @@
+{
+  "Words": [
+    {
+      "Module": "frr-interface",
+      "Word": "lib",
+      "Keys": null,
+      "Dbtype": "container",
+      "Dbvaluetype": 0
+    },
+    {
+      "Module": "frr-interface",
+      "Word": "interface",
+      "Keys": {
+        "name": {
+          "Type": 18,
+          "Int8": 0,
+          "Int16": 0,
+          "Int32": 0,
+          "Int64": 0,
+          "Uint8": 0,
+          "Uint16": 0,
+          "Uint32": 0,
+          "Uint64": 0,
+          "String": "dum0",
+          "Boolean": false,
+          "Decimal64": 0
+        }
+      },
+      "Dbtype": "list",
+      "Dbvaluetype": 0
+    },
+    {
+      "Module": "frr-interface",
+      "Word": "description",
+      "Keys": null,
+      "Dbtype": "leaf",
+      "Dbvaluetype": 18
+    }
+  ]
+}
+{
+  "Words": [
+    {
+      "Module": "frr-interface",
+      "Word": "lib",
+      "Keys": null,
+      "Dbtype": "container",
+      "Dbvaluetype": 0
+    },
+    {
+      "Module": "frr-interface",
+      "Word": "interface",
+      "Keys": {
+        "name": {
+          "Type": 18,
+          "Int8": 0,
+          "Int16": 0,
+          "Int32": 0,
+          "Int64": 0,
+          "Uint8": 0,
+          "Uint16": 0,
+          "Uint32": 0,
+          "Uint64": 0,
+          "String": "dum10",
+          "Boolean": false,
+          "Decimal64": 0
+        }
+      },
+      "Dbtype": "list",
+      "Dbvaluetype": 0
+    },
+    {
+      "Module": "frr-interface",
+      "Word": "description",
+      "Keys": null,
+      "Dbtype": "leaf",
+      "Dbvaluetype": 18
+    }
+  ]
+}
+{
+  "Words": [
+    {
+      "Module": "frr-routing",
+      "Word": "routing",
+      "Keys": null,
+      "Dbtype": "container",
+      "Dbvaluetype": 0
+    },
+    {
+      "Module": "frr-routing",
+      "Word": "control-plane-protocols",
+      "Keys": null,
+      "Dbtype": "container",
+      "Dbvaluetype": 0
+    },
+    {
+      "Module": "frr-routing",
+      "Word": "control-plane-protocol",
+      "Keys": {
+        "name": {
+          "Type": 18,
+          "Int8": 0,
+          "Int16": 0,
+          "Int32": 0,
+          "Int64": 0,
+          "Uint8": 0,
+          "Uint16": 0,
+          "Uint32": 0,
+          "Uint64": 0,
+          "String": "staticd",
+          "Boolean": false,
+          "Decimal64": 0
+        },
+        "type": {
+          "Type": 15,
+          "Int8": 0,
+          "Int16": 0,
+          "Int32": 0,
+          "Int64": 0,
+          "Uint8": 0,
+          "Uint16": 0,
+          "Uint32": 0,
+          "Uint64": 0,
+          "String": "frr-staticd:staticd",
+          "Boolean": false,
+          "Decimal64": 0
+        },
+        "vrf": {
+          "Type": 17,
+          "Int8": 0,
+          "Int16": 0,
+          "Int32": 0,
+          "Int64": 0,
+          "Uint8": 0,
+          "Uint16": 0,
+          "Uint32": 0,
+          "Uint64": 0,
+          "String": "default",
+          "Boolean": false,
+          "Decimal64": 0
+        }
+      },
+      "Dbtype": "list",
+      "Dbvaluetype": 0
+    },
+    {
+      "Module": "frr-staticd",
+      "Word": "staticd",
+      "Keys": null,
+      "Dbtype": "container",
+      "Dbvaluetype": 0
+    },
+    {
+      "Module": "frr-staticd",
+      "Word": "route-list",
+      "Keys": {
+        "afi-safi": {
+          "Type": 15,
+          "Int8": 0,
+          "Int16": 0,
+          "Int32": 0,
+          "Int64": 0,
+          "Uint8": 0,
+          "Uint16": 0,
+          "Uint32": 0,
+          "Uint64": 0,
+          "String": "frr-routing:ipv4-unicast",
+          "Boolean": false,
+          "Decimal64": 0
+        },
+        "prefix": {
+          "Type": 18,
+          "UnionType": 18,
+          "Int8": 0,
+          "Int16": 0,
+          "Int32": 0,
+          "Int64": 0,
+          "Uint8": 0,
+          "Uint16": 0,
+          "Uint32": 0,
+          "Uint64": 0,
+          "String": "1.1.1.1/32",
+          "Boolean": false,
+          "Decimal64": 0
+        }
+      },
+      "Dbtype": "list",
+      "Dbvaluetype": 0
+    },
+    {
+      "Module": "frr-staticd",
+      "Word": "prefix",
+      "Keys": null,
+      "Dbtype": "leaf",
+      "Dbvaluetype": 19,
+      "UnionTypes": [
+        {
+          "Name": "ipv4-prefix",
+          "Kind": 18,
+          "Pattern": [
+            "(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])/(([0-9])|([1-2][0-9])|(3[0-2]))"
+          ]
+        },
+        {
+          "Name": "ipv6-prefix",
+          "Kind": 18,
+          "Pattern": [
+            "((:|[0-9a-fA-F]{0,4}):)([0-9a-fA-F]{0,4}:){0,5}((([0-9a-fA-F]{0,4}:)?(:|[0-9a-fA-F]{0,4}))|(((25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])))(/(([0-9])|([0-9]{2})|(1[0-1][0-9])|(12[0-8])))",
+            "(([^:]+:){6}(([^:]+:[^:]+)|(.*\\..*)))|((([^:]+:)*[^:]+)?::(([^:]+:)*[^:]+)?)(/.+)"
+          ]
+        }
+      ]
+    }
+  ]
+}

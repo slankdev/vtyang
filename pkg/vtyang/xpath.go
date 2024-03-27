@@ -121,6 +121,7 @@ func ParseXPathArgs(dbm *DatabaseManager, args []string, setmode bool) (XPath, s
 			return XPath{}, "", fmt.Errorf("entry %s is not found", words[0])
 		}
 
+		argumentCount := 1
 		argumentExist := false
 		switch {
 		case foundNode.IsContainer():
@@ -130,7 +131,7 @@ func ParseXPathArgs(dbm *DatabaseManager, args []string, setmode bool) (XPath, s
 				if len(words) < 2 {
 					return XPath{}, "", fmt.Errorf("invalid args len")
 				}
-				valueStr = words[1]
+				valueStr = words[argumentCount]
 				argumentExist = true
 			}
 			xword.dbtype = Leaf
@@ -141,8 +142,29 @@ func ParseXPathArgs(dbm *DatabaseManager, args []string, setmode bool) (XPath, s
 			}
 			xword.dbtype = List
 			xword.keys = map[string]string{}
-			xword.keys[foundNode.Key] = words[1]
+			for _, w := range strings.Fields(foundNode.Key) {
+				xword.keys[w] = words[argumentCount]
+				argumentCount++
+			}
+			argumentCount--
 			argumentExist = true
+		case foundNode.IsLeafList():
+			if setmode {
+				if len(words) < 2 {
+					return XPath{}, "", fmt.Errorf("invalid args len")
+				}
+				vals := []string{}
+				for argumentCount < len(words) {
+					vals = append(vals, words[argumentCount])
+					argumentCount++
+				}
+				argumentCount--
+				valueStr = strings.Join(vals, " ")
+				argumentExist = true
+			}
+			xword.dbtype = LeafList
+			xword.dbvaluetype = YangTypeKind2YType(foundNode.Type.Kind)
+			//pp.Println(valueStr)
 		default:
 			panic("ASSERT")
 		}
@@ -150,7 +172,7 @@ func ParseXPathArgs(dbm *DatabaseManager, args []string, setmode bool) (XPath, s
 		xpath.words = append(xpath.words, xword)
 		words = words[1:]
 		if argumentExist {
-			words = words[1:]
+			words = words[argumentCount:]
 		}
 		module = foundNode
 	}

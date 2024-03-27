@@ -2,13 +2,17 @@ package vtyang
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/openconfig/goyang/pkg/yang"
 )
 
 func getCommandRPC(modules *yang.Modules) *CompletionNode {
 	child := []*CompletionNode{}
-	for _, m := range modules.Modules {
+	for fullname, m := range modules.Modules {
+		if strings.Contains(fullname, "@") {
+			continue
+		}
 		for _, e := range yang.ToEntry(m).Dir {
 			if e.RPC != nil {
 				child = append(child, resolveCompletionNodeRPC(e, 0))
@@ -37,7 +41,7 @@ func resolveCompletionNodeRPC(e *yang.Entry, depth int) *CompletionNode {
 		wildcardNode.Childs = []*CompletionNode{newCR()}
 		for _, ee := range e.Dir {
 			if ee.Name != e.Key {
-				nn := resolveCompletionNodeConfig(ee, depth+1)
+				nn := resolveCompletionNodeRPC(ee, depth+1)
 				if nn != nil {
 					wildcardNode.Childs = append(wildcardNode.Childs, nn)
 				}

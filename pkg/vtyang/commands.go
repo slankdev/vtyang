@@ -280,6 +280,7 @@ type CompletionTree struct {
 type CompletionNode struct {
 	Name        string
 	Description string
+	Modules     []string
 	Childs      []*CompletionNode
 }
 

@@ -1,0 +1,27 @@
+module mod1 {
+  namespace "http://slank.dev";
+  prefix mod1;
+
+  revision 2024-03-30 {
+    description "hoge";
+  }
+  revision 2024-03-29 {
+    description "hoge";
+  }
+  revision 2024-03-28 {
+    description "hoge";
+  }
+
+  container interfaces {
+    list interface {
+      key "name";
+      leaf name {
+        type string;
+      }
+      leaf address {
+        type string;
+      }
+    }
+	}
+}
+

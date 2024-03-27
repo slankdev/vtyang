@@ -1,0 +1,18 @@
+module mod2 {
+  namespace "http://slank.dev";
+  prefix mod2;
+
+  container interfaces {
+    list interface {
+      key "name";
+      leaf name {
+        type string;
+      }
+      leaf enabled {
+        type boolean;
+        default "true";
+      }
+    }
+	}
+}
+

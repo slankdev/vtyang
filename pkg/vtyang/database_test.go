@@ -211,3 +211,143 @@ func TestDBNodeJson(t *testing.T) {
 		}
 	}
 }
+
+func TestSetNode(t *testing.T) {
+	db := &DBNode{
+		Type: "container",
+		Childs: []DBNode{
+			{
+				Name: "isis",
+				Type: "container",
+				Childs: []DBNode{
+					{
+						Name: "instance",
+						Type: "list",
+						Childs: []DBNode{
+							{
+								Type: "container",
+								Childs: []DBNode{
+									{
+										Name: "area-tag",
+										Type: "leaf",
+										Value: DBValue{
+											Type:   "string",
+											String: "1",
+										},
+									},
+									{
+										Name: "vrf",
+										Type: "leaf",
+										Value: DBValue{
+											Type:   "string",
+											String: "default",
+										},
+									},
+									{
+										Name: "description",
+										Type: "leaf",
+										Value: DBValue{
+											Type:   "string",
+											String: "area1-default-hoge",
+										},
+									},
+								},
+							},
+							{
+								Type: "container",
+								Childs: []DBNode{
+									{
+										Name: "area-tag",
+										Type: "leaf",
+										Value: DBValue{
+											Type:   "string",
+											String: "1",
+										},
+									},
+									{
+										Name: "vrf",
+										Type: "leaf",
+										Value: DBValue{
+											Type:   "string",
+											String: "vrf0",
+										},
+									},
+									{
+										Name: "description",
+										Type: "leaf",
+										Value: DBValue{
+											Type:   "string",
+											String: "area1-vrf0-hoge",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	xpath := XPath{
+		words: []XWord{
+			{
+				word:   "isis",
+				dbtype: "container",
+			},
+			{
+				word: "instance",
+				keys: map[string]string{
+					"area-tag": "1",
+					"vrf":      "default",
+				},
+				dbtype: "list",
+			},
+			{
+				word:        "description",
+				keys:        map[string]string{},
+				dbtype:      "leaf",
+				dbvaluetype: "string",
+			},
+		},
+	}
+
+	_, _ = db, xpath
+}
+
+func TestDBNodeDeepCopy(t *testing.T) {
+	original := &DBNode{
+		Name: "",
+		Type: Container,
+		Childs: []DBNode{
+			{
+				Name: "child1",
+				Type: Leaf,
+				Value: DBValue{
+					Type:   YString,
+					String: "value1",
+				},
+			},
+			{
+				Name: "child2",
+				Type: Leaf,
+				Value: DBValue{
+					Type:    YInteger,
+					Integer: 42,
+				},
+			},
+		},
+	}
+
+	copy := original.DeepCopy()
+	if !reflect.DeepEqual(original, copy) {
+		t.Errorf("DeepCopy failed: original and copy are not equal")
+	}
+
+	// Modify the copy and make sure it doesn't affect the original
+	copy.Name = "modified"
+	copy.Childs[0].Value.String = "modified value"
+	if reflect.DeepEqual(original, copy) {
+		t.Errorf("DeepCopy failed: modifying the copy modified the original")
+	}
+}

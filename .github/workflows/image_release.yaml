@@ -5,13 +5,29 @@ on:
     - 'v*'
 
 jobs:
+  preprocess:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.setmatrix.outputs.result }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - uses: actions/github-script@v6
+      id: setmatrix
+      with:
+        result-encoding: string
+        script: |
+          const fs = require("fs");
+          file = fs.readFileSync('./.github/workflows/editme.json', "utf8");
+          return JSON.stringify(JSON.parse(file).containerImages);
+
   docker-build:
-    name: ${{ matrix.artifact_name }}
+    name: ${{ matrix.name }}
+    needs: preprocess
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        include:
-        - artifact_name: vtyang
+        include: ${{fromJson(needs.preprocess.outputs.matrix)}}
 
     steps:
     - name: clone repo
@@ -33,8 +49,8 @@ jobs:
           --build-arg GIT_BRANCH=nona \
           --build-arg GIT_TAG=$VERSION \
           --build-arg BUILD_DATE=$(date '+%Y/%m/%d-%H:%M:%S-%Z') \
-          --tag ghcr.io/slankdev/vtyang-${{ matrix.artifact_name }}:$VERSION \
-          --file cmd/${{ matrix.artifact_name }}/Dockerfile .
-        docker push ghcr.io/slankdev/vtyang-${{ matrix.artifact_name }}:$VERSION
+          --tag ghcr.io/slankdev/vtyang-${{ matrix.name }}:$VERSION \
+          --file cmd/${{ matrix.name }}/Dockerfile .
+        docker push ghcr.io/slankdev/vtyang-${{ matrix.name }}:$VERSION
       env:
         BUILDKIT: 1

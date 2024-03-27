@@ -13,32 +13,35 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  preprocess:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.setmatrix.outputs.result }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - uses: actions/github-script@v6
+      id: setmatrix
+      with:
+        result-encoding: string
+        script: |
+          const fs = require("fs");
+          file = fs.readFileSync('./.github/workflows/editme.json', "utf8");
+          return JSON.stringify(JSON.parse(file).binaries);
+
   build:
-    runs-on: ${{ matrix.distribution }}
+    name: ${{ matrix.name }}-${{ matrix.os }}-${{ matrix.arch }}-go${{ matrix.go }}
+    needs: preprocess
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        include:
-        - distribution: ubuntu-22.04
-          os: linux
-          arch: amd64
-          artifact_name: vtyang
-          go_version: 1.17
-        - distribution: ubuntu-22.04
-          os: linux
-          arch: arm64
-          artifact_name: vtyang
-          go_version: 1.17
-        - distribution: ubuntu-22.04
-          os: darwin
-          arch: arm64
-          artifact_name: vtyang
-          go_version: 1.17
+        include: ${{fromJson(needs.preprocess.outputs.matrix)}}
 
     steps:
     - name: set up Go
       uses: actions/setup-go@v2
       with:
-        go-version: ${{ matrix.go_version }}
+        go-version: ${{ matrix.go }}
       id: go
     - name: checkout
       uses: actions/checkout@v2
@@ -50,18 +53,18 @@ jobs:
       run: |
         REPO=github.com/slankdev/vtyang
         GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} \
-          go build -o ${{ matrix.artifact_name }} -ldflags "\
+          go build -o ${{ matrix.name }} -ldflags "\
           -X $REPO/pkg/util.gitSHA=$(git rev-parse HEAD) \
           -X $REPO/pkg/util.gitBranch=none \
           -X $REPO/pkg/util.gitTag=$(git describe --tags --abbrev=0) \
           -X $REPO/pkg/util.buildDate=$(date '+%Y/%m/%d-%H:%M:%S-%Z') \
-          " cmd/${{ matrix.artifact_name }}/main.go
+          " cmd/${{ matrix.name }}/main.go
 
     - name: upload HEAD
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: ${{ matrix.artifact_name }}
-        asset_name: pr-${{ github.event.number }}.${{ matrix.artifact_name }}.${{ matrix.os }}-${{ matrix.arch }}.go${{ matrix.go_version }}
+        file: ${{ matrix.name }}
+        asset_name: pr-${{ github.event.number }}.${{ matrix.name }}.${{ matrix.os }}-${{ matrix.arch }}.go${{ matrix.go }}
         tag: branch-main
         overwrite: true

@@ -2,13 +2,17 @@ package vtyang
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/openconfig/goyang/pkg/yang"
 )
 
 func getCommandOperState(modules *yang.Modules) *CompletionNode {
 	child := []*CompletionNode{}
-	for _, m := range modules.Modules {
+	for fullname, m := range modules.Modules {
+		if strings.Contains(fullname, "@") {
+			continue
+		}
 		for _, e := range yang.ToEntry(m).Dir {
 			child = append(child, resolveCompletionNodeOperState(e, 0))
 		}
@@ -35,7 +39,7 @@ func resolveCompletionNodeOperState(e *yang.Entry, depth int) *CompletionNode {
 		wildcardNode.Childs = []*CompletionNode{newCR()}
 		for _, ee := range e.Dir {
 			if ee.Name != e.Key {
-				if nn := resolveCompletionNodeConfig(ee, depth+1); nn != nil {
+				if nn := resolveCompletionNodeOperState(ee, depth+1); nn != nil {
 					wildcardNode.Childs = append(wildcardNode.Childs, nn)
 				}
 			}

@@ -2,17 +2,28 @@ package vtyang
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/openconfig/goyang/pkg/yang"
 )
 
 func getCommandConfig(modules *yang.Modules) *CompletionNode {
 	child := []*CompletionNode{}
-	for _, m := range modules.Modules {
+	for fullname, m := range modules.Modules {
+		if strings.Contains(fullname, "@") {
+			continue
+		}
 		for _, e := range yang.ToEntry(m).Dir {
-			if !e.ReadOnly() && e.RPC == nil {
-				child = append(child, resolveCompletionNodeConfig(e, 0))
+			if e.ReadOnly() {
+				continue
 			}
+			if e.RPC != nil {
+				continue
+			}
+			if e.Kind == yang.NotificationEntry {
+				continue
+			}
+			child = append(child, resolveCompletionNodeConfig(e, 0, m.Name))
 		}
 	}
 	return &CompletionNode{
@@ -33,26 +44,44 @@ func getCommandConfig(modules *yang.Modules) *CompletionNode {
 	}
 }
 
-func resolveCompletionNodeConfig(e *yang.Entry, depth int) *CompletionNode {
+func resolveCompletionNodeConfig(e *yang.Entry, depth int, modName string) *CompletionNode {
 	n := CompletionNode{}
 	n.Name = e.Name
-	n.Description = e.Description
+	n.Modules = []string{modName}
+
+	// TODO(slankdev):
+	//
+	// According to IETF yang, description seems to be too long for a CLI help
+	// string. We will discuss whether we should design some kind of extension
+	// for appropriate cli help strings like tailf:foo.
+	//
+	// n.Description = e.Description
 
 	switch {
 	case e.IsList():
-		wildcardNode := &CompletionNode{
-			Name:   "NAME",
-			Childs: []*CompletionNode{newCR()},
+		var top *CompletionNode = nil
+		var tail *CompletionNode = nil
+		for _, word := range strings.Fields(e.Key) {
+			tail = &CompletionNode{
+				Name:        "NAME",
+				Description: word,
+				Childs:      []*CompletionNode{newCR()},
+			}
+			if top == nil {
+				top = tail
+			} else {
+				top.Childs = append(top.Childs, tail)
+			}
 		}
 		for _, ee := range e.Dir {
 			if ee.Name != e.Key {
-				nn := resolveCompletionNodeConfig(ee, depth+1)
+				nn := resolveCompletionNodeConfig(ee, depth+1, modName)
 				if nn != nil {
-					wildcardNode.Childs = append(wildcardNode.Childs, nn)
+					tail.Childs = append(tail.Childs, nn)
 				}
 			}
 		}
-		n.Childs = append(n.Childs, wildcardNode)
+		n.Childs = append(n.Childs, top)
 
 	case e.IsLeaf():
 		child := &CompletionNode{
@@ -65,7 +94,7 @@ func resolveCompletionNodeConfig(e *yang.Entry, depth int) *CompletionNode {
 		childs := []*CompletionNode{}
 		for _, ee := range e.Dir {
 			if !ee.ReadOnly() && ee.RPC == nil {
-				childs = append(childs, resolveCompletionNodeConfig(ee, depth+1))
+				childs = append(childs, resolveCompletionNodeConfig(ee, depth+1, modName))
 			}
 		}
 		n.Childs = childs
@@ -124,10 +153,13 @@ func getCommandCallbackConfig(_ *yang.Modules) []Command {
 
 func getViewCommandConfig(modules *yang.Modules) *CompletionNode {
 	child := []*CompletionNode{}
-	for _, m := range modules.Modules {
+	for fullname, m := range modules.Modules {
+		if strings.Contains(fullname, "@") {
+			continue
+		}
 		for _, e := range yang.ToEntry(m).Dir {
 			if !e.ReadOnly() && e.RPC == nil {
-				child = append(child, resolveCompletionNodeConfig(e, 0))
+				child = append(child, resolveCompletionNodeConfig(e, 0, m.Name))
 			}
 		}
 	}

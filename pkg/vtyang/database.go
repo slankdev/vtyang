@@ -215,79 +215,177 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 	*DBNode, error) {
 	n := dbm.candidateRoot
 	xwords := xpath.words
-
 	for ; len(xwords) != 0; xwords = xwords[1:] {
-		if n.Type != Container {
-			return nil, fmt.Errorf("%s: unsupported(%s)", util.LINE(), n.Type)
-		}
-
 		xword := xwords[0]
-		found := false
-		for idx := range n.Childs {
-			child := &n.Childs[idx]
-			if child.Name == xword.word {
-				found = true
-				switch child.Type {
-				case Container:
-					n = child
-				case List:
-					if xword.keys == nil {
-						panic("database is broken")
+		switch xword.dbtype {
+		case Container:
+			found := false
+			for idx := range n.Childs {
+				child := &n.Childs[idx]
+				if child.Name == xword.word {
+					found = true
+					switch child.Type {
+					case Container:
+						n = child
+					case List:
+						if xword.keys == nil {
+							panic("database is broken")
+						}
+						listElement := EnsureListNode(child, xword.keys)
+						if listElement == nil {
+							panic("ASSERTION")
+						}
+						n = listElement
+					case Leaf:
+						if len(xwords) != 1 {
+							panic("ASSERT")
+						}
+						if val != "" {
+							(&(child.Value)).SetFromString(val)
+						}
+						return child, nil
+					default:
+						panic(fmt.Sprintf("ASSERT(%s)", child.Type))
 					}
-					listElement := EnsureListNode(child, xword.keys)
-					if listElement == nil {
-						panic("ASSERTION")
-					}
-					n = listElement
-				case Leaf:
-					if len(xwords) != 1 {
-						panic("ASSERT")
-					}
-					if val != "" {
-						(&(child.Value)).SetFromString(val)
-					}
-					return child, nil
-				default:
-					panic(fmt.Sprintf("ASSERT(%s)", child.Type))
+				}
+				if found {
+					break
 				}
 			}
-			if found {
-				break
-			}
-		}
 
-		// not found case
-		if !found {
-			newnode := DBNode{Name: xword.word}
-			newnode.Type = xword.dbtype
-			if xword.keys != nil {
-				for k, v := range xword.keys {
-					newnode.Childs = []DBNode{
-						{
-							Type: Container,
-							Childs: []DBNode{
-								{
-									Name: k,
-									Type: Leaf,
-									Value: DBValue{
-										Type:   YString,
-										String: v,
+			// not found case
+			if !found {
+				newnode := DBNode{Name: xword.word}
+				newnode.Type = xword.dbtype
+				if xword.keys != nil {
+					for k, v := range xword.keys {
+						newnode.Childs = []DBNode{
+							{
+								Type: Container,
+								Childs: []DBNode{
+									{
+										Name: k,
+										Type: Leaf,
+										Value: DBValue{
+											Type:   YString,
+											String: v,
+										},
 									},
 								},
 							},
-						},
+						}
 					}
 				}
+				if xword.dbtype == Leaf {
+					newnode.Value = DBValue{}
+					newnode.Value.Type = xword.dbvaluetype
+					(&newnode.Value).SetFromString(val)
+				}
+
+				n.Childs = append(n.Childs, newnode)
+				n = &n.Childs[len(n.Childs)-1]
 			}
-			if xword.dbtype == Leaf {
-				newnode.Value = DBValue{}
-				newnode.Value.Type = xword.dbvaluetype
-				(&newnode.Value).SetFromString(val)
-				//pp.Println(newnode.Value)
+		case List:
+			// Ensure List's leaf
+			found1 := false
+			for idx := range n.Childs {
+				if n.Childs[idx].Name == xword.word {
+					found1 = true
+					n = &n.Childs[idx]
+					break
+				}
+			}
+			if !found1 {
+				n.Childs = append(n.Childs, DBNode{
+					Name: xword.word,
+					Type: List,
+				})
+				n = &n.Childs[len(n.Childs)-1]
 			}
 
-			n.Childs = append(n.Childs, newnode)
-			n = &n.Childs[len(n.Childs)-1]
+			// Ensure List-Key leaf
+			found2 := false
+			for idx := range n.Childs {
+				match := true
+				for k, v := range xword.keys {
+					for _, c := range n.Childs[idx].Childs {
+						if c.Name == k && c.Value.String != v {
+							match = false
+						}
+					}
+				}
+				if match {
+					found2 = true
+					n = &n.Childs[idx]
+					break
+				}
+			}
+			if !found2 {
+				listChilds := []DBNode{}
+				for k, v := range xword.keys {
+					listChilds = append(listChilds, DBNode{
+						Name: k,
+						Type: Leaf,
+						Value: DBValue{
+							Type:   YString,
+							String: v,
+						},
+					})
+				}
+				n.Childs = append(n.Childs, DBNode{
+					Type:   Container,
+					Childs: listChilds,
+				})
+				n = &n.Childs[len(n.Childs)-1]
+			}
+		case Leaf:
+			switch xword.dbvaluetype {
+			case YInteger:
+				ival, err := strconv.Atoi(val)
+				if err != nil {
+					return nil, err
+				}
+				n.Childs = append(n.Childs, DBNode{
+					Name: xword.word,
+					Type: Leaf,
+					Value: DBValue{
+						Type:    YInteger,
+						Integer: ival,
+					},
+				})
+			case YString:
+				n.Childs = append(n.Childs, DBNode{
+					Name: xword.word,
+					Type: Leaf,
+					Value: DBValue{
+						Type:   YString,
+						String: val,
+					},
+				})
+			default:
+				return nil, fmt.Errorf("%s: unsupported(%s)", util.LINE(), xword.dbvaluetype)
+			}
+		case LeafList:
+			var tmpNode *DBNode
+			for idx := range n.Childs {
+				if n.Childs[idx].Name == xword.word {
+					tmpNode = &n.Childs[idx]
+					break
+				}
+			}
+			if tmpNode == nil {
+				n.Childs = append(n.Childs, DBNode{
+					Name: xword.word,
+					Type: LeafList,
+				})
+				tmpNode = &n.Childs[len(n.Childs)-1]
+			}
+			tmpNode.Value = DBValue{
+				Type:        YStringArray,
+				StringArray: strings.Fields(val),
+			}
+		default:
+			return nil, fmt.Errorf("%s: unsupported(%s)", util.LINE(), xword.dbtype)
 		}
 	}
 
@@ -487,28 +585,29 @@ const (
 )
 
 type DBNode struct {
-	Name       string
-	Type       DBNodeType
-	Childs     []DBNode
-	ListChilds [][]DBNode
-	Value      DBValue
+	Name   string
+	Type   DBNodeType
+	Childs []DBNode
+	Value  DBValue
 }
 
 type DBValueType string
 
 const (
-	YString  DBValueType = "string"
-	YInteger DBValueType = "integer"
-	YBoolean DBValueType = "boolean"
+	YString      DBValueType = "string"
+	YInteger     DBValueType = "integer"
+	YBoolean     DBValueType = "boolean"
+	YStringArray DBValueType = "stringarray"
 )
 
 type DBValue struct {
 	Type DBValueType
 
 	// Union
-	Integer int
-	String  string
-	Boolean bool
+	Integer     int
+	String      string
+	Boolean     bool
+	StringArray []string
 }
 
 func (n *DBNode) DeepCopy() *DBNode {
@@ -538,6 +637,8 @@ func (n *DBNode) ToMap() interface{} {
 		}
 		return array
 	case Leaf:
+		return n.Value.ToValue()
+	case LeafList:
 		return n.Value.ToValue()
 	case "":
 		return nil
@@ -617,6 +718,12 @@ func Interface2DBNode(i interface{}) (*DBNode, error) {
 			Type:   YString,
 			String: g,
 		}
+	case []string:
+		n.Type = LeafList
+		n.Value = DBValue{
+			Type:        YStringArray,
+			StringArray: g,
+		}
 	case nil:
 		n.Type = Container
 	default:
@@ -633,6 +740,8 @@ func (v DBValue) ToValue() interface{} {
 		return v.Boolean
 	case YString:
 		return v.String
+	case YStringArray:
+		return v.StringArray
 	default:
 		panic(fmt.Sprintf("ASSERT(%s)", v.Type))
 	}

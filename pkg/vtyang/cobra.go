@@ -25,6 +25,8 @@ import (
 
 var (
 	GlobalOptRunFilePath string
+	GlobalOptYangPath    string
+	GlobalOptDumpCliTree string
 
 	actionCBs = map[string]func(args []string) error{
 		"uptime-callback": func(args []string) error {
@@ -155,9 +157,26 @@ func newCommandAgent() *cobra.Command {
 	cmd := &cobra.Command{
 		Use: "agent",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// XXX
-			if err := InitAgent(GlobalOptRunFilePath, "./yang"); err != nil {
+			if err := InitAgent(GlobalOptRunFilePath, GlobalOptYangPath); err != nil {
 				return err
+			}
+
+			if GlobalOptDumpCliTree != "" {
+				switch GlobalOptDumpCliTree {
+				case "configure":
+					fmt.Fprintln(stdout,
+						dumpCompletionTreeJson(
+							getCommandNode(CliModeConfigure).tree.Root))
+					os.Exit(0)
+				case "view":
+					fmt.Fprintln(stdout,
+						dumpCompletionTreeJson(
+							getCommandNode(CliModeView).tree.Root))
+					os.Exit(0)
+				default:
+					fmt.Fprintf(stdout, "invalid mode (%s)", GlobalOptDumpCliTree)
+					os.Exit(1)
+				}
 			}
 
 			line := liner.NewLiner()
@@ -193,6 +212,8 @@ func newCommandAgent() *cobra.Command {
 	}
 	fs := cmd.Flags()
 	fs.StringVarP(&GlobalOptRunFilePath, "run-path", "r", "", "Runtime file path")
+	fs.StringVarP(&GlobalOptYangPath, "yang", "y", "./yang", "Runtime file path")
+	fs.StringVarP(&GlobalOptDumpCliTree, "dump", "d", "", "[configure,view]")
 	return cmd
 }
 
@@ -214,7 +235,7 @@ func ErrorOnDie(err error) {
 
 func startRPCServer() {
 	port := 8080
-	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+	listener, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", port))
 	if err != nil {
 		panic(err)
 	}
@@ -305,7 +326,6 @@ func nofityRunningConfigToSubscribers() error {
 		fmt.Fprintf(stdout, "Error: %s\n", err.Error())
 		return err
 	}
-	fmt.Fprintln(stdout, node.String())
 	for _, confChan := range confChans {
 		confChan <- Configuration{
 			Data: node.String(),

@@ -1,6 +1,7 @@
 {
   "containerImages": [
-    { "name": "vtyang" }
+    { "name": "vtyang" },
+    { "name": "linux-agent" }
   ],
   "binaries": [
     { "name": "vtyang", "os": "linux", "arch": "arm64", "go": 1.17 },

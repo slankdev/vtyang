@@ -1,0 +1,20 @@
+module linux-agent {
+  namespace "http://slank.dev";
+  prefix linux-agent;
+
+  container interfaces {
+    list interface {
+      key "name";
+      leaf name {
+        type string;
+      }
+      leaf address {
+        type string;
+      }
+      leaf enabled {
+        type boolean;
+        default "true";
+      }
+    }
+	}
+}

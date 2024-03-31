@@ -778,3 +778,8 @@ func DBNodeDiff(na, nb *DBNode) string {
 	}
 	return diff
 }
+
+func filterDbWithModule(n *DBNode, modName string) (*DBNode, error) {
+	ret := n.DeepCopy()
+	return ret, nil
+}

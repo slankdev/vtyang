@@ -780,6 +780,81 @@ func DBNodeDiff(na, nb *DBNode) string {
 }
 
 func filterDbWithModule(n *DBNode, modName string) (*DBNode, error) {
+	var mod *yang.Module = nil
+	for fullname, m := range yangmodules.Modules {
+		if fullname == modName {
+			mod = m
+		}
+	}
+	if mod == nil {
+		return nil, fmt.Errorf("module(%s) not found", modName)
+	}
 	ret := n.DeepCopy()
+	filteredChild := []DBNode{}
+	for _, e := range yang.ToEntry(mod).Dir {
+		if e.ReadOnly() ||
+			e.RPC != nil ||
+			e.Kind == yang.NotificationEntry {
+			continue
+		}
+		for _, child := range ret.Childs {
+			if child.Name == e.Name {
+				filteredChild = append(filteredChild, *filterDbWithModuleImpl(&child, e))
+			}
+		}
+	}
+	ret.Childs = filteredChild
+
+	// Append modName
+	for idx := range ret.Childs {
+		ret.Childs[idx].Name = fmt.Sprintf("%s:%s", modName, ret.Childs[idx].Name)
+
+	}
 	return ret, nil
+}
+
+func filterDbWithModuleImpl(n *DBNode, root *yang.Entry) *DBNode {
+	childs := []DBNode{}
+	switch {
+	case root.IsList():
+		//fmt.Println("LIST")
+		for _, nn := range n.Childs {
+			childs2 := []DBNode{}
+			for _, e := range root.Dir {
+				for _, child := range nn.Childs {
+					if child.Name == e.Name {
+						childs2 = append(childs2, *filterDbWithModuleImpl(&child, e))
+					}
+				}
+			}
+			childs = append(childs, DBNode{
+				Name:   "",
+				Type:   Container,
+				Childs: childs2,
+			})
+		}
+	case root.IsContainer():
+		//fmt.Println("CONTAINER")
+		for _, e := range root.Dir {
+			for _, child := range n.Childs {
+				if child.Name == e.Name {
+					childs = append(childs, *filterDbWithModuleImpl(&child, e))
+				}
+			}
+		}
+	case root.IsLeafList():
+		//fmt.Println("LeafList", root.Name, n.Name)
+		if root.Name == n.Name {
+			childs = append(childs, *n)
+		}
+	case root.IsLeaf():
+		//fmt.Println("LEAF")
+		if root.Name == n.Name {
+			childs = append(childs, *n)
+		}
+	default:
+		panic(fmt.Sprintf("OKASHII %s", root.Kind))
+	}
+	n.Childs = childs
+	return n
 }

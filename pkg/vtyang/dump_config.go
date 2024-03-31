@@ -203,7 +203,6 @@ func getViewCommandCallbackConfig(_ *yang.Modules) []Command {
 		{
 			m: "show running-config-frr",
 			f: func(args []string) {
-				//fmt.Println("OUT")
 				xpath, _, err := ParseXPathArgs(dbm, args[2:], false)
 				if err != nil {
 					fmt.Fprintf(stdout, "Error: %s\n", err.Error())
@@ -214,7 +213,12 @@ func getViewCommandCallbackConfig(_ *yang.Modules) []Command {
 					fmt.Fprintf(stdout, "Error: %s\n", err.Error())
 					return
 				}
-				fmt.Fprintln(stdout, node.String())
+				filteredNode, err := filterDbWithModule(node, "frr-isisd")
+				if err != nil {
+					fmt.Fprintf(stdout, "Error: %s\n", err.Error())
+					return
+				}
+				fmt.Fprintln(stdout, filteredNode.String())
 			},
 		},
 	}

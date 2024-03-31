@@ -79,5 +79,36 @@ cat /tmp/data.json | grpcurl -plaintext -import-path ~/git/frr/grpc \
     --with-pkg-extra-version=-MyOwnFRRVersion
 ```
 
+```
+$ ls ~/
+~/git/frr
+~/git/vtyang
+
+$ source ~/git/vtyang/cmd/frr-agent/cli.bash
+$ frr-get "/frr-isisd:isis" | jq .data.data -r | jq
+{}
+$ frr-create-candidate-config
+{
+  "candidateId": 1
+}
+$ frr-load-to-candidate-config 1 ~/git/vtyang/cmd/frr-agent/example-isis-config.json
+{}
+$ frr-commit 2 4
+$ frr-get "/frr-isisd:isis" | jq .data.data -r | jq
+{
+  "frr-isisd:isis": {
+    "instance": [
+      {
+        "area-tag": "1",
+        "vrf": "default",
+        "area-address": [
+          "10.0000.0000.0000.0000.0000.0000.0000.0000.0000.00"
+        ]
+      }
+    ]
+  }
+}
+```
+
 ## References
 - https://web.sfc.wide.ad.jp/~irino/blog/2023/04/02/frr-grpc/

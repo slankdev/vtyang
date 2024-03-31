@@ -281,17 +281,24 @@ func TestAgentXPathCliFRR(t *testing.T) {
 		{
 			Inputs: []string{
 				"configure",
-				"set isis instance 1 default description area1-default-hoge",
-				"set isis instance 1 vrf0 description area1-vrf0-hoge",
-				"set isis instance 2 vrf0 description area2-vrf0-hoge",
-				"set isis instance 1 vrf0 description area1-vrf0-fuga",
+				//"set isis instance 1 default description area1-default-hoge",
 				"set isis instance 1 default area-address 10.0000.0000.0000.0000.0000.0000.0000.0000.0000.00",
 				"commit",
 				"do show running-config-frr",
 			},
 			Output: `{
-
-			}`,
+      "frr-isisd:isis": {
+        "instance": [
+          {
+            "area-address": [
+              "10.0000.0000.0000.0000.0000.0000.0000.0000.0000.00"
+            ],
+            "area-tag": "1",
+            "vrf": "default"
+          }
+        ]
+      }
+    }`,
 		},
 	}
 

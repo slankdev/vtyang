@@ -1075,9 +1075,10 @@ module frr-isisd {
           "VRF NAME.";
       }
 
-      leaf description {
-        type string;
-      }
+      // TODO(slankdev)
+      // leaf description {
+      //   type string;
+      // }
 
       leaf is-type {
         type level;

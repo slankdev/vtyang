@@ -275,3 +275,61 @@ func TestAgentXPathCli(t *testing.T) {
 		t.Logf("Testcase[%d] output check is succeeded", idx)
 	}
 }
+
+func TestAgentXPathCliFRR(t *testing.T) {
+	testcases := []TestCaseForTestAgent{
+		{
+			Inputs: []string{
+				"configure",
+				"set isis instance 1 default description area1-default-hoge",
+				"set isis instance 1 vrf0 description area1-vrf0-hoge",
+				"set isis instance 2 vrf0 description area2-vrf0-hoge",
+				"set isis instance 1 vrf0 description area1-vrf0-fuga",
+				"set isis instance 1 default area-address 10.0000.0000.0000.0000.0000.0000.0000.0000.0000.00",
+				"commit",
+				"do show running-config-frr",
+			},
+			Output: `{
+
+			}`,
+		},
+	}
+
+	// Preparation
+	GlobalOptRunFilePath = RUNTIME_PATH
+	if util.FileExists(getDatabasePath()) {
+		if err := os.Remove(getDatabasePath()); err != nil {
+			t.Error(err)
+		}
+	}
+
+	// Initializing Agent
+	if err := InitAgent(RUNTIME_PATH,
+		"../../yang.frr/"); err != nil {
+		t.Fatal(err)
+	}
+
+	// EXECUTE TEST CASES
+	for idx, tc := range testcases {
+		buf := setStdoutWithBuffer()
+		for _, input := range tc.Inputs {
+			t.Logf("Testcase[%d] executing %s", idx, input)
+			getCommandNodeCurrent().executeCommand(input)
+		}
+		result := buf.String()
+		eq, err := util.DeepEqualJSON(result, tc.Output)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !eq {
+			t.Errorf("Unexpected output")
+			for _, input := range tc.Inputs {
+				t.Errorf("input %+v", input)
+			}
+			t.Errorf("expect(len=%d) %+v", len(tc.Output), tc.Output)
+			t.Errorf("result(len=%d) %+v", len(result), result)
+			t.Fatal("quiting test with FAILED result")
+		}
+		t.Logf("Testcase[%d] output check is succeeded", idx)
+	}
+}

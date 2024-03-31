@@ -172,6 +172,10 @@ func getViewCommandConfig(modules *yang.Modules) *CompletionNode {
 						Name:   "running-config",
 						Childs: child,
 					},
+					{
+						Name:   "running-config-frr",
+						Childs: []*CompletionNode{newCR()},
+					},
 				},
 			},
 		},
@@ -183,6 +187,23 @@ func getViewCommandCallbackConfig(_ *yang.Modules) []Command {
 		{
 			m: "show running-config",
 			f: func(args []string) {
+				xpath, _, err := ParseXPathArgs(dbm, args[2:], false)
+				if err != nil {
+					fmt.Fprintf(stdout, "Error: %s\n", err.Error())
+					return
+				}
+				node, err := dbm.GetNode(xpath)
+				if err != nil {
+					fmt.Fprintf(stdout, "Error: %s\n", err.Error())
+					return
+				}
+				fmt.Fprintln(stdout, node.String())
+			},
+		},
+		{
+			m: "show running-config-frr",
+			f: func(args []string) {
+				//fmt.Println("OUT")
 				xpath, _, err := ParseXPathArgs(dbm, args[2:], false)
 				if err != nil {
 					fmt.Fprintf(stdout, "Error: %s\n", err.Error())

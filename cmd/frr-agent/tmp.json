@@ -14,11 +14,6 @@
         },
         "segment-routing": {
           "enabled": true,
-          "label-blocks": {
-            "srgb": {
-              "lower-bound": 20000
-            }
-          },
           "prefix-sid-map": {
             "prefix-sid": [
               {

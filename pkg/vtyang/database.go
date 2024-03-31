@@ -358,6 +358,19 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 						String: val,
 					},
 				})
+			case YBoolean:
+				bval, err := strconv.ParseBool(val)
+				if err != nil {
+					return nil, err
+				}
+				n.Childs = append(n.Childs, DBNode{
+					Name: xword.word,
+					Type: Leaf,
+					Value: DBValue{
+						Type:    YBoolean,
+						Boolean: bval,
+					},
+				})
 			default:
 				return nil, fmt.Errorf("%s: unsupported(%s)", util.LINE(), xword.dbvaluetype)
 			}

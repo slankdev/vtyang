@@ -17,11 +17,7 @@
           "label-blocks": {
             "srgb": {
               "lower-bound": 20000
-            },
-            "srlb": {}
-          },
-          "msd": {
-            "node-msd": 8
+            }
           },
           "prefix-sid-map": {
             "prefix-sid": [

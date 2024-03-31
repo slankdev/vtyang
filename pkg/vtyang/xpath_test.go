@@ -184,8 +184,11 @@ func TestXPathParse(t *testing.T) {
 					{
 						dbtype: List,
 						word:   "user",
-						keys: map[string]string{
-							"name": "eva",
+						keys: map[string]DBValue{
+							"name": {
+								Type:   YString,
+								String: "eva",
+							},
 						},
 					},
 				},
@@ -230,8 +233,11 @@ func TestXPathParseCli(t *testing.T) {
 					{
 						dbtype: List,
 						word:   "user",
-						keys: map[string]string{
-							"name": "eva",
+						keys: map[string]DBValue{
+							"name": {
+								Type:   YString,
+								String: "eva",
+							},
 						},
 					},
 					{

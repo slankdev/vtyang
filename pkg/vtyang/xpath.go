@@ -2,6 +2,7 @@ package vtyang
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/openconfig/goyang/pkg/yang"
@@ -9,7 +10,7 @@ import (
 
 type XWord struct {
 	word string
-	keys map[string]string
+	keys map[string]DBValue
 
 	dbtype      DBNodeType
 	dbvaluetype DBValueType
@@ -49,8 +50,11 @@ func ParseXPath(dbm *DatabaseManager, xpath *XPath, s string) error {
 		if hasKV(words[0]) {
 			k := key(words[0])
 			v := val(words[0])
-			xword.keys = map[string]string{}
-			xword.keys[k] = v
+			xword.keys = map[string]DBValue{}
+			xword.keys[k] = DBValue{
+				Type:   YString,
+				String: v,
+			}
 		}
 
 		var foundNode *yang.Entry = nil
@@ -90,7 +94,7 @@ func (x XPath) String() string {
 		s = fmt.Sprintf("%s/%s", s, w.word)
 		if w.keys != nil {
 			for k, v := range w.keys {
-				s = fmt.Sprintf("%s['%s'='%s']", s, k, v)
+				s = fmt.Sprintf("%s['%s'='%s']", s, k, v.ToString())
 			}
 		}
 	}
@@ -141,9 +145,39 @@ func ParseXPathArgs(dbm *DatabaseManager, args []string, setmode bool) (XPath, s
 				return XPath{}, "", fmt.Errorf("invalid args len")
 			}
 			xword.dbtype = List
-			xword.keys = map[string]string{}
+			xword.keys = map[string]DBValue{}
 			for _, w := range strings.Fields(foundNode.Key) {
-				xword.keys[w] = words[argumentCount]
+				var keyLeafNode *yang.Entry
+				for _, ee := range foundNode.Dir {
+					if ee.Name == w {
+						keyLeafNode = ee
+						break
+					}
+				}
+				tmpStr := words[argumentCount]
+				switch keyLeafNode.Type.Name {
+				case "string":
+					xword.keys[w] = DBValue{
+						Type:   YString,
+						String: tmpStr,
+					}
+				case "vrf-ref":
+					xword.keys[w] = DBValue{
+						Type:   YString,
+						String: tmpStr,
+					}
+				case "uint32":
+					intval, err := strconv.ParseInt(tmpStr, 10, 32)
+					if err != nil {
+						return XPath{}, "", err
+					}
+					xword.keys[w] = DBValue{
+						Type:    YInteger,
+						Integer: int(intval),
+					}
+				default:
+					panic(fmt.Sprintf("OKASHII (%+v)", keyLeafNode.Type.Name))
+				}
 				argumentCount++
 			}
 			argumentCount--

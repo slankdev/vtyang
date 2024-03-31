@@ -504,3 +504,56 @@ func TestFilterDbWithModule(t *testing.T) {
 		t.Fatalf("diff %s\n", diff)
 	}
 }
+
+func TestLoadDatabaseFromFile(t *testing.T) {
+	testcases := []TestCaseForTestAgent{
+		{
+			Inputs: []string{
+				"show running-config-frr",
+			},
+			Output: `{
+        "frr-isisd:isis": {
+          "instance": [
+            {
+              "area-address": [
+                "10.0000.0000.0000.0000.0000.0000.0000.0000.0000.00"
+              ],
+              "area-tag": "1",
+              "vrf": "default"
+            }
+          ]
+        }
+			}`,
+		},
+	}
+
+	// Initializing Agent
+	if err := InitAgent(
+		"./testdata/runtime1",
+		"../../yang.frr/"); err != nil {
+		t.Fatal(err)
+	}
+
+	for idx, tc := range testcases {
+		buf := setStdoutWithBuffer()
+		for _, input := range tc.Inputs {
+			t.Logf("Testcase[%d] executing %s", idx, input)
+			getCommandNodeCurrent().executeCommand(input)
+		}
+		result := buf.String()
+		eq, err := util.DeepEqualJSON(result, tc.Output)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !eq {
+			t.Errorf("Unexpected output")
+			for _, input := range tc.Inputs {
+				t.Errorf("input %+v", input)
+			}
+			t.Errorf("expect(len=%d) %+v", len(tc.Output), tc.Output)
+			t.Errorf("result(len=%d) %+v", len(result), result)
+			t.Fatal("quiting test with FAILED result")
+		}
+		t.Logf("Testcase[%d] output check is succeeded", idx)
+	}
+}

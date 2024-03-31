@@ -18,24 +18,31 @@ router isis 1
 !
 
 grpcurl -plaintext -import-path ~/git/frr/grpc -proto frr-northbound.proto \
--d '{"type":0,"encoding":0,"with_defaults":true,"path":["/"]}' localhost:9001 frr.Northbound.Get
+-d '{"type":0,"encoding":0,"with_defaults":true,"path":["/"]}' \
+localhost:9001 frr.Northbound.Get
 
 grpcurl -plaintext -import-path ~/git/frr/grpc -proto frr-northbound.proto \
--d '{"type":0,"encoding":0,"with_defaults":true,"path":["/frr-interface:lib"]}' localhost:9001 frr.Northbound.Get | jq .data.data -r | less
-grpcurl -plaintext -import-path ~/git/frr/grpc -proto frr-northbound.proto \
--d '{"type":1,"encoding":0,"with_defaults":true,"path":["/frr-isisd:isis"]}' localhost:9001 frr.Northbound.Get
+-d '{"type":0,"encoding":0,"with_defaults":true,"path":["/frr-interface:lib"]}' \
+localhost:9001 frr.Northbound.Get | jq .data.data -r | less
 
 grpcurl -plaintext -import-path ~/git/frr/grpc -proto frr-northbound.proto \
--d '{"type":1,"encoding":0,"with_defaults":false,"path":["/isis/instance/flex-algos"]}' localhost:9001 frr.Northbound.Get | jq .data.data -r
+-d '{"type":1,"encoding":0,"with_defaults":true,"path":["/frr-isisd:isis"]}' \
+localhost:9001 frr.Northbound.Get
+
+grpcurl -plaintext -import-path ~/git/frr/grpc -proto frr-northbound.proto \
+-d '{"type":1,"encoding":0,"with_defaults":false,"path":["/isis/instance/flex-algos"]}' localhost:9001 \
+frr.Northbound.Get | jq .data.data -r
 
 grpcurl -plaintext -import-path ~/git/frr/grpc -proto frr-northbound.proto \
 localhost:9001 frr.Northbound.CreateCandidate | jq
 
 grpcurl -plaintext -import-path ~/git/frr/grpc -proto frr-northbound.proto \
--d '{"candidateId":2,"delete":[{"path":"/isis/instance/flex-algos"}]}' localhost:9001 frr.Northbound.EditCandidate | jq
+-d '{"candidateId":2,"delete":[{"path":"/isis/instance/flex-algos"}]}' \
+localhost:9001 frr.Northbound.EditCandidate | jq
 
 grpcurl -plaintext -import-path ~/git/frr/grpc -proto frr-northbound.proto \
--d '{"candidate_id":2,"phase":4}' localhost:9001 frr.Northbound.Commit | jq
+-d '{"candidate_id":2,"phase":4}' \
+localhost:9001 frr.Northbound.Commit | jq
 
 cat /tmp/data.json
 {

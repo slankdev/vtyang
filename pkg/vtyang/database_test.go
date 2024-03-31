@@ -3,6 +3,7 @@ package vtyang
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"reflect"
 	"testing"
 
@@ -349,5 +350,134 @@ func TestDBNodeDeepCopy(t *testing.T) {
 	copy.Childs[0].Value.String = "modified value"
 	if reflect.DeepEqual(original, copy) {
 		t.Errorf("DeepCopy failed: modifying the copy modified the original")
+	}
+}
+
+func TestFilterDbWithModule(t *testing.T) {
+	input := &DBNode{
+		Name: "",
+		Type: Container,
+		Childs: []DBNode{
+			{
+				Name: "isis",
+				Type: Container,
+				Childs: []DBNode{
+					{
+						Name: "instance",
+						Type: List,
+						Childs: []DBNode{
+							{
+								Name: "",
+								Type: Container,
+								Childs: []DBNode{
+									{
+										Name: "area-tag",
+										Type: Leaf,
+										Value: DBValue{
+											Type:   YString,
+											String: "1",
+										},
+									},
+									{
+										Name: "vrf",
+										Type: Leaf,
+										Value: DBValue{
+											Type:   YString,
+											String: "default",
+										},
+									},
+									{
+										Name: "area-address",
+										Type: LeafList,
+										Value: DBValue{
+											Type: YStringArray,
+											StringArray: []string{
+												"10.0000.0000.0000.0000.0000.0000.0000.0000.0000.00",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	expected := &DBNode{
+		Name: "",
+		Type: Container,
+		Childs: []DBNode{
+			{
+				Name: "frr-isisd:isis",
+				Type: Container,
+				Childs: []DBNode{
+					{
+						Name: "instance",
+						Type: List,
+						Childs: []DBNode{
+							{
+								Name: "",
+								Type: Container,
+								Childs: []DBNode{
+									{
+										Name: "area-tag",
+										Type: Leaf,
+										Value: DBValue{
+											Type:   YString,
+											String: "1",
+										},
+									},
+									{
+										Name: "vrf",
+										Type: Leaf,
+										Value: DBValue{
+											Type:   YString,
+											String: "default",
+										},
+									},
+									{
+										Name: "area-address",
+										Type: LeafList,
+										Value: DBValue{
+											Type: YStringArray,
+											StringArray: []string{
+												"10.0000.0000.0000.0000.0000.0000.0000.0000.0000.00",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	// Preparation
+	GlobalOptRunFilePath = RUNTIME_PATH
+	if util.FileExists(getDatabasePath()) {
+		if err := os.Remove(getDatabasePath()); err != nil {
+			t.Error(err)
+		}
+	}
+
+	// Initializing Agent
+	if err := InitAgent(RUNTIME_PATH,
+		"../../yang.frr/"); err != nil {
+		t.Fatal(err)
+	}
+
+	result, err := filterDbWithModule(input, "frr-isisd")
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(result.String())
+	fmt.Println(expected.String())
+	diff := DBNodeDiff(result, expected)
+	if diff != "" {
+		t.Fatalf("diff %s\n", diff)
 	}
 }

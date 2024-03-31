@@ -686,13 +686,28 @@ func Interface2DBNode(i interface{}) (*DBNode, error) {
 			n.Childs = append(n.Childs, *child)
 		}
 	case []interface{}:
+		isLeafList := false
+		childCandidates := []DBNode{}
 		for _, v := range g {
 			child, err := Interface2DBNode(v)
 			if err != nil {
 				return nil, err
 			}
+			if child.Type == Leaf {
+				isLeafList = true
+			}
+			childCandidates = append(childCandidates, *child)
+		}
+		if isLeafList {
+			v, err := squashListToLeafList(childCandidates)
+			if err != nil {
+				return nil, err
+			}
+			n.Type = LeafList
+			n.Value = v
+		} else {
 			n.Type = List
-			n.Childs = append(n.Childs, *child)
+			n.Childs = append(n.Childs, childCandidates...)
 		}
 	case bool:
 		n.Type = Leaf
@@ -857,4 +872,39 @@ func filterDbWithModuleImpl(n *DBNode, root *yang.Entry) *DBNode {
 	}
 	n.Childs = childs
 	return n
+}
+
+func squashListToLeafList(items []DBNode) (DBValue, error) {
+	typesMap := map[DBValueType]bool{}
+	for _, item := range items {
+		typesMap[item.Value.Type] = true
+	}
+	types := []DBValueType{}
+	for key, val := range typesMap {
+		if val {
+			types = append(types, key)
+		}
+	}
+	if len(types) != 1 {
+		return DBValue{}, fmt.Errorf("invalid list items (%+v)", types)
+	}
+
+	switch types[0] {
+	// TODO(slankdev): implemente me
+	// case YInteger:
+	// case YBoolean:
+
+	case YString:
+		g := []string{}
+		for _, item := range items {
+			g = append(g, item.Value.String)
+		}
+		ret := DBValue{
+			Type:        YStringArray,
+			StringArray: g,
+		}
+		return ret, nil
+	default:
+		panic(fmt.Sprintf("OKASHII %s", types[0]))
+	}
 }

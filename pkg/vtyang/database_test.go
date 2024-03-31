@@ -359,9 +359,31 @@ func TestFilterDbWithModule(t *testing.T) {
 		Type: Container,
 		Childs: []DBNode{
 			{
+				Name: "bgp",
+				Type: Container,
+				Childs: []DBNode{
+					{
+						Name: "as-number",
+						Type: Leaf,
+						Value: DBValue{
+							Type:    YInteger,
+							Integer: 65001,
+						},
+					},
+				},
+			},
+			{
 				Name: "isis",
 				Type: Container,
 				Childs: []DBNode{
+					{
+						Name: "ignored",
+						Type: Leaf,
+						Value: DBValue{
+							Type:    YInteger,
+							Integer: 65001,
+						},
+					},
 					{
 						Name: "instance",
 						Type: List,
@@ -474,8 +496,9 @@ func TestFilterDbWithModule(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	fmt.Println(result.String())
-	fmt.Println(expected.String())
+
 	diff := DBNodeDiff(result, expected)
 	if diff != "" {
 		t.Fatalf("diff %s\n", diff)

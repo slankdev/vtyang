@@ -1,6 +1,7 @@
 package vtyang
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -176,6 +177,10 @@ func getViewCommandConfig(modules *yang.Modules) *CompletionNode {
 						Name:   "running-config-frr",
 						Childs: []*CompletionNode{newCR()},
 					},
+					{
+						Name:   "running-config-raw",
+						Childs: []*CompletionNode{newCR()},
+					},
 				},
 			},
 		},
@@ -203,22 +208,25 @@ func getViewCommandCallbackConfig(_ *yang.Modules) []Command {
 		{
 			m: "show running-config-frr",
 			f: func(args []string) {
-				xpath, _, err := ParseXPathArgs(dbm, args[2:], false)
-				if err != nil {
-					fmt.Fprintf(stdout, "Error: %s\n", err.Error())
-					return
-				}
-				node, err := dbm.GetNode(xpath)
-				if err != nil {
-					fmt.Fprintf(stdout, "Error: %s\n", err.Error())
-					return
-				}
+				node := &dbm.root
 				filteredNode, err := filterDbWithModule(node, "frr-isisd")
 				if err != nil {
 					fmt.Fprintf(stdout, "Error: %s\n", err.Error())
 					return
 				}
 				fmt.Fprintln(stdout, filteredNode.String())
+			},
+		},
+		{
+			m: "show running-config-raw",
+			f: func(args []string) {
+				node := &dbm.root
+				out, err := json.MarshalIndent(node, "", "  ")
+				if err != nil {
+					fmt.Fprintf(stdout, "Error: %s\n", err.Error())
+					return
+				}
+				fmt.Fprintln(stdout, string(out))
 			},
 		},
 	}

@@ -8,6 +8,8 @@
 ## Snippet
 
 ```
+log file /tmp/frr.log
+debug northbound
 !
 router isis 1
  net 10.0000.0000.0000.0000.0000.0000.0000.0000.0000.00

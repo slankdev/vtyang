@@ -282,6 +282,7 @@ func TestAgentXPathCliFRR(t *testing.T) {
 			Inputs: []string{
 				"configure",
 				"set isis instance 1 default area-address 10.0000.0000.0000.0000.0000.0000.0000.0000.0000.00",
+				"set isis instance 1 default flex-algos flex-algo 128 priority 100",
 				"commit",
 				"do show running-config-frr",
 			},
@@ -293,11 +294,19 @@ func TestAgentXPathCliFRR(t *testing.T) {
                 "10.0000.0000.0000.0000.0000.0000.0000.0000.0000.00"
               ],
               "area-tag": "1",
+              "flex-algos": {
+                "flex-algo": [
+                  {
+                    "flex-algo": 128,
+                    "priority": 100
+                  }
+                ]
+              },
               "vrf": "default"
             }
           ]
         }
-			}`,
+      }`,
 		},
 	}
 

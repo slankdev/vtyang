@@ -1075,10 +1075,10 @@ module frr-isisd {
           "VRF NAME.";
       }
 
-      // TODO(slankdev)
-      // leaf description {
-      //   type string;
-      // }
+      // TODO(slankdev) this is added for vtyang-testing
+      leaf description {
+        type string;
+      }
 
       leaf is-type {
         type level;

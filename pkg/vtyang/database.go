@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"reflect"
 	"sort"
 	"strconv"
 	"strings"
@@ -130,7 +131,7 @@ func (dbm *DatabaseManager) GetNode(xpath XPath) (*DBNode, error) {
 									panic("database is broken")
 								}
 								for k, v := range xword.keys {
-									if child3.Name == k && child3.Value.String == v {
+									if child3.Name == k && reflect.DeepEqual(child3.Value, v) {
 										n = child2
 										found = true
 										goto end
@@ -264,12 +265,9 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 								Type: Container,
 								Childs: []DBNode{
 									{
-										Name: k,
-										Type: Leaf,
-										Value: DBValue{
-											Type:   YString,
-											String: v,
-										},
+										Name:  k,
+										Type:  Leaf,
+										Value: v,
 									},
 								},
 							},
@@ -309,7 +307,7 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 				match := true
 				for k, v := range xword.keys {
 					for _, c := range n.Childs[idx].Childs {
-						if c.Name == k && c.Value.String != v {
+						if c.Name == k && !reflect.DeepEqual(c.Value, v) {
 							match = false
 						}
 					}
@@ -323,14 +321,12 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 			if !found2 {
 				listChilds := []DBNode{}
 				for k, v := range xword.keys {
-					listChilds = append(listChilds, DBNode{
-						Name: k,
-						Type: Leaf,
-						Value: DBValue{
-							Type:   YString,
-							String: v,
-						},
-					})
+					tmp := DBNode{
+						Name:  k,
+						Type:  Leaf,
+						Value: v,
+					}
+					listChilds = append(listChilds, tmp)
 				}
 				n.Childs = append(n.Childs, DBNode{
 					Type:   Container,
@@ -412,12 +408,9 @@ func (xpath XPath) CreateDBNodeTree() (*DBNode, error) {
 			for k, v := range xword.keys {
 				n.Childs[0].Childs = []DBNode{
 					{
-						Name: k,
-						Type: Leaf,
-						Value: DBValue{
-							Type:   YString,
-							String: v,
-						},
+						Name:  k,
+						Type:  Leaf,
+						Value: v,
 					},
 				}
 			}
@@ -431,7 +424,7 @@ func (xpath XPath) CreateDBNodeTree() (*DBNode, error) {
 	return &root, nil
 }
 
-func EnsureListNode(listNode *DBNode, kv map[string]string) *DBNode {
+func EnsureListNode(listNode *DBNode, kv map[string]DBValue) *DBNode {
 	if listNode.Type != List {
 		panic("ASSERTION")
 	}
@@ -446,12 +439,9 @@ func EnsureListNode(listNode *DBNode, kv map[string]string) *DBNode {
 	newElement := DBNode{Type: Container}
 	for k, v := range kv {
 		n := DBNode{
-			Name: k,
-			Type: Leaf,
-			Value: DBValue{
-				Type:   YString,
-				String: v,
-			},
+			Name:  k,
+			Type:  Leaf,
+			Value: v,
 		}
 		newElement.Childs = append(newElement.Childs, n)
 	}
@@ -460,12 +450,12 @@ func EnsureListNode(listNode *DBNode, kv map[string]string) *DBNode {
 	return &listNode.Childs[len(listNode.Childs)-1]
 }
 
-func matchChild(root *DBNode, kv map[string]string) bool {
+func matchChild(root *DBNode, kv map[string]DBValue) bool {
 	nMatch := 0
 	for idx := range root.Childs {
 		child := &root.Childs[idx]
 		for k, v := range kv {
-			if child.Name == k && child.Value.String == v {
+			if child.Name == k && reflect.DeepEqual(child.Value, v) {
 				nMatch++
 			}
 		}
@@ -473,14 +463,14 @@ func matchChild(root *DBNode, kv map[string]string) bool {
 	return len(kv) == nMatch
 }
 
-func lookupChildIdx(root *DBNode, kv map[string]string) int {
+func lookupChildIdx(root *DBNode, kv map[string]DBValue) int {
 	for idx := range root.Childs {
 		child := &root.Childs[idx]
 		for idx2 := range child.Childs {
 			child2 := &child.Childs[idx2]
 			nMatch := 0
 			for k, v := range kv {
-				if child2.Name == k && child2.Value.String == v {
+				if child2.Name == k && reflect.DeepEqual(child2.Value, v) {
 					nMatch++
 				}
 			}
@@ -608,6 +598,17 @@ type DBValue struct {
 	String      string
 	Boolean     bool
 	StringArray []string
+}
+
+func (v *DBValue) ToString() string {
+	switch v.Type {
+	case YString:
+		return v.String
+	case YInteger:
+		return fmt.Sprintf("%d", v.Integer)
+	default:
+		panic(fmt.Sprintf("OKASHI (%s)", v.Type))
+	}
 }
 
 func (n *DBNode) DeepCopy() *DBNode {

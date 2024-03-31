@@ -298,15 +298,21 @@ func TestSetNode(t *testing.T) {
 			},
 			{
 				word: "instance",
-				keys: map[string]string{
-					"area-tag": "1",
-					"vrf":      "default",
+				keys: map[string]DBValue{
+					"area-tag": {
+						Type:   YString,
+						String: "1",
+					},
+					"vrf": {
+						Type:   YString,
+						String: "default",
+					},
 				},
 				dbtype: "list",
 			},
 			{
 				word:        "description",
-				keys:        map[string]string{},
+				keys:        map[string]DBValue{},
 				dbtype:      "leaf",
 				dbvaluetype: "string",
 			},

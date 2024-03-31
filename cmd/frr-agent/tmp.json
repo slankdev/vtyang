@@ -1,0 +1,47 @@
+{
+  "frr-isisd:isis": {
+    "instance": [
+      {
+        "area-tag": "1",
+        "vrf": "default",
+        "flex-algos": {
+          "flex-algo": [
+            {
+              "flex-algo": 201,
+              "advertise-definition": true
+            }
+          ]
+        },
+        "segment-routing": {
+          "enabled": true,
+          "label-blocks": {
+            "srgb": {
+              "lower-bound": 20000
+            },
+            "srlb": {}
+          },
+          "msd": {
+            "node-msd": 8
+          },
+          "prefix-sid-map": {
+            "prefix-sid": [
+              {
+                "prefix": "1.1.1.1/32",
+                "sid-value": 1
+              }
+            ]
+          },
+          "algorithm-prefix-sids": {
+            "algorithm-prefix-sid": [
+              {
+                "prefix": "1.1.1.1/32",
+                "algo": 201,
+                "sid-value": 101
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+}

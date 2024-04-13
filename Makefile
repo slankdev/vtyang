@@ -19,3 +19,6 @@ reset-netns:
 	ssh -t dev sudo ip netns exec ns0 ip link add dum0 type dummy
 	ssh -t dev sudo ip netns exec ns0 ip link add dum1 type dummy
 	ssh -t dev sudo ip netns exec ns0 ip link add dum2 type dummy
+
+frr-run: frr-agent-build
+	ssh -t dev sudo /home/ubuntu/git/vtyang/bin/frr-agent

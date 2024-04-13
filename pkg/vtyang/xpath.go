@@ -166,6 +166,11 @@ func ParseXPathArgs(dbm *DatabaseManager, args []string, setmode bool) (XPath, s
 						Type:   YString,
 						String: tmpStr,
 					}
+				case "ip-prefix":
+					xword.keys[w] = DBValue{
+						Type:   YString,
+						String: tmpStr,
+					}
 				case "uint32":
 					intval, err := strconv.ParseInt(tmpStr, 10, 32)
 					if err != nil {

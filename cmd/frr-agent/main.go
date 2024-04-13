@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"math/rand"
 	"os"
@@ -13,8 +12,9 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
+	"github.com/slankdev/vtyang/pkg/frr"
+	frrapi "github.com/slankdev/vtyang/pkg/frr"
 	vtyangapi "github.com/slankdev/vtyang/pkg/grpc/api"
-	"github.com/slankdev/vtyang/pkg/linux-agent/yang"
 	"github.com/slankdev/vtyang/pkg/util"
 )
 
@@ -45,9 +45,12 @@ func NewCommand() *cobra.Command {
 }
 
 func f(cmd *cobra.Command, args []string) error {
-	conn, err := grpc.Dial(
+	ctx := context.Background()
+
+	// Init VTYANG gRPC Client
+	conn, err := grpc.DialContext(
+		ctx,
 		clioptVtyang,
-		grpc.WithTimeout(1*time.Second),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithBlock(),
 	)
@@ -61,6 +64,22 @@ func f(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+
+	// Init FRR gRPC Client
+	connFrr, err := grpc.DialContext(
+		ctx,
+		clioptFrr,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithBlock(),
+	)
+	if err != nil {
+		return err
+	}
+	pp.Println("frr connected")
+	defer connFrr.Close()
+	clientFrr := frrapi.NewNorthboundClient(connFrr)
+
+	// Main loop
 	loop := true
 	for loop {
 		res, err := stream.Recv()
@@ -69,27 +88,25 @@ func f(cmd *cobra.Command, args []string) error {
 			loop = false
 			continue
 		}
-		device := yang.Device{}
-		if err := json.Unmarshal([]byte(res.Data), &device); err != nil {
-			return err
-		}
-		pp.Println(device)
-		if err := validate(&device); err != nil {
-			return err
-		}
-		if err := commit(&device); err != nil {
+		if err := commit(res.Data, clientFrr); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func validate(_ *yang.Device) error {
-	// TODO(slankdev): it's not implemented
-	return nil
-}
+func commit(data string, clientFrr frr.NorthboundClient) error {
+	// Create Candidate
+	ctx := context.Background()
+	resp, err := clientFrr.CreateCandidate(ctx, &frrapi.CreateCandidateRequest{})
+	if err != nil {
+		return err
+	}
+	pp.Println(resp.CandidateId)
 
-func commit(device *yang.Device) error {
-	fmt.Println("NOT IMPLEMENTED (COMMIT)")
+	// Load config to candidate
+	fmt.Println(data)
+
+	// Commit
 	return nil
 }

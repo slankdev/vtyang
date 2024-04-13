@@ -14,4 +14,5 @@ message HelloRequest {
 message HelloResponse {
 	string message = 1;
 	string data = 2;
+	string dataWithModule = 3;
 }

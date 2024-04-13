@@ -276,8 +276,14 @@ func (s *myServer) HelloStream(
 	if err != nil {
 		return err
 	}
+	filteredNode, err := filterDbWithModule(node, "frr-isisd")
+	if err != nil {
+		fmt.Fprintf(stdout, "Error: %s\n", err.Error())
+		return err
+	}
 	if err := stream.Send(&vtyangapi.HelloResponse{
-		Data: node.String(),
+		Data:           node.String(),
+		DataWithModule: filteredNode.String(),
 	}); err != nil {
 		return err
 	}
@@ -295,8 +301,9 @@ func (s *myServer) HelloStream(
 	for loop {
 		conf := <-confChan
 		if err := stream.Send(&vtyangapi.HelloResponse{
-			Message: "HELLO",
-			Data:    conf.Data,
+			Message:        "HELLO",
+			Data:           conf.Data,
+			DataWithModule: conf.DataWithModule,
 		}); err != nil {
 			pp.Println(err.Error())
 			loop = false
@@ -308,8 +315,9 @@ func (s *myServer) HelloStream(
 }
 
 type Configuration struct {
-	Revision int
-	Data     string
+	Revision       int
+	Data           string
+	DataWithModule string
 }
 
 var (
@@ -326,9 +334,16 @@ func nofityRunningConfigToSubscribers() error {
 		fmt.Fprintf(stdout, "Error: %s\n", err.Error())
 		return err
 	}
+	filteredNode, err := filterDbWithModule(node, "frr-isisd")
+	if err != nil {
+		fmt.Fprintf(stdout, "Error: %s\n", err.Error())
+		return err
+	}
+
 	for _, confChan := range confChans {
 		confChan <- Configuration{
-			Data: node.String(),
+			Data:           node.String(),
+			DataWithModule: filteredNode.String(),
 		}
 	}
 	return nil

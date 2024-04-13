@@ -88,14 +88,14 @@ func f(cmd *cobra.Command, args []string) error {
 			loop = false
 			continue
 		}
-		if err := commit(res.Data, clientFrr); err != nil {
+		if err := commit(res, clientFrr); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func commit(data string, clientFrr frr.NorthboundClient) error {
+func commit(res *vtyangapi.HelloResponse, clientFrr frr.NorthboundClient) error {
 	// Create Candidate
 	ctx := context.Background()
 	resp, err := clientFrr.CreateCandidate(ctx, &frrapi.CreateCandidateRequest{})
@@ -105,7 +105,8 @@ func commit(data string, clientFrr frr.NorthboundClient) error {
 	pp.Println(resp.CandidateId)
 
 	// Load config to candidate
-	fmt.Println(data)
+	fmt.Println(res.Data)
+	fmt.Println(res.DataWithModule)
 
 	// Commit
 	return nil

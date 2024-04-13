@@ -98,16 +98,38 @@ func f(cmd *cobra.Command, args []string) error {
 func commit(res *vtyangapi.HelloResponse, clientFrr frr.NorthboundClient) error {
 	// Create Candidate
 	ctx := context.Background()
-	resp, err := clientFrr.CreateCandidate(ctx, &frrapi.CreateCandidateRequest{})
+	resp1, err := clientFrr.CreateCandidate(ctx, &frrapi.CreateCandidateRequest{})
 	if err != nil {
 		return err
 	}
-	pp.Println(resp.CandidateId)
+	// pp.Println(resp1.CandidateId)
+	// fmt.Println(res.Data)
+	// fmt.Println(res.DataWithModule)
 
 	// Load config to candidate
-	fmt.Println(res.Data)
-	fmt.Println(res.DataWithModule)
+	resp2, err := clientFrr.LoadToCandidate(ctx, &frrapi.LoadToCandidateRequest{
+		CandidateId: resp1.CandidateId,
+		Config: &frrapi.DataTree{
+			Encoding: frrapi.Encoding_JSON,
+			Data:     res.DataWithModule,
+		},
+	})
+	if err != nil {
+		return err
+	}
+	pp.Println("resp2", resp2.String())
 
 	// Commit
+	resp3, err := clientFrr.Commit(ctx, &frrapi.CommitRequest{
+		CandidateId: resp1.CandidateId,
+		Phase:       frrapi.CommitRequest_ALL,
+		Comment:     "TEST",
+	})
+	if err != nil {
+		return err
+	}
+	pp.Println("resp3", resp3.String())
+
+	// Return
 	return nil
 }

@@ -114,6 +114,9 @@ $ frr-get "/frr-isisd:isis" | jq .data.data -r | jq
 
 
 ```
+set isis instance 1 default area-address 10.0000.0000.0000.0000.0000.0000.0000.0000.0000.00
+```
+```
 set isis instance 1 default segment-routing enabled true
 set isis instance 1 default segment-routing prefix-sid-map prefix-sid 1.1.1.1/32 sid-value 1
 set isis instance 1 default flex-algos flex-algo 200 advertise-definition true

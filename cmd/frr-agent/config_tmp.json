@@ -1,0 +1,10 @@
+{
+  "frr-isisd:isis": {
+    "instance": [
+      {
+        "area-tag": "1",
+        "vrf": "default"
+      }
+    ]
+  }
+}

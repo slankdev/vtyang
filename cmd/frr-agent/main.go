@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/k0kubun/pp"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -79,7 +80,18 @@ func f(cmd *cobra.Command, args []string) error {
 	defer connFrr.Close()
 	clientFrr := frrapi.NewNorthboundClient(connFrr)
 
+	res0, err := stream.Recv()
+	if err != nil {
+		fmt.Println("KOKO1", err.Error())
+		return err
+	}
+	if err := commit(res0, clientFrr); err != nil {
+		fmt.Println("KOKO2", err.Error())
+		return err
+	}
+
 	// Main loop
+	pp.Println("start main loop")
 	loop := true
 	for loop {
 		res, err := stream.Recv()
@@ -106,6 +118,21 @@ func commit(res *vtyangapi.HelloResponse, clientFrr frr.NorthboundClient) error 
 	// fmt.Println(res.Data)
 	// fmt.Println(res.DataWithModule)
 
+	resp11, err := clientFrr.Get(ctx, &frrapi.GetRequest{
+		Type: frrapi.GetRequest_CONFIG,
+		Path: []string{
+			"/frr-isis",
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "clientFrr.Get")
+	}
+	resp111, err := resp11.Recv()
+	if err != nil {
+		return errors.Wrap(err, "clientFrr.Get.Recv")
+	}
+	pp.Println(resp111.Data)
+
 	// Load config to candidate
 	resp2, err := clientFrr.LoadToCandidate(ctx, &frrapi.LoadToCandidateRequest{
 		CandidateId: resp1.CandidateId,
@@ -118,6 +145,33 @@ func commit(res *vtyangapi.HelloResponse, clientFrr frr.NorthboundClient) error 
 		return err
 	}
 	pp.Println("resp2", resp2.String())
+
+	doValidate := true
+	doPrepare := true
+
+	// Commit
+	if doValidate {
+		resp3, err := clientFrr.Commit(ctx, &frrapi.CommitRequest{
+			CandidateId: resp1.CandidateId,
+			Phase:       frrapi.CommitRequest_VALIDATE,
+			Comment:     "VALIDATE",
+		})
+		if err != nil {
+			return errors.Wrap(err, "validate")
+		}
+		pp.Println("validate", resp3.String())
+	}
+	if doPrepare {
+		resp3, err := clientFrr.Commit(ctx, &frrapi.CommitRequest{
+			CandidateId: resp1.CandidateId,
+			Phase:       frrapi.CommitRequest_PREPARE,
+			Comment:     "PREPARE",
+		})
+		if err != nil {
+			return errors.Wrap(err, "prepare")
+		}
+		pp.Println("prepare", resp3.String())
+	}
 
 	// Commit
 	resp3, err := clientFrr.Commit(ctx, &frrapi.CommitRequest{

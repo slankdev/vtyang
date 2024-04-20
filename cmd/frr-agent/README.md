@@ -130,5 +130,11 @@ set isis instance 1 default flex-algos flex-algo 200 advertise-definition true
 set isis instance 1 default flex-algos flex-algo 200 priority 100
 ```
 
+```
+do show mgmt get-config /
+
+/frr-routing:routing/control-plane-protocols/control-plane-protocol[type='frr-staticd:staticd'][name='staticd'][vrf='default']/frr-staticd:staticd/route-list[prefix='1.1.1.1/32'][afi-safi='frr-routing:ipv4-unicast']/prefix 1.1.1.1/32
+```
+
 ## References
 - https://web.sfc.wide.ad.jp/~irino/blog/2023/04/02/frr-grpc/

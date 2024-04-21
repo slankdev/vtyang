@@ -42,7 +42,7 @@ const (
 
 func NewCommand() *cobra.Command {
 	rootCmd := &cobra.Command{
-		Use:  "frr-agent",
+		Use:  "mgmtd",
 		RunE: f,
 	}
 	rootCmd.Flags().StringVar(&clioptFrr, "frr",
@@ -96,33 +96,38 @@ func f(cmd *cobra.Command, args []string) error {
 	sessionId := msg.GetSessionReply().SessionId
 	pp.Println(sessionId)
 
-	// // STEP3
-	// sessionId := uint64(0)
-	// config := true
-	// dsId := mgmtd.DatastoreId_RUNNING_DS
-	// reqId := uint64(0)
-	// nextIdx := int64(-1)
-	// xpath := "/"
-	// if err := writeProtoBufMsg(conn, &mgmtd.FeMessage{
-	// 	Message: &mgmtd.FeMessage_GetReq{
-	// 		GetReq: &mgmtd.FeGetReq{
-	// 			SessionId: &sessionId,
-	// 			Config:    &config,
-	// 			DsId:      &dsId,
-	// 			ReqId:     &reqId,
-	// 			Data: []*mgmtd.YangGetDataReq{
-	// 				{
-	// 					Data: &mgmtd.YangData{
-	// 						Xpath: &xpath,
-	// 					},
-	// 					NextIndx: &nextIdx,
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// }); err != nil {
-	// 	return errors.Wrap(err, "writeProtoBufMsg")
-	// }
+	// STEP5
+	dsId := mgmtd.DatastoreId_RUNNING_DS
+	xpath := "/"
+	if err := writeProtoBufMsg(conn, &mgmtd.FeMessage{
+		Message: &mgmtd.FeMessage_GetReq{
+			GetReq: &mgmtd.FeGetReq{
+				SessionId: sessionId,
+				Config:    util.NewBoolPointer(true),
+				DsId:      &dsId,
+				ReqId:     util.NewUint64Pointer(0),
+				Data: []*mgmtd.YangGetDataReq{
+					{
+						Data: &mgmtd.YangData{
+							Xpath: &xpath,
+						},
+						NextIndx: util.NewInt64Pointer(-1),
+					},
+				},
+			},
+		},
+	}); err != nil {
+		return errors.Wrap(err, "writeProtoBufMsg")
+	}
+
+	// STEP6
+	msg1, err := readProtoBufMsg(conn)
+	if err != nil {
+		return errors.Wrap(err, "readProtoBufMsg")
+	}
+	fmt.Println(msg1.GetGetReply().String())
+	// sessionId := msg.GetSessionReply().SessionId
+	// pp.Println(sessionId)
 
 	// STEP99
 	time.Sleep(1000 * time.Second)

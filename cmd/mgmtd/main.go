@@ -88,12 +88,13 @@ func f(cmd *cobra.Command, args []string) error {
 	}
 
 	// STEP4
-	buf := make([]byte, 1024)
-	n, err := conn.Read(buf)
+	msg, err := readProtoBufMsg(conn)
 	if err != nil {
-		return errors.Wrap(err, "conn.Read")
+		return errors.Wrap(err, "readProtoBufMsg")
 	}
-	pp.Println(n)
+	fmt.Println(msg.String())
+	sessionId := msg.GetSessionReply().SessionId
+	pp.Println(sessionId)
 
 	// // STEP3
 	// sessionId := uint64(0)
@@ -151,4 +152,40 @@ func writeProtoBufMsg(conn net.Conn, msg *mgmtd.FeMessage) error {
 	}
 	fmt.Println(hex.Dump(buf.Bytes()))
 	return nil
+}
+
+func readProtoBufMsg(conn net.Conn) (*mgmtd.FeMessage, error) {
+	buf := make([]byte, 1024)
+	n, err := conn.Read(buf)
+	if err != nil {
+		return nil, errors.Wrap(err, "conn.Read")
+	}
+	if n > 1024 {
+		return nil, errors.Errorf("msg too big (>1024)")
+	}
+	buff := bytes.NewBuffer(buf)
+
+	// Parse Marker
+	marker := uint32(0)
+	if err := binary.Read(buff, binary.LittleEndian, &marker); err != nil {
+		return nil, errors.Wrap(err, "binary.Read")
+	}
+	if marker != MGMT_MSG_MARKER_PROTOBUF {
+		return nil, errors.Errorf("not PROTOBUF marker")
+	}
+
+	// Parse Size
+	msize := uint32(0)
+	if err := binary.Read(buff, binary.LittleEndian, &msize); err != nil {
+		return nil, errors.Wrap(err, "binary.Read")
+	}
+	msize0 := msize - 8
+
+	// Parse Body
+	body := buf[8 : 8+msize0]
+	msg := mgmtd.FeMessage{}
+	if err := proto.Unmarshal(body, &msg); err != nil {
+		return nil, errors.Wrap(err, "proto.Unmarshal")
+	}
+	return &msg, nil
 }

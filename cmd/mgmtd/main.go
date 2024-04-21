@@ -73,6 +73,48 @@ func f(cmd *cobra.Command, args []string) error {
 	}
 
 	// STEP3
+	if err := writeProtoBufMsg(conn, &mgmtd.FeMessage{
+		Message: &mgmtd.FeMessage_SessionReq{
+			SessionReq: &mgmtd.FeSessionReq{
+				Create: util.NewBoolPointer(true),
+				Id: &mgmtd.FeSessionReq_ClientConnId{
+					ClientConnId: 0,
+				},
+			},
+		},
+	}); err != nil {
+		return errors.Wrap(err, "writeProtoBufMsg")
+	}
+
+	// STEP4
+
+	// // STEP3
+	// sessionId := uint64(0)
+	// config := true
+	// dsId := mgmtd.DatastoreId_RUNNING_DS
+	// reqId := uint64(0)
+	// nextIdx := int64(-1)
+	// xpath := "/"
+	// if err := writeProtoBufMsg(conn, &mgmtd.FeMessage{
+	// 	Message: &mgmtd.FeMessage_GetReq{
+	// 		GetReq: &mgmtd.FeGetReq{
+	// 			SessionId: &sessionId,
+	// 			Config:    &config,
+	// 			DsId:      &dsId,
+	// 			ReqId:     &reqId,
+	// 			Data: []*mgmtd.YangGetDataReq{
+	// 				{
+	// 					Data: &mgmtd.YangData{
+	// 						Xpath: &xpath,
+	// 					},
+	// 					NextIndx: &nextIdx,
+	// 				},
+	// 			},
+	// 		},
+	// 	},
+	// }); err != nil {
+	// 	return errors.Wrap(err, "writeProtoBufMsg")
+	// }
 
 	// STEP99
 	time.Sleep(1000 * time.Second)

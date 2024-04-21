@@ -58,7 +58,6 @@ func f(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
 	_ = ctx
 	name := "vtyang"
-	_ = name
 
 	// STEP1
 	conn, err := net.Dial("unix", "/var/run/frr/mgmtd_fe.sock")
@@ -66,7 +65,6 @@ func f(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "net.Dial")
 	}
 	defer conn.Close()
-	// pp.Println(conn)
 
 	// STEP2
 	msg := mgmtd.FeMessage{
@@ -76,28 +74,13 @@ func f(cmd *cobra.Command, args []string) error {
 			},
 		},
 	}
-	//pp.Println(msg)
-	// msg0.Message = &msgImple
-	// // req := msg0.GetRegisterReq()
-	// // req.ClientName = &name
-	// s := msg0.String()
-	// fmt.Println("HELLLO")
-	// fmt.Println(s)
-
-	// pp.Println("WAIT")
-	// buf := make([]byte, 1024)
-	// n, err := conn.Read(buf)
-	// if err != nil {
-	// 	return errors.Wrap(err, "conn.Read")
-	// }
-	// pp.Println("RECV", n, buf)
-
 	data, err := proto.Marshal(&msg)
 	if err != nil {
 		return errors.Wrap(err, "proto.Marshal")
 	}
 	pp.Println(data)
 
+	// STEP3
 	buf := new(bytes.Buffer)
 	if err := binary.Write(buf, binary.NativeEndian,
 		MGMT_MSG_MARKER_PROTOBUF); err != nil {
@@ -118,7 +101,6 @@ func f(cmd *cobra.Command, args []string) error {
 
 	out := hex.Dump(buf.Bytes())
 	fmt.Println(out)
-
 	time.Sleep(1000 * time.Second)
 	return nil
 }

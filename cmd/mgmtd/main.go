@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"context"
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
@@ -13,7 +12,6 @@ import (
 
 	//"github.com/k0kubun/pp"
 
-	"github.com/k0kubun/pp"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"google.golang.org/protobuf/proto"
@@ -30,6 +28,7 @@ func main() {
 }
 
 var (
+	name         = "vtyang"
 	clioptFrr    string
 	clioptVtyang string
 )
@@ -55,10 +54,6 @@ func NewCommand() *cobra.Command {
 }
 
 func f(cmd *cobra.Command, args []string) error {
-	ctx := context.Background()
-	_ = ctx
-	name := "vtyang"
-
 	// STEP1
 	conn, err := net.Dial("unix", "/var/run/frr/mgmtd_fe.sock")
 	if err != nil {
@@ -74,13 +69,23 @@ func f(cmd *cobra.Command, args []string) error {
 			},
 		},
 	}
-	data, err := proto.Marshal(&msg)
+	if err := writeProtoBufMsg(conn, &msg); err != nil {
+		return errors.Wrap(err, "writeProtoBufMsg")
+	}
+
+	// STEP3
+
+	// STEP99
+	time.Sleep(1000 * time.Second)
+	return nil
+}
+
+func writeProtoBufMsg(conn net.Conn, msg *mgmtd.FeMessage) error {
+	data, err := proto.Marshal(msg)
 	if err != nil {
 		return errors.Wrap(err, "proto.Marshal")
 	}
-	pp.Println(data)
 
-	// STEP3
 	buf := new(bytes.Buffer)
 	if err := binary.Write(buf, binary.NativeEndian,
 		MGMT_MSG_MARKER_PROTOBUF); err != nil {
@@ -93,15 +98,9 @@ func f(cmd *cobra.Command, args []string) error {
 	if _, err := buf.Write([]byte(data)); err != nil {
 		return errors.Wrap(err, "buf.Write")
 	}
-	n, err := conn.Write(buf.Bytes())
-	if err != nil {
+	if _, err := conn.Write(buf.Bytes()); err != nil {
 		return errors.Wrap(err, "conn.Write")
 	}
-	pp.Println(n)
-
-	// STEP4
-	out := hex.Dump(buf.Bytes())
-	fmt.Println(out)
-	time.Sleep(1000 * time.Second)
+	fmt.Println(hex.Dump(buf.Bytes()))
 	return nil
 }

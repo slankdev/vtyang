@@ -6,4 +6,4 @@ mgmtd-docker-build: ## Build docker image with the mgmtd.
 mgmtd-docker-push: mgmtd-docker-build ## Push docker image with the mgmtd.
 	docker push ${mgmtd_img}
 mgmtd-run: mgmtd-build
-	./bin/mgmtd agent --run-path /usr/local/var/run/mgmtd
+	sudo ./bin/mgmtd

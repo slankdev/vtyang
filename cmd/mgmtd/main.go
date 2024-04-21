@@ -62,14 +62,13 @@ func f(cmd *cobra.Command, args []string) error {
 	defer conn.Close()
 
 	// STEP2
-	msg := mgmtd.FeMessage{
+	if err := writeProtoBufMsg(conn, &mgmtd.FeMessage{
 		Message: &mgmtd.FeMessage_RegisterReq{
 			RegisterReq: &mgmtd.FeRegisterReq{
 				ClientName: &name,
 			},
 		},
-	}
-	if err := writeProtoBufMsg(conn, &msg); err != nil {
+	}); err != nil {
 		return errors.Wrap(err, "writeProtoBufMsg")
 	}
 

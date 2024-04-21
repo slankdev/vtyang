@@ -136,5 +136,19 @@ do show mgmt get-config /
 /frr-routing:routing/control-plane-protocols/control-plane-protocol[type='frr-staticd:staticd'][name='staticd'][vrf='default']/frr-staticd:staticd/route-list[prefix='1.1.1.1/32'][afi-safi='frr-routing:ipv4-unicast']/prefix 1.1.1.1/32
 ```
 
+```
+do show mgmt get-config /
+do configure terminal file-lock
+
+mgmt set-config /frr-interface:lib/interface[name='dum0']/frr-zebra:zebra/ipv4-addrs[ip='10.255.0.1'][prefix-length='24']/ip 10.255.0.1
+mgmt set-config /frr-interface:lib/interface[name='dum0']/description dum0-int
+mgmt set-config /frr-interface:lib/interface[name='dum1']/frr-zebra:zebra/ipv4-addrs[ip='10.255.1.1'][prefix-length='24']/ip 10.255.1.1
+mgmt set-config /frr-interface:lib/interface[name='dum1']/description dum1-int
+
+mgmt commit check
+mgmt commit apply
+do show mgmt datastore-contents json 
+```
+
 ## References
 - https://web.sfc.wide.ad.jp/~irino/blog/2023/04/02/frr-grpc/

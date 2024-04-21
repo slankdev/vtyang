@@ -69,13 +69,12 @@ func f(cmd *cobra.Command, args []string) error {
 	// pp.Println(conn)
 
 	// STEP2
-	req := mgmtd.FeMessage_RegisterReq{
-		RegisterReq: &mgmtd.FeRegisterReq{
-			ClientName: &name,
-		},
-	}
 	msg := mgmtd.FeMessage{
-		Message: &req,
+		Message: &mgmtd.FeMessage_RegisterReq{
+			RegisterReq: &mgmtd.FeRegisterReq{
+				ClientName: &name,
+			},
+		},
 	}
 	//pp.Println(msg)
 	// msg0.Message = &msgImple

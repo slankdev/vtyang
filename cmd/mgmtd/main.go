@@ -99,6 +99,7 @@ func f(cmd *cobra.Command, args []string) error {
 	}
 	pp.Println(n)
 
+	// STEP4
 	out := hex.Dump(buf.Bytes())
 	fmt.Println(out)
 	time.Sleep(1000 * time.Second)

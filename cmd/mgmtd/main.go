@@ -12,6 +12,7 @@ import (
 
 	//"github.com/k0kubun/pp"
 
+	"github.com/k0kubun/pp"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"google.golang.org/protobuf/proto"
@@ -87,6 +88,12 @@ func f(cmd *cobra.Command, args []string) error {
 	}
 
 	// STEP4
+	buf := make([]byte, 1024)
+	n, err := conn.Read(buf)
+	if err != nil {
+		return errors.Wrap(err, "conn.Read")
+	}
+	pp.Println(n)
 
 	// // STEP3
 	// sessionId := uint64(0)

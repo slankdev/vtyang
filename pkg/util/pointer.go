@@ -11,3 +11,7 @@ func NewUint64Pointer(v uint64) *uint64 {
 func NewInt64Pointer(v int64) *int64 {
 	return &v
 }
+
+func NewStringPointer(v string) *string {
+	return &v
+}

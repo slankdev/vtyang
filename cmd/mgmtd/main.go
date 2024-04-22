@@ -86,30 +86,31 @@ func f(cmd *cobra.Command, args []string) error {
 	}
 
 	// STEP4
-	msg, err := readProtoBufMsg(conn)
+	fmt.Println("\n\nSTEP4")
+	msgs, err := readProtoBufMsg(conn)
 	if err != nil {
 		return errors.Wrap(err, "readProtoBufMsg")
 	}
+	msg := msgs[0]
 	fmt.Println(msg.String())
 	sessionId := msg.GetSessionReply().SessionId
 	pp.Println(sessionId)
 
-	// STEP5
-	dsId := mgmtd.DatastoreId_RUNNING_DS
-	xpath := "/"
+	// STEP5: get config /
+	fmt.Println("\n\nSTEP5")
 	if err := writeProtoBufMsg(conn, &mgmtd.FeMessage{
 		Message: &mgmtd.FeMessage_GetReq{
 			GetReq: &mgmtd.FeGetReq{
 				SessionId: sessionId,
 				Config:    util.NewBoolPointer(true),
-				DsId:      &dsId,
+				DsId:      mgmtd.DatastoreId_RUNNING_DS.Enum(),
 				ReqId:     util.NewUint64Pointer(0),
 				Data: []*mgmtd.YangGetDataReq{
 					{
 						Data: &mgmtd.YangData{
-							Xpath: &xpath,
+							Xpath: util.NewStringPointer("/"),
 						},
-						NextIndx: util.NewInt64Pointer(-1),
+						NextIndx: util.NewInt64Pointer(0),
 					},
 				},
 			},
@@ -117,15 +118,147 @@ func f(cmd *cobra.Command, args []string) error {
 	}); err != nil {
 		return errors.Wrap(err, "writeProtoBufMsg")
 	}
-	msg1, err := readProtoBufMsg(conn)
+	msg1_, err := readProtoBufMsg(conn)
 	if err != nil {
 		return errors.Wrap(err, "readProtoBufMsg")
 	}
-	fmt.Println(msg1.GetGetReply().String())
+	for _, msg := range msg1_ {
+		for _, data := range msg.GetGetReply().Data.Data {
+			fmt.Println(data)
+		}
+	}
 
-	// STEP6
+	// STEP6: lock running_ds
+	fmt.Println("\n\nSTEP6")
+	if err := writeProtoBufMsg(conn, &mgmtd.FeMessage{
+		Message: &mgmtd.FeMessage_LockdsReq{
+			LockdsReq: &mgmtd.FeLockDsReq{
+				SessionId: sessionId,
+				ReqId:     util.NewUint64Pointer(0),
+				DsId:      mgmtd.DatastoreId_RUNNING_DS.Enum(),
+				Lock:      util.NewBoolPointer(true),
+			},
+		},
+	}); err != nil {
+		return errors.Wrap(err, "writeProtoBufMsg")
+	}
+	msg2_, err := readProtoBufMsg(conn)
+	if err != nil {
+		return errors.Wrap(err, "readProtoBufMsg")
+	}
+	for _, msg := range msg2_ {
+		fmt.Println(msg.String())
+	}
+
+	// STEP7: lock candidate_ds
+	fmt.Println("\n\nSTEP7")
+	if err := writeProtoBufMsg(conn, &mgmtd.FeMessage{
+		Message: &mgmtd.FeMessage_LockdsReq{
+			LockdsReq: &mgmtd.FeLockDsReq{
+				SessionId: sessionId,
+				ReqId:     util.NewUint64Pointer(0),
+				DsId:      mgmtd.DatastoreId_CANDIDATE_DS.Enum(),
+				Lock:      util.NewBoolPointer(true),
+			},
+		},
+	}); err != nil {
+		return errors.Wrap(err, "writeProtoBufMsg")
+	}
+	msg3_, err := readProtoBufMsg(conn)
+	if err != nil {
+		return errors.Wrap(err, "readProtoBufMsg")
+	}
+	for _, msg := range msg3_ {
+		fmt.Println(msg.String())
+	}
+
+	// STEP8
+	// mgmt set-config /frr-filter:lib/prefix-list[type='ipv4'][name='hoge']/entry[sequence='10']/action permit
+	// mgmt set-config /frr-filter:lib/prefix-list[type='ipv4'][name='hoge']/entry[sequence='10']/ipv4-prefix 10.255.0.0/16
+	// mgmt set-config /frr-filter:lib/prefix-list[type='ipv4'][name='hoge']/entry[sequence='10']/ipv4-prefix-length-lesser-or-equal 32
+	fmt.Println("\n\nSTEP8")
+	if err := writeProtoBufMsg(conn, &mgmtd.FeMessage{
+		Message: &mgmtd.FeMessage_SetcfgReq{
+			SetcfgReq: &mgmtd.FeSetConfigReq{
+				SessionId:      sessionId,
+				DsId:           mgmtd.DatastoreId_CANDIDATE_DS.Enum(),
+				CommitDsId:     mgmtd.DatastoreId_RUNNING_DS.Enum(),
+				ReqId:          util.NewUint64Pointer(0),
+				ImplicitCommit: util.NewBoolPointer(false),
+				Data: []*mgmtd.YangCfgDataReq{
+					{
+						ReqType: mgmtd.CfgDataReqType_SET_DATA.Enum(),
+						Data: &mgmtd.YangData{
+							Xpath: util.NewStringPointer("/frr-filter:lib/prefix-list[type='ipv4'][name='hoge']/entry[sequence='10']/action"),
+							Value: &mgmtd.YangDataValue{
+								Value: &mgmtd.YangDataValue_EncodedStrVal{
+									EncodedStrVal: "permit",
+								},
+							},
+						},
+					},
+					{
+						ReqType: mgmtd.CfgDataReqType_SET_DATA.Enum(),
+						Data: &mgmtd.YangData{
+							Xpath: util.NewStringPointer("/frr-filter:lib/prefix-list[type='ipv4'][name='hoge']/entry[sequence='10']/ipv4-prefix"),
+							Value: &mgmtd.YangDataValue{
+								Value: &mgmtd.YangDataValue_EncodedStrVal{
+									EncodedStrVal: "10.255.0.0/16",
+								},
+							},
+						},
+					},
+					{
+						ReqType: mgmtd.CfgDataReqType_SET_DATA.Enum(),
+						Data: &mgmtd.YangData{
+							Xpath: util.NewStringPointer("/frr-filter:lib/prefix-list[type='ipv4'][name='hoge']/entry[sequence='10']/ipv4-prefix-length-lesser-or-equal"),
+							Value: &mgmtd.YangDataValue{
+								Value: &mgmtd.YangDataValue_EncodedStrVal{
+									EncodedStrVal: "32",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}); err != nil {
+		return errors.Wrap(err, "writeProtoBufMsg")
+	}
+	msg4_, err := readProtoBufMsg(conn)
+	if err != nil {
+		return errors.Wrap(err, "readProtoBufMsg")
+	}
+	for _, msg := range msg4_ {
+		fmt.Println(msg.String())
+	}
+
+	// STEP9: commit check & apply
+	fmt.Println("\n\nSTEP9")
+	if err := writeProtoBufMsg(conn, &mgmtd.FeMessage{
+		Message: &mgmtd.FeMessage_CommcfgReq{
+			CommcfgReq: &mgmtd.FeCommitConfigReq{
+				SessionId:    sessionId,
+				ReqId:        util.NewUint64Pointer(0),
+				SrcDsId:      mgmtd.DatastoreId_CANDIDATE_DS.Enum(),
+				DstDsId:      mgmtd.DatastoreId_RUNNING_DS.Enum(),
+				ValidateOnly: util.NewBoolPointer(false),
+				Abort:        util.NewBoolPointer(false),
+			},
+		},
+	}); err != nil {
+		return errors.Wrap(err, "writeProtoBufMsg")
+	}
+	msg5_, err := readProtoBufMsg(conn)
+	if err != nil {
+		return errors.Wrap(err, "readProtoBufMsg")
+	}
+	for _, msg := range msg5_ {
+		fmt.Println(msg.String())
+	}
 
 	// STEP99
+	fmt.Println("WAIT 1000s")
 	time.Sleep(1000 * time.Second)
 	return nil
 }
@@ -155,38 +288,49 @@ func writeProtoBufMsg(conn net.Conn, msg *mgmtd.FeMessage) error {
 	return nil
 }
 
-func readProtoBufMsg(conn net.Conn) (*mgmtd.FeMessage, error) {
-	buf := make([]byte, 1024)
+func readProtoBufMsg(conn net.Conn) ([]*mgmtd.FeMessage, error) {
+	const size = 40960
+	buf := make([]byte, size)
 	n, err := conn.Read(buf)
 	if err != nil {
 		return nil, errors.Wrap(err, "conn.Read")
 	}
-	if n > 1024 {
-		return nil, errors.Errorf("msg too big (>1024)")
+	if n >= size {
+		return nil, errors.Errorf("msg too big (>%d)", size)
 	}
 	buff := bytes.NewBuffer(buf)
+	msgs := []*mgmtd.FeMessage{}
 
-	// Parse Marker
-	marker := uint32(0)
-	if err := binary.Read(buff, binary.LittleEndian, &marker); err != nil {
-		return nil, errors.Wrap(err, "binary.Read")
-	}
-	if marker != MGMT_MSG_MARKER_PROTOBUF {
-		return nil, errors.Errorf("not PROTOBUF marker")
-	}
+	remain := n
+	for remain > 0 {
+		// Parse Marker
+		marker := uint32(0)
+		if err := binary.Read(buff, binary.LittleEndian, &marker); err != nil {
+			return nil, errors.Wrap(err, "binary.Read(marker)")
+		}
+		if marker != MGMT_MSG_MARKER_PROTOBUF {
+			return nil, errors.Errorf("not PROTOBUF marker")
+		}
 
-	// Parse Size
-	msize := uint32(0)
-	if err := binary.Read(buff, binary.LittleEndian, &msize); err != nil {
-		return nil, errors.Wrap(err, "binary.Read")
-	}
-	msize0 := msize - 8
+		// Parse Size
+		msize := uint32(0)
+		if err := binary.Read(buff, binary.LittleEndian, &msize); err != nil {
+			return nil, errors.Wrap(err, "binary.Read(size)")
+		}
+		msize0 := msize - 8
+		remain -= int(msize)
 
-	// Parse Body
-	body := buf[8 : 8+msize0]
-	msg := mgmtd.FeMessage{}
-	if err := proto.Unmarshal(body, &msg); err != nil {
-		return nil, errors.Wrap(err, "proto.Unmarshal")
+		// Parse Body
+		body := make([]byte, msize0)
+		if err := binary.Read(buff, binary.LittleEndian, &body); err != nil {
+			pp.Println(buf)
+			return nil, errors.Wrap(err, "binary.Read(body)")
+		}
+		msg := &mgmtd.FeMessage{}
+		if err := proto.Unmarshal(body, msg); err != nil {
+			return nil, errors.Wrap(err, "proto.Unmarshal")
+		}
+		msgs = append(msgs, msg)
 	}
-	return &msg, nil
+	return msgs, nil
 }

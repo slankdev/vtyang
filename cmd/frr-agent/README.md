@@ -1,9 +1,17 @@
 # DEMO: FRR-Agent for vtyang
 
-## Quick Start
+## Northbound-APIとは
 
-```
-```
+gRPC + Yang model baseのユーザインターフェース.
+Yang backendに対応したFRR daemon (isisdなど)で使うことができる.
+FRR全体に対して一つのAPIを持つのではなく, 現在はdaemonごとに個別にgRPC server
+が動作するので, Cisco RouterをgRPCで設定したい. 的なユースケースには
+足りないものがたくさんある.
+最近はmgmtdというそのような背景と課題を解決するものができてきたので
+ゆくゆくはそっちに切り替わる認識をしている.
+
+- https://docs.frrouting.org/en/latest/grpc.html
+- https://docs.frrouting.org/projects/dev-guide/en/latest/northbound/northbound.html
 
 ## Snippet
 

@@ -160,17 +160,33 @@ interface dum1
  exit
 
 exit
-write mem
 ```
 
 ```
 do show mgmt get-config /
 do configure terminal file-lock
 
-mgmt set-config /frr-interface:lib/interface[name='dum0']/frr-zebra:zebra/ipv4-addrs[ip='10.255.0.1'][prefix-length='24']/ip 10.255.0.1
-mgmt set-config /frr-interface:lib/interface[name='dum0']/description dum0-int
-mgmt set-config /frr-interface:lib/interface[name='dum1']/frr-zebra:zebra/ipv4-addrs[ip='10.255.1.1'][prefix-length='24']/ip 10.255.1.1
-mgmt set-config /frr-interface:lib/interface[name='dum1']/description dum1-int
+! zebra? multi daemon?
+mgmt set-config /frr-filter:lib/prefix-list[type='ipv4'][name='hoge']/entry[sequence='10']/action permit
+mgmt set-config /frr-filter:lib/prefix-list[type='ipv4'][name='hoge']/entry[sequence='10']/ipv4-prefix 10.255.0.0/16
+mgmt set-config /frr-filter:lib/prefix-list[type='ipv4'][name='hoge']/entry[sequence='10']/ipv4-prefix-length-lesser-or-equal 32
+mgmt set-config /frr-filter:lib/prefix-list[type='ipv4'][name='hoge']/entry[sequence='15']/action permit
+mgmt set-config /frr-filter:lib/prefix-list[type='ipv4'][name='hoge']/entry[sequence='15']/ipv4-prefix 10.254.0.0/16
+mgmt set-config /frr-filter:lib/prefix-list[type='ipv4'][name='hoge']/entry[sequence='15']/ipv4-prefix-length-lesser-or-equal 32
+
+! staticd
+mgmt set-config /frr-routing:routing/control-plane-protocols/control-plane-protocol[type='frr-staticd:staticd'][name='staticd'][vrf='default'] {}
+mgmt set-config /frr-routing:routing/control-plane-protocols/control-plane-protocol[type='frr-staticd:staticd'][name='staticd'][vrf='default']/frr-staticd:staticd/route-list[prefix='1.1.1.1/32'][afi-safi='frr-routing:ipv4-unicast'] {}
+mgmt set-config /frr-routing:routing/control-plane-protocols/control-plane-protocol[type='frr-staticd:staticd'][name='staticd'][vrf='default']/frr-staticd:staticd/route-list[prefix='1.1.1.1/32'][afi-safi='frr-routing:ipv4-unicast']/path-list[table-id='0'][distance='1'] {}
+mgmt set-config /frr-routing:routing/control-plane-protocols/control-plane-protocol[type='frr-staticd:staticd'][name='staticd'][vrf='default']/frr-staticd:staticd/route-list[prefix='1.1.1.1/32'][afi-safi='frr-routing:ipv4-unicast']/path-list[table-id='0'][distance='1']/frr-nexthops/nexthop[nh-type='blackhole'][vrf='default'][gateway=''][interface='(null)'] {}
+
+! zebra
+mgmt set-config /frr-interface:lib/interface[name='dum0'] {}
+mgmt set-config /frr-interface:lib/interface[name='dum0']/description dum0-interface-comment
+mgmt set-config /frr-interface:lib/interface[name='dum0']/frr-zebra:zebra/ipv4-addrs[ip='10.255.10.1'][prefix-length='24'] {}
+mgmt set-config /frr-interface:lib/interface[name='dum1'] {}
+mgmt set-config /frr-interface:lib/interface[name='dum1']/description dum1-interface-comment
+mgmt set-config /frr-interface:lib/interface[name='dum1']/frr-zebra:zebra/ipv4-addrs[ip='10.255.11.1'][prefix-length='24'] {}
 
 mgmt commit check
 mgmt commit apply

@@ -10,8 +10,6 @@ import (
 	"os"
 	"time"
 
-	//"github.com/k0kubun/pp"
-
 	"github.com/k0kubun/pp"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -119,15 +117,13 @@ func f(cmd *cobra.Command, args []string) error {
 	}); err != nil {
 		return errors.Wrap(err, "writeProtoBufMsg")
 	}
-
-	// STEP6
 	msg1, err := readProtoBufMsg(conn)
 	if err != nil {
 		return errors.Wrap(err, "readProtoBufMsg")
 	}
 	fmt.Println(msg1.GetGetReply().String())
-	// sessionId := msg.GetSessionReply().SessionId
-	// pp.Println(sessionId)
+
+	// STEP6
 
 	// STEP99
 	time.Sleep(1000 * time.Second)

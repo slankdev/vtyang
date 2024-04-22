@@ -11,10 +11,6 @@ module frr-zebra {
     prefix inet;
   }
 
-  import frr-route-map {
-    prefix frr-route-map;
-  }
-
   import frr-route-types {
     prefix frr-route-types;
   }
@@ -2731,12 +2727,6 @@ module frr-zebra {
           description
             "The protocol to filter.";
         }
-        leaf route-map {
-          type frr-route-map:route-map-ref;
-          mandatory true;
-          description
-            "A route-map to filter routes.";
-        }
       }
 
       list filter-nht {
@@ -2755,12 +2745,6 @@ module frr-zebra {
           type string;
           description
             "The protocol to filter.";
-        }
-        leaf route-map {
-          type frr-route-map:route-map-ref;
-          mandatory true;
-          description
-            "A route-map to filter nexthops.";
         }
       }
 
@@ -2891,11 +2875,6 @@ module frr-zebra {
         description
           "The admin distance to use for imported routes.";
       }
-      leaf route-map {
-        type frr-route-map:route-map-ref;
-        description
-          "A route-map to filter imported routes.";
-      }
     }
     leaf allow-external-route-update {
       type empty;
@@ -2916,15 +2895,6 @@ module frr-zebra {
       default "false";
       description
         "Enable PTM globally.";
-    }
-    leaf route-map-delay {
-      type uint32 {
-        range "0..600";
-      }
-      units "seconds";
-      default "5";
-      description
-        "Time to wait before route-map updates are processed.";
     }
     /*
      * Debug options

@@ -1,0 +1,2999 @@
+module frr-zebra {
+  yang-version 1.1;
+  namespace "http://frrouting.org/yang/zebra";
+  prefix frr-zebra;
+
+  import ietf-yang-types {
+    prefix yang;
+  }
+
+  import ietf-inet-types {
+    prefix inet;
+  }
+
+  import frr-affinity-map {
+    prefix frr-affinity-map;
+  }
+
+  import frr-route-map {
+    prefix frr-route-map;
+  }
+
+  import frr-route-types {
+    prefix frr-route-types;
+  }
+
+  import ietf-routing-types {
+    prefix rt-types;
+  }
+
+  import frr-nexthop {
+    prefix frr-nh;
+  }
+
+  import frr-routing {
+    prefix frr-rt;
+  }
+
+  import frr-interface {
+    prefix frr-interface;
+  }
+
+  import frr-vrf {
+    prefix frr-vrf;
+  }
+
+  organization
+    "FRRouting";
+  contact
+    "FRR Users List: <mailto:frog@lists.frrouting.org>
+     FRR Development List: <mailto:dev@lists.frrouting.org>";
+  description
+    "This module defines a model for managing the FRR zebra daemon.
+
+     Copyright 2020 FRRouting
+
+     Redistribution and use in source and binary forms, with or without
+     modification, are permitted provided that the following conditions
+     are met:
+
+     1. Redistributions of source code must retain the above copyright notice,
+     this list of conditions and the following disclaimer.
+
+     2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in the
+     documentation and/or other materials provided with the distribution.
+
+     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+     \"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+     LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+     A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+     HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+     SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+     LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+     DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+     THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+     OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.";
+
+  revision 2019-06-01 {
+    description
+      "Initial revision.";
+  }
+
+  feature ipv6-router-advertisements {
+    description
+      "Support for IPv6 Router Advertisements.";
+  }
+
+  feature ptm-bfd {
+    description
+      "Using an external PTM daemon that implements BFD.";
+  }
+
+  typedef unix-timestamp {
+    type uint32;
+    units "seconds";
+    description
+      "An absolute time in seconds since the unix epoch.";
+  }
+
+  identity zebra-interface-type {
+    description
+      "zebra interface type.";
+  }
+
+  identity zif-other {
+    base zebra-interface-type;
+    description
+      "Zebra interface type other.";
+  }
+
+  identity zif-bridge {
+    base zebra-interface-type;
+    description
+      "Zebra interface type bridge.";
+  }
+
+  identity zif-vlan {
+    base zebra-interface-type;
+    description
+      "Zebra interface type vlan.";
+  }
+
+  identity zif-vxlan {
+    base zebra-interface-type;
+    description
+      "Zebra interface type vxlan.";
+  }
+
+  identity zif-vrf {
+    base zebra-interface-type;
+    description
+      "Zebra interface type vrf.";
+  }
+
+  identity zif-veth {
+    base zebra-interface-type;
+    description
+      "Zebra interface type veth.";
+  }
+
+  identity zif-bond {
+    base zebra-interface-type;
+    description
+      "Zebra interface type bond.";
+  }
+
+  identity zif-macvlan {
+    base zebra-interface-type;
+    description
+      "Zebra interface type macvlan.";
+  }
+
+  identity zif-gre {
+    base zebra-interface-type;
+    description
+      "Zebra interface type gre.";
+  }
+
+  /*
+   * Multicast RPF mode configurable type
+   */
+
+  typedef mcast-rpf-lookup-mode {
+    type enumeration {
+      enum "none" {
+        value 0;
+        description
+          "No mode set.";
+      }
+      enum "mrib-only" {
+        value 1;
+        description
+          "Lookup in unicast RIB only.";
+      }
+      enum "urib-only" {
+        value 2;
+        description
+          "Lookup in multicast RIB only.";
+      }
+      enum "mrib-then-urib" {
+        value 3;
+        description
+          "Try multicast RIB first, fall back to unicast RIB.";
+      }
+      enum "lower-distance" {
+        value 4;
+        description
+          "Lookup both unicast and mcast, use entry with lower distance.";
+      }
+      enum "longer-prefix" {
+        value 5;
+        description
+          "Lookup both unicast and mcast, use entry with longer prefix.";
+      }
+    }
+    description
+      "Multicast RPF lookup behavior";
+  }
+
+  // End of ip6-route
+  /*
+   * VxLAN Network Identifier type
+   */
+
+  typedef vni-id-type {
+    type uint32 {
+      range "0..16777215";
+    }
+    description
+      "A VxLAN network identifier value.";
+  }
+
+  typedef vni-vtep-flood-type {
+    type enumeration {
+      enum "head-end-repl" {
+        value 0;
+        description
+          "Head-end replication.";
+      }
+      enum "disabled" {
+        value 1;
+        description
+          "Flooding disabled.";
+      }
+      enum "pim-sm" {
+        value 2;
+        description
+          "Multicast PIM-SM.";
+      }
+    }
+  }
+
+  /*
+   * Common route data, shared by v4 and v6 routes.
+   */
+
+  grouping route-common {
+    description
+      "Common information about a route.";
+
+    leaf distance {
+      type uint8;
+      description
+        "Admin distance based on routing protocol.";
+    }
+
+    leaf metric {
+      type uint32;
+      description
+        "Route metric value.";
+    }
+
+    leaf tag {
+      type uint32 {
+        range "1..4294967295";
+      }
+      description
+        "Route tag value.";
+    }
+
+    leaf selected {
+      type empty;
+      description
+        "Route is the selected or preferred route for the prefix.";
+    }
+
+    leaf installed {
+      type empty;
+      description
+        "Route is installed in the FIB.";
+    }
+
+    leaf failed {
+      type empty;
+      description
+        "Route installation in FIB has failed.";
+    }
+
+    leaf queued {
+      type empty;
+      description
+        "Route has a pending FIB operation that has not completed.";
+    }
+
+    leaf internal-flags {
+      type int32;
+      description
+        "Internal flags for the route.";
+    }
+
+    leaf internal-status {
+      type int32;
+      description
+        "Internal status for the route.";
+    }
+
+    leaf uptime {
+      type yang:date-and-time;
+      description
+        "Uptime for the route.";
+    }
+
+    uses frr-nh:frr-nexthop-group-operational;
+  }
+
+  // End of route-common
+  /*
+   * IPv4 Route object.
+   */
+
+  grouping ip4-route {
+    description
+      "An IPv4 route.";
+    leaf prefix {
+      type inet:ipv4-prefix;
+      description
+        "IP address (in the form A.B.C.D) and prefix length,
+         separated by the slash (/) character. The range of
+         values for the prefix-length is 0 to 32.";
+    }
+
+    leaf protocol {
+      type frr-route-types:frr-route-types-v4;
+      description
+        "The protocol owning the route.";
+    }
+
+    uses route-common;
+  }
+
+  // End of ip4-route
+  /*
+   * IPv6 Route object.
+   */
+
+  grouping ip6-route {
+    description
+      "An IPv6 route.";
+    leaf prefix {
+      type inet:ipv6-prefix;
+      description
+        "The route's IPv6 prefix.";
+    }
+
+    leaf protocol {
+      type frr-route-types:frr-route-types-v6;
+      description
+        "The protocol owning the route.";
+    }
+
+    uses route-common;
+  }
+  // End of ip6-route
+
+  /*
+   * Information about EVPN VNIs
+   */
+
+  grouping vni-information {
+    choice type-choice {
+      case l2 {
+        leaf is-layer2 {
+          type empty;
+          description
+            "Information about an L2 VNI.";
+        }
+
+        leaf vtep-count {
+          type uint32;
+          description
+            "Number of VTEPs.";
+        }
+      }
+
+      case l3 {
+        leaf is-layer3 {
+          type empty;
+          description
+            "Information about an L3 VNI.";
+        }
+      }
+    }
+
+    leaf vni-id {
+      type vni-id-type;
+      description
+        "The VNI identifier.";
+    }
+
+    leaf vxlan-ifname {
+      type frr-interface:interface-ref;
+      description
+        "The VxLAN interface name.";
+    }
+
+    leaf mac-count {
+      type uint32;
+      description
+        "Number of valid MACs.";
+    }
+
+    leaf neighbor-count {
+      type uint32;
+      description
+        "Number of neighbors.";
+    }
+
+    leaf vrf {
+      type frr-vrf:vrf-ref;
+      description
+        "The tenant VRF.";
+    }
+
+    leaf local-vtep-addr {
+      type inet:ipv4-address;
+      description
+        "The local VTEP IP address.";
+    }
+  }
+
+  /*
+   * Detailed EVPN VNI information for L2.
+   */
+
+  grouping vni-l2-detail {
+    leaf if-index {
+      type uint32;
+      description
+        "The VxLAN ifindex.";
+    }
+
+    leaf advertise-gw {
+      type empty;
+      description
+        "The gateway MAC-IP is being advertised.";
+    }
+
+    leaf mcast-group {
+      type rt-types:ipv4-multicast-group-address;
+      description
+        "The VNI multicast group for BUM traffic.";
+    }
+
+    list remote-vtep-list {
+      leaf remote-vtep {
+        type inet:ipv4-address;
+        description
+          "The remote VTEP IP address.";
+      }
+
+      leaf vtep-flood {
+        type vni-vtep-flood-type;
+      }
+    }
+  }
+
+  /*
+   * Detailed EVPN VNI information for L3.
+   */
+
+  grouping vni-l3-detail {
+    leaf svi-interface {
+      type frr-interface:interface-ref;
+      description
+        "The SVI interface.";
+    }
+
+    leaf is-up {
+      type empty;
+      description
+        "The state is active.";
+    }
+
+    leaf prefix-only {
+      type empty;
+      description
+        "Prefix routes only";
+    }
+
+    leaf router-mac {
+      type yang:mac-address;
+      description
+        "The VNI Router MAC address.";
+    }
+
+    list vni-list {
+      description
+        "A list of the associated L2 VNIs.";
+      leaf vni-id {
+        type vni-id-type;
+        description
+          "An L2 VNI identifier.";
+      }
+    }
+  }
+
+  /*
+   * Debug options
+   */
+
+  grouping zebra-debugs {
+    leaf debug-events {
+      type boolean;
+      description
+        "Debug ZAPI events.";
+    }
+
+    leaf debug-zapi-send {
+      type boolean;
+      description
+        "Debug ZAPI messages sent.";
+    }
+
+    leaf debug-zapi-recv {
+      type boolean;
+      description
+        "Debug ZAPI messages received.";
+    }
+
+    leaf debug-zapi-detail {
+      type boolean;
+      description
+        "Debug ZAPI details.";
+    }
+
+    leaf debug-kernel {
+      type boolean;
+      description
+        "Debug kernel events.";
+    }
+
+    leaf debug-kernel-msg-send {
+      type boolean;
+      description
+        "Debug kernel messages sent.";
+    }
+
+    leaf debug-kernel-msg-recv {
+      type boolean;
+      description
+        "Debug kernel messages received.";
+    }
+
+    leaf debug-rib {
+      type boolean;
+      description
+        "Debug RIB processing.";
+    }
+
+    leaf debug-rib-detail {
+      type boolean;
+      description
+        "Debug RIB processing details.";
+    }
+
+    leaf debug-fpm {
+      type boolean;
+      description
+        "Debug the FIB Push Interface subsystem.";
+    }
+
+    leaf debug-nht {
+      type boolean;
+      description
+        "Debug Nexthop-tracking.";
+    }
+
+    leaf debug-nht-detail {
+      type boolean;
+      description
+        "Debug Nexthop-tracking details.";
+    }
+
+    leaf debug-mpls {
+      type boolean;
+      description
+        "Debug MPLS.";
+    }
+
+    leaf debug-vxlan {
+      type boolean;
+      description
+        "Debug VxLAN.";
+    }
+
+    leaf debug-pw {
+      type boolean;
+      description
+        "Debug pseudowires.";
+    }
+
+    leaf debug-dplane {
+      type boolean;
+      description
+        "Debug the dataplane subsystem.";
+    }
+
+    leaf debug-dplane-detail {
+      type boolean;
+      description
+        "Debug dataplane subsystem details.";
+    }
+
+    leaf debug-mlag {
+      type boolean;
+      description
+        "Debug MLAG.";
+    }
+  }
+
+  grouping ribs {
+    container ribs {
+      config false;
+      description
+        "RIBs supported by FRR.";
+      list rib {
+        key "afi-safi-name table-id";
+        leaf afi-safi-name {
+          type identityref {
+            base frr-rt:afi-safi-type;
+          }
+          description
+            "AFI, SAFI name.";
+        }
+
+        leaf table-id {
+          type uint32;
+          description
+            "Routing Table id (default id - 254).";
+        }
+
+        list route {
+          key "prefix";
+          leaf prefix {
+            type inet:ip-prefix;
+            description
+              "The route's prefix.";
+          }
+
+          list route-entry {
+            key "protocol";
+            leaf protocol {
+              type frr-route-types:frr-route-types;
+              description
+                "The protocol owning the route.";
+            }
+
+            leaf instance {
+              type uint16;
+              must "../protocol = \"ospf\"";
+              description
+                "Retrieve routes from a specific OSPF instance.";
+            }
+
+            uses route-common;
+          }
+        }
+      }
+    }
+  }
+
+  grouping vrf-vni-mapping {
+    description
+      "EVPN L3-VNI mapping corresponding to a VRF.";
+    leaf l3vni-id {
+      type vni-id-type;
+      description
+        "EVPN L3-VNI id to map to the VRF.";
+    }
+
+    leaf prefix-only {
+      type boolean;
+      default "false";
+      description
+        "EVPN asymmetric mode advertise prefix routes only.";
+    }
+  }
+
+  // End of zebra container
+  /*
+   * RPCs
+   */
+
+  rpc get-route-information {
+    description
+      "Retrieve IPv4 or IPv6 unicast routes.";
+    input {
+      choice ip-type {
+        case v4 {
+          leaf ipv4 {
+            type empty;
+            mandatory true;
+            description
+              "Retrieve IPv4 routes.";
+          }
+
+          leaf prefix-v4 {
+            type inet:ipv4-prefix;
+            description
+              "Retrieve routes matching a specific prefix.";
+          }
+
+          leaf supernets-only {
+            type empty;
+            description
+              "Skip routes that are subnets of classful prefix sizes.";
+          }
+        }
+
+        case v6 {
+          leaf ipv6 {
+            type empty;
+            mandatory true;
+            description
+              "Retrieve IPv6 routes.";
+          }
+
+          leaf prefix-v6 {
+            type inet:ipv6-prefix;
+            description
+              "Retrieve routes matching a specific prefix.";
+          }
+        }
+      }
+
+      choice vrf-choice {
+        case single {
+          leaf vrf {
+            type frr-vrf:vrf-ref;
+            description
+              "Retrieve routes in a non-default vrf.";
+          }
+        }
+
+        case all {
+          leaf all-vrfs {
+            type empty;
+            description
+              "Retrieve routes from all vrfs.";
+          }
+        }
+      }
+
+      leaf fib-routes {
+        type empty;
+        description
+          "Retrieve FIB routes rather than RIB routes.";
+      }
+
+      leaf table-id {
+        type uint32 {
+          range "1..4294967295";
+        }
+        description
+          "Routing table id to retrieve.";
+      }
+
+      leaf protocol {
+        type frr-route-types:frr-route-types-v4;
+        description
+          "Retrieve routes from a specific protocol daemon.";
+      }
+
+      leaf ospf-instance {
+        type uint32 {
+          range "1..65535";
+        }
+        must "../protocol = \"ospf\"";
+        description
+          "Retrieve routes from a specific OSPF instance.";
+      }
+
+      choice detail {
+        case det {
+          leaf include-detail {
+            type empty;
+            description
+              "Include detailed information.";
+          }
+        }
+
+        case summ {
+          leaf summary {
+            type empty;
+            description
+              "Include summary information only.";
+          }
+        }
+      }
+    }
+    // End of input
+    output {
+      choice route-list {
+        case v4 {
+          container routes-v4 {
+            description
+              "IPv4 route information.";
+            list route {
+              uses ip4-route;
+            }
+          }
+        }
+
+        case v6 {
+          container routes-v6 {
+            description
+              "IPv6 route information.";
+            list route {
+              uses ip6-route;
+            }
+          }
+        }
+      }
+    }
+    // End of output
+  }
+
+  // End get-route-information
+
+  rpc get-v6-mroute-info {
+    description
+      "Retrieve IPv6 multicast routes.";
+    input {
+      choice vrf-choice {
+        case single {
+          leaf vrf {
+            type frr-vrf:vrf-ref;
+            description
+              "Retrieve routes in a non-default vrf.";
+          }
+        }
+
+        case all {
+          leaf all-vrfs {
+            type empty;
+            description
+              "Retrieve routes from all vrfs.";
+          }
+        }
+      }
+    }
+
+    output {
+      container routes {
+        description
+          "IPv6 mcast route information.";
+        list route {
+          uses ip6-route;
+        }
+      }
+    }
+  }
+
+  // End get-v6-mroute-info
+
+  rpc get-vrf-info {
+    description
+      "Retrieve VRF information; the default VRF is elided.";
+    // Note: no input clause.
+    output {
+      list vrf-list {
+        leaf name {
+          type frr-vrf:vrf-ref;
+          description
+            "The VRF name";
+        }
+
+        leaf is-user-config {
+          type empty;
+          description
+            "The VRF was configured by an admin.";
+        }
+
+        leaf vrf-id {
+          type uint32;
+          description
+            "The VRF id.";
+        }
+
+        choice vrf-type {
+          case inactive {
+            leaf is-inactive {
+              type empty;
+              description
+                "The VRF is inactive.";
+            }
+          }
+
+          case netns {
+            leaf netns-name {
+              type string;
+              description
+                "The net namespace name associated with the VRF.";
+            }
+          }
+
+          case table {
+            leaf table-id {
+              type uint32;
+              description
+                "The table-id associated with the VRF.";
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // End get-vrf-info
+
+  rpc get-vrf-vni-info {
+    description
+      "Retrieve mappings between EVPN VNI and VRF.";
+    // Note: no input clause.
+    output {
+      list vrf-vni-list {
+        leaf vrf-name {
+          type frr-vrf:vrf-ref;
+          description
+            "The VRF name.";
+        }
+
+        leaf vni-id {
+          type vni-id-type;
+          description
+            "The EVPN VNI.";
+        }
+
+        leaf vxlan-if-name {
+          type frr-interface:interface-ref;
+          description
+            "The VxLAN interface name.";
+        }
+
+        leaf svi-if-name {
+          type frr-interface:interface-ref;
+          description
+            "The SVI interface name.";
+        }
+
+        leaf router-mac-addr {
+          type yang:mac-address;
+          description
+            "Router MAC address.";
+        }
+
+        leaf is-up {
+          type empty;
+          description
+            "The state is active.";
+        }
+      }
+    }
+  }
+
+  // End get-vrf-vni-info
+
+  rpc get-evpn-info {
+    description
+      "Retrieve global information about EVPN.";
+    // Note: No input clause.
+    output {
+      leaf l2vni-count {
+        type uint32;
+        description
+          "Number of L2 VNIs.";
+      }
+
+      leaf l3vni-count {
+        type uint32;
+        description
+          "Number of L3 VNIs.";
+      }
+
+      leaf advertise-gateway {
+        type empty;
+        description
+          "Advertise the gateway MAC-IP.";
+      }
+
+      leaf advertise-svi {
+        type empty;
+        description
+          "Advertise SVI MAC-IP.";
+      }
+
+      leaf dup-detect {
+        type empty;
+        description
+          "Duplicate address detection is enabled.";
+      }
+
+      leaf dad-max-moves {
+        type uint32;
+        description
+          "Maximum moves allowed before address is considered duplicate.";
+      }
+
+      leaf dad-timeout {
+        type uint32;
+        units "seconds";
+        description
+          "Duplicate address detection timeout.";
+      }
+
+      leaf dad-freeze {
+        type empty;
+        description
+          "Duplicate address detection freeze enabled.";
+      }
+
+      choice dad-freeze-choice {
+        case freeze-permanent {
+          leaf dad-freeze-perm {
+            type empty;
+            description
+              "Duplicate address detection freeze is permanent.";
+          }
+        }
+
+        case freeze-time {
+          leaf dad-freeze-time {
+            type uint32;
+            units "seconds";
+            description
+              "Duplicate address detection freeze timer.";
+          }
+        }
+      }
+    }
+  }
+
+  // End get-evpn-info
+
+  rpc get-vni-info {
+    // If no vni is specified, retrieve global list.
+    input {
+      choice vni-choice {
+        default "all-vnis";
+        case all-vnis {
+          leaf all-vnis {
+            type empty;
+            description
+              "Retrieve information about all VNIs.";
+          }
+        }
+
+        case single-vni {
+          leaf vni-id {
+            type vni-id-type;
+            description
+              "Retrieve information about a specific EVPN VNI.";
+          }
+        }
+      }
+
+      leaf detailed-info {
+        type empty;
+        description
+          "Retrieve detailed information.";
+      }
+    }
+
+    output {
+      list vni-list {
+        description
+          "Information about EVPN VNI objects.";
+        uses vni-information;
+
+        choice detail-choice {
+          case l2 {
+            description
+              "Detailed L2 information.";
+            uses vni-l2-detail;
+          }
+
+          case l3 {
+            description
+              "Detailed L3 information.";
+            uses vni-l3-detail;
+          }
+        }
+      }
+    }
+  }
+
+  // End get-vni-info
+
+  rpc get-evpn-vni-rmac {
+    description
+      "Retrieve information about VxLAN VNI RMACs.";
+    input {
+      choice vni-choice {
+        default "all-vnis";
+        case all-vnis {
+          leaf all-vnis {
+            type empty;
+            description
+              "Retrieve information about all VNIs.";
+          }
+        }
+
+        case single-vni {
+          leaf vni-id {
+            type vni-id-type;
+            description
+              "Retrieve information about a specific EVPN VNI.";
+          }
+
+          leaf vni-rmac {
+            type yang:mac-address;
+            description
+              "A single RMAC address.";
+          }
+        }
+      }
+    }
+
+    output {
+      list rmac-info-list {
+        leaf rmac {
+          type yang:mac-address;
+          description
+            "The RMAC address.";
+        }
+
+        leaf remote-vtep {
+          type inet:ipv4-address;
+          description
+            "The remote VTEP IP address.";
+        }
+
+        leaf refcount {
+          type uint32;
+          description
+            "The refcount of the RMAC.";
+        }
+
+        list prefix-list {
+          leaf prefix-item {
+            type inet:ip-prefix;
+            description
+              "IP prefixes associated with the RMAC.";
+          }
+        }
+      }
+    }
+  }
+
+  // End get-evpn-vni-rmac
+
+  rpc get-evpn-vni-nexthops {
+    description
+      "Retrieve information about EVPN nexthops.";
+    input {
+      choice vni-choice {
+        default "all-vnis";
+        case all-vnis {
+          leaf all-vnis {
+            type empty;
+            description
+              "Retrieve information about all VNIs.";
+          }
+        }
+
+        case single-vni {
+          leaf vni-id {
+            type vni-id-type;
+            description
+              "Retrieve information about a specific EVPN VNI.";
+          }
+
+          leaf vni-ipaddr {
+            type inet:ip-address;
+            description
+              "A single host IP address (v4 or v6).";
+          }
+        }
+      }
+    }
+
+    output {
+      list nh-info-list {
+        leaf ip-addr {
+          type inet:ip-address;
+          description
+            "The nexthop IP address.";
+        }
+
+        leaf mac-addr {
+          type yang:mac-address;
+          description
+            "The nexthop MAC address.";
+        }
+
+        leaf refcount {
+          type uint32;
+          description
+            "The refcount of the RMAC.";
+        }
+
+        list prefix-list {
+          leaf prefix-item {
+            type inet:ip-prefix;
+            description
+              "IP prefixes associated with the RMAC.";
+          }
+        }
+      }
+    }
+  }
+
+  // End get-evpn-vni-vteps
+
+  rpc clear-evpn-dup-addr {
+    description
+      "Clear duplicate address detection state for one or all VNIs.";
+    input {
+      choice clear-dup-choice {
+        case all-case {
+          leaf all-vnis {
+            type empty;
+            description
+              "Clear all VNIs.";
+          }
+        }
+
+        case single-case {
+          leaf vni-id {
+            type vni-id-type;
+            description
+              "Clear state for a single EVPN VNI.";
+          }
+
+          choice ip-mac-choice {
+            description
+              "Clear state for a specific MAC or IP address.";
+            case ip-case {
+              leaf vni-ipaddr {
+                type inet:ip-address;
+                description
+                  "A specific IP address (v4 or v6).";
+              }
+            }
+
+            case mac-case {
+              leaf mac-addr {
+                type yang:mac-address;
+                description
+                  "A specific MAC address.";
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // End clear-evpn-dup-addr
+
+  rpc get-evpn-macs {
+    description
+      "Retrieve information about EVPN MAC addresses.";
+    input {
+      choice all-choice {
+        default "all-vni";
+        case all-vni {
+          leaf all-vnis {
+            type empty;
+            description
+              "Retrieve information for all VNIs.";
+          }
+
+          choice all-choices {
+            case detail-case {
+              leaf all-detail {
+                type empty;
+                description
+                  "Include detailed results.";
+              }
+            }
+
+            case vtep-case {
+              leaf all-vtep-addr {
+                type inet:ipv4-address;
+                description
+                  "A single VTEP address.";
+              }
+            }
+
+            case dup-case {
+              leaf all-dup {
+                type empty;
+                description
+                  "Show duplicate addresses.";
+              }
+            }
+          }
+        }
+
+        case single-vni {
+          leaf vni-id {
+            type vni-id-type;
+            description
+              "Retrieve information for a single VNI.";
+          }
+
+          choice single-choices {
+            case detail-case {
+              leaf single-detail {
+                type empty;
+                description
+                  "Include detailed results.";
+              }
+            }
+
+            case mac-case {
+              leaf single-mac {
+                type yang:mac-address;
+                description
+                  "A specific MAC address.";
+              }
+            }
+
+            case vtep-case {
+              leaf single-vtep {
+                type inet:ipv4-address;
+                description
+                  "A single VTEP address.";
+              }
+            }
+
+            case dup-case {
+              leaf single-dup {
+                type empty;
+                description
+                  "Show duplicate addresses.";
+              }
+            }
+          }
+        }
+      }
+    }
+    // End of input section
+    output {
+      list mac-list {
+        leaf mac-addr {
+          type yang:mac-address;
+          description
+            "The MAC address.";
+        }
+
+        leaf vni {
+          type vni-id-type;
+          description
+            "The VNI value.";
+        }
+
+        leaf local-sequence {
+          type uint32;
+          description
+            "Local sequence number.";
+        }
+
+        leaf remote-sequence {
+          type uint32;
+          description
+            "Remote sequence number.";
+        }
+
+        leaf dad-count {
+          type uint32;
+          description
+            "Duplicate detection counter.";
+        }
+
+        leaf is-duplicate {
+          type empty;
+          description
+            "Duplicate MAC detected.";
+        }
+
+        leaf dup-detect-time {
+          type unix-timestamp;
+          description
+            "If a duplicate, the detection time.";
+        }
+
+        container dup-detect-started {
+          leaf dup-detect-start {
+            type unix-timestamp;
+            description
+              "Duplicate detection process start time.";
+          }
+
+          leaf dup-count {
+            type uint32;
+            description
+              "Duplicate detection count.";
+          }
+        }
+
+        leaf is-auto {
+          type empty;
+          description
+            "This is an Auto MAC.";
+        }
+
+        leaf is-sticky {
+          type empty;
+          description
+            "This is a sticky MAC.";
+        }
+
+        leaf is-default-gw {
+          type empty;
+          description
+            "This is a default-gateway MAC.";
+        }
+
+        leaf is-remote-gw {
+          type empty;
+          description
+            "This is a remote-gateway MAC.";
+        }
+
+        list neighbor-list {
+          leaf neighbor-addr {
+            type inet:ip-address;
+            description
+              "Neighbor address.";
+          }
+
+          leaf is-active {
+            type empty;
+            description
+              "Neighbor is active.";
+          }
+        }
+
+        leaf mac-count {
+          type uint32;
+          description
+            "Number of MACs (local and remote).";
+        }
+
+        choice local-rem-choice {
+          case local-case {
+            leaf intf {
+              type frr-interface:interface-ref;
+              description
+                "The local interface name.";
+            }
+
+            leaf vlan {
+              type uint32;
+              description
+                "A VLAN id.";
+            }
+          }
+
+          case remote-case {
+            leaf vtep-addr {
+              type inet:ipv4-address;
+              description
+                "The remote VTEP IP address.";
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // End get-evpn-macs
+
+  rpc get-evpn-arp-cache {
+    description
+      "Retrieve information about EVPN neighbor cache entries.";
+    input {
+      choice all-choice {
+        default "all-vni";
+        case all-vni {
+          leaf all-vnis {
+            type empty;
+            description
+              "Retrieve information for all VNIs.";
+          }
+
+          choice all-choices {
+            case detail-case {
+              leaf all-detail {
+                type empty;
+                description
+                  "Include detailed results.";
+              }
+            }
+
+            case dup-case {
+              leaf all-dup {
+                type empty;
+                description
+                  "Show duplicates.";
+              }
+            }
+          }
+        }
+
+        case single-vni {
+          leaf vni-id {
+            type vni-id-type;
+            description
+              "Retrieve information for a single VNI.";
+          }
+
+          choice single-choices {
+            case vtep-case {
+              leaf single-vtep {
+                type inet:ipv4-address;
+                description
+                  "A single VTEP address.";
+              }
+            }
+
+            case neighbor-case {
+              leaf neighbor-addr {
+                type inet:ip-address;
+                description
+                  "A single neighbor address.";
+              }
+            }
+
+            case dup-case {
+              leaf single-dup {
+                type empty;
+                description
+                  "Show duplicates.";
+              }
+            }
+          }
+        }
+      }
+    }
+    // End input section
+    output {
+      list vni-list {
+        container vni-container {
+          description
+            "Information for one VNI.";
+          leaf vni-id {
+            type vni-id-type;
+            description
+              "The VNI id.";
+          }
+
+          list neigh-list {
+            description
+              "Information about a VNI's neighbor cache.";
+            leaf mac-addr {
+              type yang:mac-address;
+              description
+                "A neighbor MAC address.";
+            }
+
+            leaf ip-addr {
+              type inet:ip-address;
+              description
+                "A neighbor IP address.";
+            }
+
+            leaf state-active {
+              type empty;
+              description
+                "Indicates whether the entry is active.";
+            }
+
+            choice local-remote-choice {
+              case local-case {
+                leaf is-local {
+                  type empty;
+                  description
+                    "The entry is local.";
+                }
+              }
+
+              case remote-case {
+                leaf is-remote {
+                  type empty;
+                  description
+                    "The entry is remote.";
+                }
+              }
+            }
+
+            leaf is-dup {
+              type empty;
+              description
+                "The entry is a detected duplicate.";
+            }
+
+            leaf is-default-gw {
+              type empty;
+              description
+                "The entry is a default gateway.";
+            }
+
+            leaf is-router {
+              type empty;
+              description
+                "The entry is a router.";
+            }
+
+            leaf local-sequence {
+              type uint32;
+              description
+                "The local sequence number.";
+            }
+
+            leaf remote-sequence {
+              type uint32;
+              description
+                "The remote sequence number.";
+            }
+
+            leaf remote-vtep {
+              type inet:ipv4-address;
+              description
+                "The remote VTEP address.";
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // End get-evpn-arp-cache
+
+  rpc get-pbr-ipset {
+    input {
+      leaf name {
+        type string {
+          length "1..32";
+        }
+        description
+          "An optional specific IPset name.";
+      }
+    }
+
+    output {
+      list ipset-list {
+        leaf name {
+          type string {
+            length "1..32";
+          }
+          description
+            "The IPset name.";
+        }
+
+        leaf ipset-type {
+          type enumeration {
+            enum "net-net" {
+              value 1;
+              description
+                "";
+            }
+            enum "net-port-net" {
+              value 2;
+              description
+                "";
+            }
+            enum "net-port" {
+              value 3;
+              description
+                "";
+            }
+            enum "net" {
+              value 4;
+              description
+                "";
+            }
+          }
+        }
+
+        leaf src-prefix {
+          type inet:ip-prefix;
+          description
+            "";
+        }
+
+        leaf dest-prefix {
+          type inet:ip-prefix;
+          description
+            "";
+        }
+
+        leaf src-port {
+          type inet:port-number;
+          description
+            "";
+        }
+
+        leaf dest-port {
+          type inet:port-number;
+          description
+            "";
+        }
+
+        choice proto-choice {
+          description
+            "Filter UDP/TCP only, or a specific protocol number.";
+          case udp-tcp-case {
+            leaf is-udp-tcp {
+              type empty;
+              description
+                "Filter TCP/UDP ports only.";
+            }
+          }
+
+          case proto-case {
+            leaf proto {
+              type uint32;
+              description
+                "Filter a specific protocol number.";
+            }
+          }
+        }
+
+        container icmp-info {
+          description
+            "Additional information for ICMP filters.";
+          leaf type-min {
+            type uint8;
+            description
+              "";
+          }
+
+          leaf type-max {
+            type uint8;
+            description
+              "";
+          }
+
+          leaf code-min {
+            type uint8;
+            description
+              "";
+          }
+
+          leaf code-max {
+            type uint8;
+            description
+              "";
+          }
+        }
+
+        container ipset-stats {
+          leaf is-unique {
+            type empty;
+            description
+              "";
+          }
+
+          leaf packet-counter {
+            type uint64;
+            description
+              "";
+          }
+
+          leaf bytes-counter {
+            type uint64;
+            description
+              "";
+          }
+        }
+      }
+    }
+  }
+
+  // End get-pbr-ipset
+
+  rpc get-pbr-iptable {
+    input {
+      leaf name {
+        type string {
+          length "1..32";
+        }
+        description
+          "An optional single IPtable name.";
+      }
+    }
+
+    output {
+      list iptable-list {
+        leaf name {
+          type string {
+            length "1..32";
+          }
+          description
+            "The IPtable name.";
+        }
+
+        leaf unique-val {
+          type uint32;
+          description
+            "";
+        }
+
+        choice action-choice {
+          description
+            "The table action.";
+          case drop-case {
+            leaf action-drop {
+              type empty;
+              description
+                "";
+            }
+          }
+
+          case redirect-case {
+            leaf action-redirect {
+              type empty;
+              description
+                "";
+            }
+          }
+        }
+
+        leaf min-packet {
+          type uint32;
+          description
+            "";
+        }
+
+        leaf max-packet {
+          type uint32;
+          description
+            "";
+        }
+
+        leaf lookup-src-port {
+          type empty;
+          description
+            "";
+        }
+
+        leaf lookup-dst-port {
+          type empty;
+          description
+            "";
+        }
+
+        leaf tcp-flags {
+          type uint16;
+          description
+            "";
+        }
+
+        leaf tcp-flags-mask {
+          type uint16;
+          description
+            "";
+        }
+
+        leaf protocol-val {
+          type uint32;
+          description
+            "An IP protocol number.";
+        }
+
+        container dscp-info {
+          leaf dscp-value {
+            type uint32;
+            description
+              "A DSCP value to match.";
+          }
+
+          leaf invert-match {
+            type empty;
+            description
+              "If set, exclude the specified value";
+          }
+        }
+
+        container fragment-info {
+          leaf fragment-val {
+            type uint32;
+            description
+              "An IP fragment value.";
+          }
+
+          leaf invert-match {
+            type empty;
+            description
+              "If set, exclude the specified value.";
+          }
+        }
+
+        container iptable-stats {
+          leaf packet-counter {
+            type uint64;
+            description
+              "";
+          }
+
+          leaf bytes-counter {
+            type uint64;
+            description
+              "";
+          }
+        }
+
+        container rule-info {
+          description
+            "Information about a rule, for redirect tables.";
+          leaf table-id {
+            type uint32;
+            description
+              "The rule table id.";
+          }
+
+          leaf table-fwmark {
+            type uint32;
+            description
+              "The firewall mark for the rule.";
+          }
+        }
+      }
+    }
+  }
+
+  // End get-pbr-iptable
+  /*
+   * Handy 'all-at-once' api to retrieve debugs
+   */
+
+  rpc get-debugs {
+    output {
+      uses zebra-debugs;
+    }
+  }
+
+  // End get-debugs
+
+  augment "/frr-interface:lib/frr-interface:interface" {
+    description
+      "Extends interface model with Zebra-related parameters.";
+    container zebra {
+      list ipv4-addrs {
+        key "ip prefix-length";
+        description
+          "The list of configured IPv4 addresses on the interface.";
+
+        leaf ip {
+          type inet:ipv4-address-no-zone;
+          description
+            "The IPv4 address on the interface.";
+        }
+
+        leaf prefix-length {
+          type uint8 {
+            range "0..32";
+          }
+          description
+            "The length of the subnet prefix.";
+        }
+
+        leaf label {
+          type string;
+          description
+            "Optional string label for the address.";
+        }
+      }
+
+      list ipv4-p2p-addrs {
+        key "ip peer-ip peer-prefix-length";
+        description
+          "The list of configured peer-to-peer IPv4 addresses on the interface.";
+
+        leaf ip {
+          type inet:ipv4-address-no-zone;
+          description
+            "The IPv4 address on the interface.";
+        }
+
+        leaf peer-ip {
+          type inet:ipv4-address-no-zone;
+          description
+            "Peer address.";
+        }
+
+        leaf peer-prefix-length {
+          type uint8 {
+            range "0..32";
+          }
+          description
+            "The length of the peer subnet prefix.";
+        }
+
+        leaf label {
+          type string;
+          description
+            "Optional string label for the address.";
+        }
+      }
+
+      list ipv6-addrs {
+        key "ip prefix-length";
+        description
+          "The list of configured IPv6 addresses on the interface.";
+
+        leaf ip {
+          type inet:ipv6-address-no-zone;
+          description
+            "The IPv6 address on the interface.";
+        }
+
+        leaf prefix-length {
+          type uint8 {
+            range "0..128";
+          }
+          description
+            "The length of the subnet prefix.";
+        }
+      }
+
+      leaf multicast {
+        type boolean;
+        description
+          "Multicast flag for the interface.";
+      }
+
+      leaf link-detect {
+        type boolean;
+        default "true";
+        description
+          "Link-detection for the interface.";
+      }
+
+      leaf enabled {
+        type boolean;
+        description
+          "Interface admin status.";
+      }
+
+      leaf mpls {
+        type boolean;
+        description
+          "Interface MPLS status.";
+      }
+
+      leaf bandwidth {
+        type uint32 {
+          range "1..1000000";
+        }
+        units "megabits/sec";
+        description
+          "Link bandwidth informational parameter, in megabits.";
+      }
+      container link-params {
+        presence "Activates link parameters on this interface.";
+        description
+          "link-params for Traffic-Engineering (TE) use in IGP extensions.";
+        leaf metric {
+          type uint32;
+          description
+            "Link metric for MPLS-TE purpose.";
+        }
+        leaf max-bandwidth {
+          type rt-types:bandwidth-ieee-float32;
+          description
+            "Maximum bandwidth.";
+        }
+        leaf max-reservable-bandwidth {
+          type rt-types:bandwidth-ieee-float32;
+          description
+            "Maximum reservable bandwidth.";
+        }
+        container unreserved-bandwidths {
+          description
+            "All unreserved bandwidths.";
+          list unreserved-bandwidth {
+            key "priority";
+            leaf priority {
+              type uint8 {
+                range "0 .. 7";
+              }
+              description
+                "Priority from 0 to 7.";
+            }
+            leaf unreserved-bandwidth {
+              type rt-types:bandwidth-ieee-float32;
+              mandatory true;
+              description
+                "Unreserved bandwidth.";
+            }
+            description
+              "List of unreserved bandwidths for different
+                priorities.";
+          }
+        }
+        leaf residual-bandwidth {
+          type rt-types:bandwidth-ieee-float32;
+          description
+            "Unidirectional residual bandwidth.";
+        }
+        leaf available-bandwidth {
+          type rt-types:bandwidth-ieee-float32;
+          description
+            "Unidirectional available bandwidth.";
+        }
+        leaf utilized-bandwidth {
+          type rt-types:bandwidth-ieee-float32;
+          description
+            "Unidirectional utilized bandwidth.";
+        }
+        choice admin-group-mode {
+          description "Admin-group mode";
+          case legacy {
+            description
+              "Legacy mode. Only support standard admin-group (RFC3630/5305/5329)";
+            leaf legacy-admin-group {
+              description "Admin-Group value";
+              type uint32;
+            }
+          }
+          case affinity {
+            container affinities {
+              leaf-list affinity {
+                type frr-affinity-map:affinity-map-ref;
+                max-elements "256";
+                must '../../affinity-mode != "standard" or /frr-affinity-map:lib/frr-affinity-map:affinity-maps/frr-affinity-map:affinity-map[frr-affinity-map:name=current()]/frr-affinity-map:value < 32' {
+                  error-message "Affinity bit-position must be less than 32 when used with standard affinity mode";
+                }
+                description
+                  "Array of Attribute Names";
+              }
+            }
+          }
+        }
+        leaf affinity-mode {
+          description
+            "Affinity mode";
+          default "extended";
+          type enumeration {
+              enum extended {
+              value 0;
+              description
+                "Extended Admin-Group only (RFC7308)";
+            }
+            enum standard {
+            value 1;
+              description
+                "Standard Admin-Group only (RFC3630/5305/5329)";
+            }
+            enum both {
+              value 2;
+              description
+                "Standard and extended Admin-Group";
+            }
+          }
+        }
+        container neighbor {
+          description "Remote ASBR information (RFC 5316 & RFC 5392)";
+          presence "Activates neighbor information on this interface.";
+          leaf remote-as {
+            type inet:as-number;
+            mandatory true;
+            description
+              "Remote AS Number (RFC 5316 & RFC 5392)";
+          }
+          leaf ipv4-remote-id {
+            type inet:ipv4-address;
+            mandatory true;
+            description
+              "IPv4 Remote ASBR ID (RFC 5316 & RFC 5392)";
+          }
+        }
+        leaf delay {
+          type uint32 {
+            range "0..16777215";
+          }
+          description
+            "Average Unidirectional Link Delay";
+        }
+        container min-max-delay {
+          description
+            "Min/Max Unidirectional Link Delay";
+          presence "Activates min/max delay.";
+          leaf delay-min {
+            type uint32 {
+              range "0..16777215";
+            }
+            must '. <= ../../delay' {
+              error-message "Min delay must be less than or equal to delay";
+            }
+            mandatory true;
+            description
+              "Min Delay";
+          }
+          leaf delay-max {
+            type uint32 {
+              range "0..16777215";
+            }
+            must '. >= ../../delay' {
+              error-message "Max delay must be greater than or equal to delay";
+            }
+            mandatory true;
+            description
+              "Max Delay";
+          }
+        }
+        leaf delay-variation {
+          type uint32 {
+            range "0..16777215";
+          }
+          description
+            "Unidirectional Delay Variation";
+        }
+        leaf packet-loss {
+          type decimal64 {
+            fraction-digits 6;
+            range "0..50.331642";
+          }
+          description
+            "Unidirectional Link Packet Loss";
+        }
+        // TODO -- other link-params options
+        // for (experimental/partial TE use in IGP extensions)
+      }
+      container evpn-mh {
+        description "EVPN multihoming configuration";
+        choice esi-choice {
+          description "ESI type";
+          container type-0 {
+            leaf esi {
+              type yang:hex-string {
+                length "29";
+              }
+              description
+                "10-octet ESI.";
+              }
+          }
+          container type-3 {
+            leaf system-mac {
+              type yang:mac-address;
+              description
+                "System MAC address.";
+            }
+            leaf local-discriminator {
+              type uint32 {
+                range "1..16777215";
+              }
+              description
+                "Local discriminator.";
+            }
+          }
+        }
+        leaf df-preference {
+          type uint16;
+          default "32767";
+          description
+            "Preference value used for DF election.";
+        }
+        leaf bypass {
+          type boolean;
+          default "false";
+          description
+            "Bypass mode.";
+        }
+        leaf uplink {
+          type boolean;
+          default "false";
+          description
+            "Uplink to the VxLAN core.";
+        }
+      }
+      container ipv6-router-advertisements {
+        if-feature "ipv6-router-advertisements";
+        description
+          "Support for IPv6 Router Advertisements.";
+        leaf send-advertisements {
+          type boolean;
+          default "false";
+          description
+            "A flag indicating whether or not the router sends
+            periodic Router Advertisements and responds to
+            Router Solicitations.";
+          reference
+            "RFC 4861: Neighbor Discovery for IP version 6 (IPv6)
+                       - AdvSendAdvertisements";
+        }
+        leaf max-rtr-adv-interval {
+          type uint32 {
+            range "70..1800000";
+          }
+          units "milliseconds";
+          default "600000";
+          description
+            "The maximum time allowed between sending unsolicited
+            multicast Router Advertisements from the interface.";
+          reference
+            "RFC 4861: Neighbor Discovery for IP version 6 (IPv6)
+                       - MaxRtrAdvInterval
+             RFC 6275: Mobility Support in IPv6";
+        }
+        // Setting this value is not yet supported by the actual code.
+        /*
+        leaf min-rtr-adv-interval {
+          type uint32 {
+            range "30..1350000";
+          }
+          units "milliseconds";
+          must ". <= 0.75 * ../max-rtr-adv-interval" {
+            description
+              "The value MUST NOT be greater than 75% of
+              'max-rtr-adv-interval'.";
+          }
+          description
+            "The minimum time allowed between sending unsolicited
+            multicast Router Advertisements from the interface.
+
+            The default value to be used operationally if this
+            leaf is not configured is determined as follows:
+
+            - if max-rtr-adv-interval >= 9 seconds, the default
+              value is 0.33 * max-rtr-adv-interval;
+
+            - otherwise, it is 0.75 * max-rtr-adv-interval.";
+          reference
+            "RFC 4861: Neighbor Discovery for IP version 6 (IPv6)
+                       - MaxRtrAdvInterval
+             RFC 6275: Mobility Support in IPv6";
+        }
+        */
+        leaf managed-flag {
+          type boolean;
+          default "false";
+          description
+            "The value to be placed in the 'Managed address
+            configuration' flag field in the Router
+            Advertisement.";
+          reference
+            "RFC 4861: Neighbor Discovery for IP version 6 (IPv6)
+                       - AdvManagedFlag";
+        }
+        leaf other-config-flag {
+          type boolean;
+          default "false";
+          description
+            "The value to be placed in the 'Other configuration'
+            flag field in the Router Advertisement.";
+          reference
+            "RFC 4861: Neighbor Discovery for IP version 6 (IPv6)
+                       - AdvOtherConfigFlag";
+        }
+        leaf home-agent-flag {
+          type boolean;
+          default "false";
+          description
+            "The value to be placed in the 'Home Agent'
+            flag field in the Router Advertisement.";
+          reference
+            "RFC 6275: Mobility Support in IPv6";
+        }
+        leaf link-mtu {
+          type uint32;
+          default "0";
+          description
+            "The value to be placed in MTU options sent by the
+            router.  A value of zero indicates that no MTU options
+            are sent.";
+          reference
+            "RFC 4861: Neighbor Discovery for IP version 6 (IPv6)
+                       - AdvLinkMTU";
+        }
+        leaf reachable-time {
+          type uint32 {
+            range "0..3600000";
+          }
+          units "milliseconds";
+          default "0";
+          description
+            "The value to be placed in the Reachable Time field in
+            the Router Advertisement messages sent by the router.
+            A value of zero means unspecified (by this router).";
+          reference
+            "RFC 4861: Neighbor Discovery for IP version 6 (IPv6)
+                       - AdvReachableTime";
+        }
+        leaf retrans-timer {
+          type uint32;
+          units "milliseconds";
+          default "0";
+          description
+            "The value to be placed in the Retrans Timer field in
+            the Router Advertisement messages sent by the router.
+            A value of zero means unspecified (by this router).";
+          reference
+            "RFC 4861: Neighbor Discovery for IP version 6 (IPv6)
+                       - AdvRetransTimer";
+        }
+        leaf cur-hop-limit {
+          type uint8;
+          description
+            "The value to be placed in the Cur Hop Limit field in
+            the Router Advertisement messages sent by the router.
+            A value of zero means unspecified (by this router).
+
+            If this parameter is not configured, the device SHOULD
+            use the IANA-specified value for the default IPv4
+            Time to Live (TTL) parameter that was in effect at the
+            time of implementation.";
+          reference
+            "RFC 3232: Assigned Numbers: RFC 1700 is Replaced by
+                       an On-line Database
+             RFC 4861: Neighbor Discovery for IP version 6 (IPv6)
+                       - AdvCurHopLimit
+             IANA: IP Parameters
+                   (https://www.iana.org/assignments/ip-parameters)";
+        }
+        leaf default-lifetime {
+          type uint16 {
+            range "0..9000";
+          }
+          units "seconds";
+          must ". = 0 or . * 1000 >= ../max-rtr-adv-interval" {
+            description
+              "The value MUST NOT be less than max-rtr-adv-interval.";
+          }
+          description
+            "The value to be placed in the Router Lifetime field of
+            Router Advertisements sent from the interface, in
+            seconds.  It MUST be either zero or between
+            max-rtr-adv-interval and 9000 seconds.  A value of zero
+            indicates that the router is not to be used as a
+            default router.  These limits may be overridden by
+            specific documents that describe how IPv6 operates over
+            different link layers.
+
+            If this parameter is not configured, the device SHOULD
+            use a value of 3 * max-rtr-adv-interval.";
+          reference
+            "RFC 4861: Neighbor Discovery for IP version 6 (IPv6)
+                       - AdvDefaultLifetime";
+        }
+        leaf fast-retransmit {
+          type boolean;
+          default "true";
+          description
+            "Allow sending unsolicited multicast Router Advertisements
+            more frequently than once every 3 seconds as required by
+            RFC 4861.";
+        }
+        leaf advertisement-interval-option {
+          type boolean;
+          default "false";
+          description
+            "Enable sending the Advertisement Interval Option in
+            Router Advertisements.";
+          reference
+            "RFC 6275: Mobility Support in IPv6";
+        }
+        leaf home-agent-preference {
+          type uint16;
+          description
+            "The value to be placed in the Home Agent Preference
+            field in the Router Advertisement messages sent by the
+            router.";
+          reference
+            "RFC 6275: Mobility Support in IPv6";
+        }
+        leaf home-agent-lifetime {
+          type uint16;
+          description
+            "The value to be placed in the Home Agent Lifetime
+            field in the Router Advertisement messages sent by the
+            router.";
+          reference
+            "RFC 6275: Mobility Support in IPv6";
+        }
+        leaf default-router-preference {
+          type enumeration {
+            enum high {
+              value 1; /* 01 */
+              description
+                "High preference.";
+            }
+            enum medium {
+              value 0; /* 00 */
+              description
+                "Medium preference.";
+            }
+            enum low {
+              value 3; /* 11 */
+              description
+                "Low preference.";
+            }
+          }
+          default "medium";
+          description
+            "The value to be placed in the Default Router
+            Preference field in the Router Advertisement messages
+            sent by the router.";
+          reference
+            "RFC 4191: Default Router Preferences and More-Specific
+                       Routes";
+        }
+        container prefix-list {
+          description
+            "Support for prefixes to be placed in Prefix
+            Information options in Router Advertisement messages
+            sent from the interface.
+
+            Prefixes that are advertised by default but do not
+            have their entries in the child 'prefix' list are
+            advertised with the default values of all parameters.
+
+            The link-local prefix SHOULD NOT be included in the
+            list of advertised prefixes.";
+          reference
+            "RFC 4861: Neighbor Discovery for IP version 6 (IPv6)
+                       - AdvPrefixList";
+          list prefix {
+            key "prefix-spec";
+            description
+              "Support for an advertised prefix entry.";
+            leaf prefix-spec {
+              type inet:ipv6-prefix;
+              description
+                "IPv6 address prefix.";
+            }
+            // FRR doesn't support 'no-advertise'. Keeping the code
+            // here for future reference.
+            /*
+            choice control-adv-prefixes {
+              default "advertise";
+              description
+                "Either (1) the prefix is explicitly removed from the
+                set of advertised prefixes or (2) the parameters with
+                which the prefix is advertised are specified (default
+                case).";
+              leaf no-advertise {
+                type empty;
+                description
+                  "The prefix will not be advertised.
+
+                  This can be used for removing the prefix from
+                  the default set of advertised prefixes.";
+              }
+              case advertise {
+            */
+                leaf valid-lifetime {
+                  type uint32;
+                  units "seconds";
+                  default "2592000";
+                  description
+                    "The value to be placed in the Valid Lifetime
+                    in the Prefix Information option.  The
+                    designated value of all 1's (0xffffffff)
+                      represents infinity.";
+                  reference
+                    "RFC 4861: Neighbor Discovery for IP version 6
+                              (IPv6) - AdvValidLifetime";
+                }
+                leaf on-link-flag {
+                  type boolean;
+                  default "true";
+                  description
+                    "The value to be placed in the on-link flag
+                    ('L-bit') field in the Prefix Information
+                    option.";
+                  reference
+                    "RFC 4861: Neighbor Discovery for IP version 6
+                              (IPv6) - AdvOnLinkFlag";
+                }
+                leaf preferred-lifetime {
+                  type uint32;
+                  units "seconds";
+                  must ". <= ../valid-lifetime" {
+                    description
+                      "This value MUST NOT be greater than
+                      valid-lifetime.";
+                  }
+                  default "604800";
+                  description
+                    "The value to be placed in the Preferred
+                    Lifetime in the Prefix Information option.
+                    The designated value of all 1's (0xffffffff)
+                    represents infinity.";
+                  reference
+                    "RFC 4861: Neighbor Discovery for IP version 6
+                              (IPv6) - AdvPreferredLifetime";
+                }
+                leaf autonomous-flag {
+                  type boolean;
+                  default "true";
+                  description
+                    "The value to be placed in the Autonomous Flag
+                    field in the Prefix Information option.";
+                  reference
+                    "RFC 4861: Neighbor Discovery for IP version 6
+                              (IPv6) - AdvAutonomousFlag";
+                }
+                leaf router-address-flag {
+                  type boolean;
+                  default "false";
+                  description
+                    "The value to be placed in the Router Address
+                    flag field in the Prefix Information option.";
+                  reference
+                    "RFC 6275: Mobility Support in IPv6";
+                }
+            /*
+              }
+            }
+            */
+            // This is closing brackets for `case advertise` and
+            // `choice control-adv-prefixes`.
+          }
+        }
+        container rdnss {
+          description
+            "A list of recursive DNS server addresses that are placed
+            in Recursive DNS Server (RDNSS) options in Router
+            Advertisement messages sent from the interface.";
+          reference
+            "RFC 8106: IPv6 Router Advertisement Options for DNS
+                       Configuration";
+          list rdnss-address {
+            key "address";
+            description
+              "Recursive DNS server address.";
+            leaf address {
+              type inet:ipv6-address;
+              description
+                "IPv6 address of a recursive DNS server.";
+            }
+            leaf lifetime {
+              type uint32;
+              units "seconds";
+              description
+                "The value that is placed in the Lifetime field in the
+                RDNSS option.  The designated value of all 1's
+                (0xffffffff) represents infinity.";
+            }
+          }
+        }
+        container dnssl {
+          description
+            "A list of domain names that are placed in DNS Search List (DNSSL)
+            options in Router Advertisement messages sent from the interface.";
+          reference
+            "RFC 8106: IPv6 Router Advertisement Options for DNS
+                       Configuration";
+          list dnssl-domain {
+            key "domain";
+            description
+              "Domain name for the search list.";
+            leaf domain {
+              type inet:domain-name;
+              description
+                "Domain name for the search list.";
+            }
+            leaf lifetime {
+              type uint32;
+              units "seconds";
+              description
+                "The value that is placed in the Lifetime field in the
+                DNSSL option.  The designated value of all 1's
+                (0xffffffff) represents infinity.";
+            }
+          }
+        }
+      }
+      leaf ptm-enable {
+        if-feature ptm-bfd;
+        type boolean;
+        default "true";
+        description
+          "Enable PTM on the interface.";
+      }
+      container state {
+        config false;
+        description
+          "Operational data.";
+        leaf up-count {
+          type uint16;
+          description
+            "Interface Up count.";
+        }
+
+        leaf down-count {
+          type uint16;
+          description
+            "Interface Down count.";
+        }
+
+        leaf zif-type {
+          type identityref {
+            base zebra-interface-type;
+          }
+          description
+            "zebra interface type.";
+        }
+
+        leaf ptm-status {
+          type string;
+          default "disabled";
+          description
+            "Interface PTM status.";
+        }
+
+        leaf vlan-id {
+          type uint16 {
+            range "1..4094";
+          }
+          description
+            "A VLAN id.";
+        }
+
+        leaf vni-id {
+          type vni-id-type;
+        }
+
+        leaf remote-vtep {
+          type inet:ipv4-address;
+          description
+            "The remote VTEP IP address.";
+        }
+
+        leaf mcast-group {
+          type rt-types:ipv4-multicast-group-address;
+          description
+            "The VNI multicast group for BUM traffic.";
+        }
+
+        leaf bond {
+          type frr-interface:interface-ref;
+          description
+            "The bond interface this interface belongs to.";
+        }
+      }
+    }
+  }
+
+  augment "/frr-vrf:lib/frr-vrf:vrf" {
+    description
+      "Extends VRF model with Zebra-related parameters.";
+    container zebra {
+      description
+        "Zebra's vrf specific configuration and operational model.";
+
+      leaf router-id {
+        type yang:dotted-quad;
+        description
+          "A 32-bit number in the form of a dotted quad that is used by
+           some routing protocols identifying a router.";
+      }
+
+      leaf ipv6-router-id {
+        type inet:ipv6-address-no-zone;
+        description
+          "A 128-bit number in the form of an IPv6 address that is used by
+           some routing protocols identifying a router.";
+      }
+
+      list filter-protocol {
+        key "afi-safi protocol";
+        description
+          "Filter routing info exchanged between zebra and protocol.";
+        leaf afi-safi {
+          type identityref {
+            base frr-rt:afi-safi-type;
+          }
+          description
+            "AFI-SAFI type.";
+        }
+        leaf protocol {
+          // This should be identityref to frr-rt:control-plane-protocol someday
+          type string;
+          description
+            "The protocol to filter.";
+        }
+        leaf route-map {
+          type frr-route-map:route-map-ref;
+          mandatory true;
+          description
+            "A route-map to filter routes.";
+        }
+      }
+
+      list filter-nht {
+        key "afi-safi protocol";
+        description
+          "Filter next hop tracking route resolution.";
+        leaf afi-safi {
+          type identityref {
+            base frr-rt:afi-safi-type;
+          }
+          description
+            "AFI-SAFI type.";
+        }
+        leaf protocol {
+          // This should be identityref to frr-rt:control-plane-protocol someday
+          type string;
+          description
+            "The protocol to filter.";
+        }
+        leaf route-map {
+          type frr-route-map:route-map-ref;
+          mandatory true;
+          description
+            "A route-map to filter nexthops.";
+        }
+      }
+
+      leaf resolve-via-default {
+        type boolean;
+        description
+          "Resolve IPv4 nexthops via the default route. This is true by default
+           for traditional profile and false by default for datacenter profile.
+           Removing the leaf sets it back to the default value for the profile.";
+      }
+
+      leaf ipv6-resolve-via-default {
+        type boolean;
+        description
+          "Resolve IPv4 nexthops via the default route. This is true by default
+           for traditional profile and false by default for datacenter profile.
+           Removing the leaf sets it back to the default value for the profile.";
+      }
+
+      container netns {
+        description
+          "Configuration for netns VRF backend.";
+        container table-range {
+          presence "Activates table-range configuration.";
+          description
+            "The range of tables to use for this netns.";
+          leaf start {
+            type uint32;
+            mandatory true;
+            description
+              "The first table to use.";
+          }
+          leaf end {
+            type uint32;
+            mandatory true;
+            must ". >= ../start" {
+              error-message "End table must be greater than or equal to start table";
+            }
+            description
+              "The last table to use.";
+          }
+        }
+      }
+
+      uses ribs;
+
+      uses vrf-vni-mapping;
+    }
+  }
+
+  augment "/frr-vrf:lib/frr-vrf:vrf/frr-zebra:zebra/ribs/rib/route/route-entry/nexthop-group/nexthop" {
+    uses frr-nh:frr-nexthop-operational;
+  }
+
+  /*
+   * Main zebra container
+   */
+
+  container zebra {
+    description
+      "Data model for the Zebra daemon.";
+    leaf mcast-rpf-lookup {
+      type frr-zebra:mcast-rpf-lookup-mode;
+      default "mrib-then-urib";
+      description
+        "Multicast RPF lookup behavior.";
+    }
+    leaf ip-forwarding {
+      type boolean;
+      description
+        "IP forwarding status.";
+    }
+    leaf ipv6-forwarding {
+      type enumeration {
+        enum unknown {
+          value -1;
+          description
+            "Unknown state.";
+        }
+        enum off {
+          value 0;
+          description
+            "IPv6 forwarding disabled.";
+        }
+        enum on {
+          value 1;
+          description
+            "IPv6 forwarding enabled.";
+        }
+      }
+      description
+        "IPv6 forwarding status.";
+    }
+    leaf workqueue-hold-timer {
+      type uint32 {
+        range "0..10000";
+      }
+      units "milliseconds";
+      default "10";
+      description
+        "Work-queue processing hold timer, in milliseconds.";
+    }
+    leaf zapi-packets {
+      type uint32 {
+        range "1..10000";
+      }
+      default "1000";
+      description
+        "Number of ZAPI packets to process before relinquishing
+         the main thread.";
+    }
+    container import-kernel-table {
+      description
+        "Parameters to use when importing IPv4 routes from a non-main kernel
+         routing table.";
+      leaf table-id {
+        type uint32 {
+          range "1..252";
+        }
+        description
+          "The kernel table id.";
+      }
+      leaf distance {
+        type uint32 {
+          range "1..255";
+        }
+        default "15";
+        description
+          "The admin distance to use for imported routes.";
+      }
+      leaf route-map {
+        type frr-route-map:route-map-ref;
+        description
+          "A route-map to filter imported routes.";
+      }
+    }
+    leaf allow-external-route-update {
+      type empty;
+      description
+        "Allow FRR-controlled routes to be overwritten by external processes";
+    }
+    leaf dplane-queue-limit {
+      type uint32 {
+        range "0..10000";
+      }
+      default "200";
+      description
+        "Limit on the number of updates queued to the dataplane subsystem.";
+    }
+    leaf ptm-enable {
+      if-feature ptm-bfd;
+      type boolean;
+      default "false";
+      description
+        "Enable PTM globally.";
+    }
+    leaf route-map-delay {
+      type uint32 {
+        range "0..600";
+      }
+      units "seconds";
+      default "5";
+      description
+        "Time to wait before route-map updates are processed.";
+    }
+    /*
+     * Debug options
+     */
+    container debugs {
+      uses zebra-debugs;
+    }
+    /* End of debugs */
+    /*
+     * End of configuration attributes
+     */
+    /*
+     * Operational data.
+     */
+    container state {
+      config false;
+      description
+        "Operational data.";
+    }
+    // End of operational / state container
+  }
+}

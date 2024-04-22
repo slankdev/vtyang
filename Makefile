@@ -8,7 +8,7 @@ include ./cmd/*/sub.mk
 rrr: vtyang-build
 	./bin/vtyang agent --run-path /usr/local/var/run/vtyang -y ./yang
 rr: vtyang-build
-	./bin/vtyang agent --run-path /usr/local/var/run/vtyang -y ./yang.frr
+	sudo ./bin/vtyang agent --run-path /var/run/vtyang -y ./yang.frr
 r:
 	GOOS=linux CGO_ENABLED=0 go build -o bin/linux-agent cmd/linux-agent/main.go
 	scp ./bin/linux-agent dev:/tmp

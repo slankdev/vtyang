@@ -11,10 +11,6 @@ module frr-zebra {
     prefix inet;
   }
 
-  import frr-affinity-map {
-    prefix frr-affinity-map;
-  }
-
   import frr-route-map {
     prefix frr-route-map;
   }
@@ -2112,52 +2108,6 @@ module frr-zebra {
           type rt-types:bandwidth-ieee-float32;
           description
             "Unidirectional utilized bandwidth.";
-        }
-        choice admin-group-mode {
-          description "Admin-group mode";
-          case legacy {
-            description
-              "Legacy mode. Only support standard admin-group (RFC3630/5305/5329)";
-            leaf legacy-admin-group {
-              description "Admin-Group value";
-              type uint32;
-            }
-          }
-          case affinity {
-            container affinities {
-              leaf-list affinity {
-                type frr-affinity-map:affinity-map-ref;
-                max-elements "256";
-                must '../../affinity-mode != "standard" or /frr-affinity-map:lib/frr-affinity-map:affinity-maps/frr-affinity-map:affinity-map[frr-affinity-map:name=current()]/frr-affinity-map:value < 32' {
-                  error-message "Affinity bit-position must be less than 32 when used with standard affinity mode";
-                }
-                description
-                  "Array of Attribute Names";
-              }
-            }
-          }
-        }
-        leaf affinity-mode {
-          description
-            "Affinity mode";
-          default "extended";
-          type enumeration {
-              enum extended {
-              value 0;
-              description
-                "Extended Admin-Group only (RFC7308)";
-            }
-            enum standard {
-            value 1;
-              description
-                "Standard Admin-Group only (RFC3630/5305/5329)";
-            }
-            enum both {
-              value 2;
-              description
-                "Standard and extended Admin-Group";
-            }
-          }
         }
         container neighbor {
           description "Remote ASBR information (RFC 5316 & RFC 5392)";

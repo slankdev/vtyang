@@ -100,6 +100,7 @@ func InitAgent(runtimePath, yangPath string) error {
 	}
 
 	cliMode = CliModeView
+	commandnodes = nil
 	installCommandsDefault(CliModeView)
 	installCommandsDefault(CliModeConfigure)
 	installCommands()
@@ -186,7 +187,7 @@ func newCommandAgent() *cobra.Command {
 			line.SetTabCompletionStyle(liner.TabPrints)
 			line.SetBinder(QUESTION_MARK, completionLister)
 
-			go startRPCServer()
+			// go startRPCServer()
 			for {
 				if name, err := line.Prompt(getPrompt()); err == nil {
 					line.AppendHistory(name)
@@ -325,26 +326,26 @@ var (
 )
 
 func nofityRunningConfigToSubscribers() error {
-	xpath, _, err := ParseXPathArgs(dbm, []string{}, false)
-	if err != nil {
-		return err
-	}
-	node, err := dbm.GetNode(xpath)
-	if err != nil {
-		fmt.Fprintf(stdout, "Error: %s\n", err.Error())
-		return err
-	}
-	filteredNode, err := filterDbWithModule(node, "frr-isisd")
-	if err != nil {
-		fmt.Fprintf(stdout, "Error: %s\n", err.Error())
-		return err
-	}
+	// xpath, _, err := ParseXPathArgs(dbm, []string{}, false)
+	// if err != nil {
+	// 	return err
+	// }
+	// node, err := dbm.GetNode(xpath)
+	// if err != nil {
+	// 	fmt.Fprintf(stdout, "Error: %s\n", err.Error())
+	// 	return err
+	// }
+	// filteredNode, err := filterDbWithModule(node, "frr-isisd")
+	// if err != nil {
+	// 	fmt.Fprintf(stdout, "Error: %s\n", err.Error())
+	// 	return err
+	// }
 
-	for _, confChan := range confChans {
-		confChan <- Configuration{
-			Data:           node.String(),
-			DataWithModule: filteredNode.String(),
-		}
-	}
+	// for _, confChan := range confChans {
+	// 	confChan <- Configuration{
+	// 		Data:           node.String(),
+	// 		DataWithModule: filteredNode.String(),
+	// 	}
+	// }
 	return nil
 }

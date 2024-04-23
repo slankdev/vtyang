@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -90,6 +91,16 @@ func installCommandsDefault(mode CliMode) {
 		"Display completion tree",
 	}, func(arg []string) {
 		fmt.Fprintln(stdout, dumpCompletionTreeJson(getCommandNodeCurrent().tree.Root))
+	})
+
+	installCommand(mode, "save cli-tree", []string{
+		"Save information",
+		"Save completion tree",
+	}, func(arg []string) {
+		content := dumpCompletionTreeJson(getCommandNodeCurrent().tree.Root)
+		if err := ioutil.WriteFile("/tmp/clitree.json", []byte(content), os.ModePerm); err != nil {
+			fmt.Fprintf(stdout, "ERROR: %s", err.Error())
+		}
 	})
 }
 

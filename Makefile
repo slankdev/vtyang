@@ -1,5 +1,5 @@
 test:
-	go test ./...
+	go test ./... -count=1
 godoc:
 	godoc -http=:6060
 generate:
@@ -8,6 +8,7 @@ include ./cmd/*/sub.mk
 rrr: vtyang-build
 	./bin/vtyang agent --run-path /usr/local/var/run/vtyang -y ./yang
 rr: vtyang-build
+	sudo rm -f /tmp/vtyang.log
 	sudo ./bin/vtyang agent --run-path /var/run/vtyang -y ./yang.frr2
 r:
 	GOOS=linux CGO_ENABLED=0 go build -o bin/linux-agent cmd/linux-agent/main.go
@@ -21,3 +22,7 @@ reset-netns:
 	ssh -t dev sudo ip netns exec ns0 ip link add dum2 type dummy
 frr-run: frr-agent-build
 	ssh -t dev sudo /home/ubuntu/git/vtyang/bin/frr-agent
+
+t:
+	sudo rm -f /tmp/vtyang.log
+	go test ./pkg/vtyang/ -run TestAgentXPathCliFRR2 -v

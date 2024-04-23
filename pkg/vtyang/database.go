@@ -62,7 +62,7 @@ func (m *DatabaseManager) LoadYangModuleOrDie(path string) {
 }
 
 func (m *DatabaseManager) LoadYangModule(path string) error {
-	files, err := ioutil.ReadDir(path)
+	files, err := os.ReadDir(path)
 	if err != nil {
 		return err
 	}
@@ -690,7 +690,9 @@ func Interface2DBNode(i interface{}) (*DBNode, error) {
 	n := &DBNode{}
 	switch g := i.(type) {
 	case map[string]interface{}:
-		for k, v := range g {
+		keys := util.GetSortedKeys(g)
+		for _, k := range keys {
+			v := g[k]
 			child, err := Interface2DBNode(v)
 			if err != nil {
 				return nil, err

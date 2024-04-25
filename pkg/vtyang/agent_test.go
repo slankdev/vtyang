@@ -8,7 +8,6 @@ import (
 )
 
 const (
-	YANG_PATH    = "./testdata"      // TODO
 	RUNTIME_PATH = "/tmp/run/vtyang" // TODO
 )
 

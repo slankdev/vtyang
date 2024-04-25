@@ -89,3 +89,15 @@ func TestYangCompletion1(t *testing.T) {
 		},
 	})
 }
+
+func TestLoadDatabaseFromFile(t *testing.T) {
+	executeTestCase(t, &TestCase{
+		YangPath:       "../../yang.frr/",
+		RuntimePath:    "/tmp/run/vtyang",
+		InitConfigFile: "./testdata/runtime1/config.json",
+		OutputFile:     "./testdata/runtime1/output.txt",
+		Inputs: []string{
+			"show running-config-frr",
+		},
+	})
+}

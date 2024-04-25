@@ -236,7 +236,7 @@ func TestFilterDbWithModule(t *testing.T) {
 
 	// Initializing Agent
 	if err := InitAgent(RUNTIME_PATH,
-		"../../yang.frr/"); err != nil {
+		"../../yang.frr/", "/tmp/testlog.log"); err != nil {
 		t.Fatal(err)
 	}
 

@@ -11,6 +11,7 @@ import (
 type TestCase struct {
 	YangPath       string
 	RuntimePath    string
+	LogFile        string
 	Inputs         []string
 	OutputString   string
 	OutputFile     string
@@ -37,7 +38,7 @@ func executeTestCase(t *testing.T, tc *TestCase) {
 	}
 
 	// Initializing Agent
-	if err := InitAgent(tc.RuntimePath, tc.YangPath); err != nil {
+	if err := InitAgent(tc.RuntimePath, tc.YangPath, tc.LogFile); err != nil {
 		t.Fatal(err)
 	}
 

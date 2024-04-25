@@ -61,9 +61,9 @@ func TestAgentXPathCli(t *testing.T) {
 
 func TestAgentXPathCliFRR(t *testing.T) {
 	executeTestCase(t, &TestCase{
-		YangPath:       "./testdata/frr_isid_test1",
-		RuntimePath:    "/tmp/run/vtyang",
-		OutputJsonFile: "./testdata/frr_isid_test1/output.json",
+		YangPath:    "./testdata/frr_isid_test1",
+		RuntimePath: "/tmp/run/vtyang",
+		OutputFile:  "./testdata/frr_isid_test1/output.json",
 		Inputs: []string{
 			"configure",
 			"set isis instance 1 default area-address 10.0000.0000.0000.0000.0000.0000.0000.0000.0000.00",
@@ -76,9 +76,9 @@ func TestAgentXPathCliFRR(t *testing.T) {
 
 func TestYangCompletion1(t *testing.T) {
 	executeTestCase(t, &TestCase{
-		YangPath:       "./testdata/same_container_name_in_different_modules/",
-		RuntimePath:    "/tmp/run/vtyang",
-		OutputJsonFile: "./testdata/same_container_name_in_different_modules/clitree.json",
+		YangPath:    "./testdata/same_container_name_in_different_modules/",
+		RuntimePath: "/tmp/run/vtyang",
+		OutputFile:  "./testdata/same_container_name_in_different_modules/clitree.json",
 		Inputs: []string{
 			"show cli-tree",
 		},

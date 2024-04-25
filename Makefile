@@ -25,4 +25,6 @@ frr-run: frr-agent-build
 
 t:
 	sudo rm -f /tmp/vtyang.log
-	go test ./pkg/vtyang/ -run TestAgentXPathCliFRR2 -v
+	go test ./pkg/vtyang/ -count=1 -run TestYangCompletion1
+tt: vtyang-build
+	./bin/vtyang agent -y pkg/vtyang/testdata/same_container_name_in_different_modules/

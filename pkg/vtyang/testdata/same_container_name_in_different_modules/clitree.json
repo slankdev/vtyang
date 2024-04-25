@@ -160,33 +160,6 @@
                           ]
                         }
                       ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "Name": "interfaces",
-          "Description": "",
-          "Modules": null,
-          "Childs": [
-            {
-              "Name": "interface",
-              "Description": "",
-              "Modules": null,
-              "Childs": [
-                {
-                  "Name": "NAME",
-                  "Description": "",
-                  "Modules": null,
-                  "Childs": [
-                    {
-                      "Name": "\u003ccr\u003e",
-                      "Description": "",
-                      "Modules": null,
-                      "Childs": null
                     },
                     {
                       "Name": "enabled",
@@ -223,14 +196,16 @@
               "Name": "interfaces",
               "Description": "",
               "Modules": [
-                "mod1"
+                "mod1",
+                "mod2"
               ],
               "Childs": [
                 {
                   "Name": "interface",
                   "Description": "",
                   "Modules": [
-                    "mod1"
+                    "mod1",
+                    "mod2"
                   ],
                   "Childs": [
                     {
@@ -265,37 +240,6 @@
                               ]
                             }
                           ]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "Name": "interfaces",
-              "Description": "",
-              "Modules": [
-                "mod2"
-              ],
-              "Childs": [
-                {
-                  "Name": "interface",
-                  "Description": "",
-                  "Modules": [
-                    "mod2"
-                  ],
-                  "Childs": [
-                    {
-                      "Name": "NAME",
-                      "Description": "name",
-                      "Modules": null,
-                      "Childs": [
-                        {
-                          "Name": "\u003ccr\u003e",
-                          "Description": "",
-                          "Modules": null,
-                          "Childs": null
                         },
                         {
                           "Name": "enabled",

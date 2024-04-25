@@ -160,6 +160,33 @@
                           ]
                         }
                       ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "Name": "interfaces",
+          "Description": "",
+          "Modules": null,
+          "Childs": [
+            {
+              "Name": "interface",
+              "Description": "",
+              "Modules": null,
+              "Childs": [
+                {
+                  "Name": "NAME",
+                  "Description": "",
+                  "Modules": null,
+                  "Childs": [
+                    {
+                      "Name": "\u003ccr\u003e",
+                      "Description": "",
+                      "Modules": null,
+                      "Childs": null
                     },
                     {
                       "Name": "enabled",

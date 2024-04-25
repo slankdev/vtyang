@@ -3,6 +3,7 @@ package vtyang
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/openconfig/goyang/pkg/yang"
@@ -24,9 +25,21 @@ func getCommandConfig(modules *yang.Modules) *CompletionNode {
 			if e.Kind == yang.NotificationEntry {
 				continue
 			}
-			child = append(child, resolveCompletionNodeConfig(e, 0, m.Name))
+			c := resolveCompletionNodeConfig(e, 0, m.Name)
+			found := false
+			for idx := range child {
+				if child[idx].Name == c.Name {
+					child[idx] = merge(child[idx], c)
+					found = true
+					break
+				}
+			}
+			if !found {
+				child = append(child, resolveCompletionNodeConfig(e, 0, m.Name))
+			}
 		}
 	}
+	sort.Slice(child, func(i, j int) bool { return child[i].Name < child[j].Name })
 	return &CompletionNode{
 		Childs: []*CompletionNode{
 			{
@@ -72,6 +85,7 @@ func resolveCompletionNodeConfig(e *yang.Entry, depth int, modName string) *Comp
 				top = tail
 			} else {
 				top.Childs = append(top.Childs, tail)
+				sort.Slice(top.Childs, func(i, j int) bool { return top.Childs[i].Name < top.Childs[j].Name })
 			}
 		}
 		for _, ee := range e.Dir {
@@ -79,10 +93,12 @@ func resolveCompletionNodeConfig(e *yang.Entry, depth int, modName string) *Comp
 				nn := resolveCompletionNodeConfig(ee, depth+1, modName)
 				if nn != nil {
 					tail.Childs = append(tail.Childs, nn)
+					sort.Slice(tail.Childs, func(i, j int) bool { return tail.Childs[i].Name < tail.Childs[j].Name })
 				}
 			}
 		}
 		n.Childs = append(n.Childs, top)
+		sort.Slice(n.Childs, func(i, j int) bool { return n.Childs[i].Name < n.Childs[j].Name })
 
 	case e.IsLeaf():
 		child := &CompletionNode{
@@ -98,6 +114,7 @@ func resolveCompletionNodeConfig(e *yang.Entry, depth int, modName string) *Comp
 				childs = append(childs, resolveCompletionNodeConfig(ee, depth+1, modName))
 			}
 		}
+		sort.Slice(childs, func(i, j int) bool { return childs[i].Name < childs[j].Name })
 		n.Childs = childs
 	}
 	return &n
@@ -152,6 +169,61 @@ func getCommandCallbackConfig(_ *yang.Modules) []Command {
 	}
 }
 
+func merge(n1, n2 *CompletionNode) *CompletionNode {
+	if n1.Name != n2.Name {
+		panic("ASSERTION")
+	}
+	new := CompletionNode{
+		Name:        n1.Name,
+		Description: n1.Description,
+	}
+	new.Modules = append(new.Modules, n1.Modules...)
+	new.Modules = append(new.Modules, n2.Modules...)
+	sort.Slice(new.Modules, func(i, j int) bool { return new.Modules[i] < new.Modules[j] })
+
+	// Only exist in n1
+	for idx1 := range n1.Childs {
+		found := false
+		for idx2 := range n2.Childs {
+			if n1.Childs[idx1].Name == n2.Childs[idx2].Name {
+				found = true
+				break
+			}
+		}
+		if !found {
+			new.Childs = append(new.Childs, n1.Childs[idx1])
+		}
+	}
+
+	// Only exist in n2
+	for idx2 := range n2.Childs {
+		found := false
+		for idx1 := range n1.Childs {
+			if n1.Childs[idx1].Name == n2.Childs[idx2].Name {
+				found = true
+				break
+			}
+		}
+		if !found {
+			new.Childs = append(new.Childs, n2.Childs[idx2])
+		}
+	}
+
+	// Duplicate in n1 and n2
+	for idx1 := range n1.Childs {
+		for idx2 := range n2.Childs {
+			if n1.Childs[idx1].Name == n2.Childs[idx2].Name {
+				n := merge(n1.Childs[idx1], n2.Childs[idx2])
+				new.Childs = append(new.Childs, n)
+				break
+			}
+		}
+	}
+
+	sort.Slice(new.Childs, func(i, j int) bool { return new.Childs[i].Name < new.Childs[j].Name })
+	return &new
+}
+
 func getViewCommandConfig(modules *yang.Modules) *CompletionNode {
 	child := []*CompletionNode{}
 	for fullname, m := range modules.Modules {
@@ -160,10 +232,22 @@ func getViewCommandConfig(modules *yang.Modules) *CompletionNode {
 		}
 		for _, e := range yang.ToEntry(m).Dir {
 			if !e.ReadOnly() && e.RPC == nil {
-				child = append(child, resolveCompletionNodeConfig(e, 0, m.Name))
+				c := resolveCompletionNodeConfig(e, 0, m.Name)
+				found := false
+				for idx := range child {
+					if child[idx].Name == c.Name {
+						child[idx] = merge(child[idx], c)
+						found = true
+						break
+					}
+				}
+				if !found {
+					child = append(child, resolveCompletionNodeConfig(e, 0, m.Name))
+				}
 			}
 		}
 	}
+	sort.Slice(child, func(i, j int) bool { return child[i].Name < child[j].Name })
 	return &CompletionNode{
 		Childs: []*CompletionNode{
 			{

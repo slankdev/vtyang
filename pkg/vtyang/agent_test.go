@@ -8,11 +8,6 @@ const (
 	RUNTIME_PATH = "/tmp/run/vtyang" // TODO
 )
 
-type TestCaseForTestAgent struct { // TODO
-	Inputs []string
-	Output string
-}
-
 func TestAgentNoDatabase(t *testing.T) {
 	executeTestCase(t, &TestCase{
 		YangPath:    "./testdata",

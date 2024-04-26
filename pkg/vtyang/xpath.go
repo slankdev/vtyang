@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/k0kubun/pp"
 	"github.com/openconfig/goyang/pkg/yang"
 )
 
@@ -194,8 +193,32 @@ func ParseXPathArgsImpl(module *yang.Entry, args []string, setmode bool) (XPath,
 						Integer: int(intval),
 					}
 				case "enumeration":
-					pp.Println(keyLeafNode.Type)
-					panic(fmt.Sprintf("NOT IMPLE (%+v)", keyLeafNode.Type.Name))
+					// XXX(slankdev)
+					xword.Keys[w] = DBValue{
+						Type:   YString,
+						String: tmpStr,
+					}
+				case "access-list-name":
+					// XXX(slankdev)
+					xword.Keys[w] = DBValue{
+						Type:   YString,
+						String: tmpStr,
+					}
+				case "access-list-sequence":
+					// XXX(slankdev)
+					intval, err := strconv.ParseInt(tmpStr, 10, 32)
+					if err != nil {
+						return XPath{}, "", err
+					}
+					xword.Keys[w] = DBValue{
+						Type:    YInteger,
+						Integer: int(intval),
+					}
+				case "HOGE":
+					//pp.Println(keyLeafNode.Type)
+					// pp.Println(keyLeafNode.Type.Enum)
+					// pp.Println(keyLeafNode.Type.Enum.Names())
+					// panic(fmt.Sprintf("NOT IMPLE (%+v)", keyLeafNode.Type.Name))
 				default:
 					panic(fmt.Sprintf("OKASHII (%+v)", keyLeafNode.Type.Name))
 				}

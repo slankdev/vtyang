@@ -601,6 +601,7 @@ const (
 	YInteger     DBValueType = "integer"
 	YBoolean     DBValueType = "boolean"
 	YStringArray DBValueType = "stringarray"
+	YEnum        DBValueType = "enum"
 )
 
 type DBValue struct {

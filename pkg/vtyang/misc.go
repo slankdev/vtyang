@@ -23,6 +23,9 @@ func YangTypeKind2YType(t yang.TypeKind) DBValueType {
 		return YString
 	case yang.Ybool:
 		return YBoolean
+	case yang.Yenum:
+		return YEnum
+		//return YInteger
 	default:
 		panic(fmt.Sprintf("TODO(%s)", t))
 	}

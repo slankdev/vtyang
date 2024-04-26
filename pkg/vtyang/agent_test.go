@@ -67,6 +67,7 @@ func TestAgentXPathCli(t *testing.T) {
 func TestAgentXPathCliFRR(t *testing.T) {
 	executeTestCase(t, &TestCase{
 		RuntimePath: "/tmp/run/vtyang",
+		LogFile:     "/tmp/run/vtyang/vtyang.log",
 		YangPath:    "./testdata/yang/frr_isisd_minimal",
 		OutputFile:  "./testdata/frr_isisd_test1_output.json",
 		Inputs: []string{
@@ -120,6 +121,7 @@ func TestXpathParse2(t *testing.T) {
 		OutputFile:  "./testdata/xpath_parse2_output.txt",
 		Inputs: []string{
 			"show-xpath values u08 100",
+			// TODO
 			// "show-xpath values u16 100",
 			// "show-xpath values u32 100",
 			// "show-xpath values u64 100",

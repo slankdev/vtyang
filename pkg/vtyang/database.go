@@ -407,8 +407,8 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 					Name: xword.Word,
 					Type: Leaf,
 					Value: DBValue{
-						Type: yang.Yuint8,
-						Int8: int8(ival),
+						Type:  yang.Yuint8,
+						Uint8: uint8(ival),
 					},
 				})
 			case yang.Yuint16:
@@ -420,8 +420,8 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 					Name: xword.Word,
 					Type: Leaf,
 					Value: DBValue{
-						Type:  yang.Yuint16,
-						Int16: int16(ival),
+						Type:   yang.Yuint16,
+						Uint16: uint16(ival),
 					},
 				})
 			case yang.Yuint32:
@@ -433,8 +433,8 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 					Name: xword.Word,
 					Type: Leaf,
 					Value: DBValue{
-						Type:  yang.Yuint32,
-						Int32: int32(ival),
+						Type:   yang.Yuint32,
+						Uint32: uint32(ival),
 					},
 				})
 			case yang.Yuint64:
@@ -446,8 +446,8 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 					Name: xword.Word,
 					Type: Leaf,
 					Value: DBValue{
-						Type:  yang.Yuint64,
-						Int64: int64(ival),
+						Type:   yang.Yuint64,
+						Uint64: uint64(ival),
 					},
 				})
 			case yang.Ystring:

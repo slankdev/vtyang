@@ -16,7 +16,7 @@ func TestAgentNoDatabase(t *testing.T) {
 	executeTestCase(t, &TestCase{
 		RuntimePath: "/tmp/run/vtyang",
 		YangPath:    "./testdata/yang/accounting",
-		OutputFile:  "./testdata/no_database/output.txt",
+		OutputFile:  "./testdata/no_database_output.txt",
 		Inputs: []string{
 			"show running-config",
 			"configure",
@@ -31,8 +31,8 @@ func TestAgentLoadDatabase(t *testing.T) {
 	executeTestCase(t, &TestCase{
 		RuntimePath:    "/tmp/run/vtyang",
 		YangPath:       "./testdata/yang/accounting",
-		InitConfigFile: "./testdata/load_database/config.json",
-		OutputFile:     "./testdata/load_database/output.txt",
+		InitConfigFile: "./testdata/load_database_config.json",
+		OutputFile:     "./testdata/load_database_output.txt",
 		Inputs: []string{
 			"show running-config",
 			"configure",
@@ -49,7 +49,7 @@ func TestAgentXPathCli(t *testing.T) {
 	executeTestCase(t, &TestCase{
 		RuntimePath: "/tmp/run/vtyang",
 		YangPath:    "./testdata/yang/frr_isisd_minimal",
-		OutputFile:  "./testdata/xpath_cli/output.txt",
+		OutputFile:  "./testdata/xpath_cli_output.txt",
 		Inputs: []string{
 			"configure",
 			"set isis instance 1 default description area1-default-hoge",
@@ -66,9 +66,8 @@ func TestAgentXPathCli(t *testing.T) {
 func TestAgentXPathCliFRR(t *testing.T) {
 	executeTestCase(t, &TestCase{
 		RuntimePath: "/tmp/run/vtyang",
-		// YangPath:    "./testdata/frr_isid_test1",
-		YangPath:   "./testdata/yang/frr_isisd_minimal",
-		OutputFile: "./testdata/frr_isid_test1/output.json",
+		YangPath:    "./testdata/yang/frr_isisd_minimal",
+		OutputFile:  "./testdata/frr_isisd_test1_output.json",
 		Inputs: []string{
 			"configure",
 			"set isis instance 1 default area-address 10.0000.0000.0000.0000.0000.0000.0000.0000.0000.00",
@@ -82,8 +81,8 @@ func TestAgentXPathCliFRR(t *testing.T) {
 func TestYangCompletion1(t *testing.T) {
 	executeTestCase(t, &TestCase{
 		RuntimePath: "/tmp/run/vtyang",
-		YangPath:    "./testdata/same_container_name_in_different_modules/",
-		OutputFile:  "./testdata/same_container_name_in_different_modules/clitree.json",
+		YangPath:    "./testdata/yang/same_container_name_in_different_modules/",
+		OutputFile:  "./testdata/same_container_name_in_different_modules_output.json",
 		Inputs: []string{
 			"show cli-tree",
 		},
@@ -94,8 +93,8 @@ func TestLoadDatabaseFromFile(t *testing.T) {
 	executeTestCase(t, &TestCase{
 		RuntimePath:    "/tmp/run/vtyang",
 		YangPath:       "./testdata/yang/frr_isisd_minimal",
-		InitConfigFile: "./testdata/runtime1/config.json",
-		OutputFile:     "./testdata/runtime1/output.txt",
+		InitConfigFile: "./testdata/show_run_frr_config.json",
+		OutputFile:     "./testdata/show_run_frr_output.txt",
 		Inputs: []string{
 			"show running-config-frr",
 		},

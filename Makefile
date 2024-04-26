@@ -17,5 +17,5 @@ rr: vtyang-build
 		--run-path /var/run/vtyang \
 		--yang $(YANG) \
 		-c "configure" \
-		-c "set values u8 10"
+		-c "set values u08 10"
 		#END

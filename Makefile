@@ -8,7 +8,9 @@ include ./cmd/*/sub.mk
 rrr: vtyang-build
 	./bin/vtyang agent --run-path /usr/local/var/run/vtyang -y ./yang
 rr: vtyang-build
-	sudo ./bin/vtyang agent --run-path /var/run/vtyang -y ./pkg/vtyang/testdata/yang/frr_mgmtd_minimal
+	sudo ./bin/vtyang agent \
+		--run-path /var/run/vtyang \
+		--yang ./pkg/vtyang/testdata/yang/frr_mgmtd_minimal2
 reset-netns:
 	ssh -t dev sudo ip netns del ns0 || true
 	ssh -t dev sudo ip netns add ns0

@@ -48,7 +48,7 @@ func TestAgentLoadDatabase(t *testing.T) {
 func TestAgentXPathCli(t *testing.T) {
 	executeTestCase(t, &TestCase{
 		RuntimePath: "/tmp/run/vtyang",
-		YangPath:    "../../yang.frr/",
+		YangPath:    "./testdata/yang/frr_isisd_minimal",
 		OutputFile:  "./testdata/xpath_cli/output.txt",
 		Inputs: []string{
 			"configure",
@@ -92,7 +92,7 @@ func TestYangCompletion1(t *testing.T) {
 func TestLoadDatabaseFromFile(t *testing.T) {
 	executeTestCase(t, &TestCase{
 		RuntimePath:    "/tmp/run/vtyang",
-		YangPath:       "../../yang.frr/",
+		YangPath:       "./testdata/yang/frr_isisd_minimal",
 		InitConfigFile: "./testdata/runtime1/config.json",
 		OutputFile:     "./testdata/runtime1/output.txt",
 		Inputs: []string{
@@ -236,7 +236,8 @@ func TestFilterDbWithModule(t *testing.T) {
 
 	// Initializing Agent
 	if err := InitAgent(RUNTIME_PATH,
-		"../../yang.frr/", "/tmp/testlog.log"); err != nil {
+		"./testdata/yang/frr_isisd_minimal",
+		"/tmp/testlog.log"); err != nil {
 		t.Fatal(err)
 	}
 

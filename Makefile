@@ -8,12 +8,7 @@ include ./cmd/*/sub.mk
 rrr: vtyang-build
 	./bin/vtyang agent --run-path /usr/local/var/run/vtyang -y ./yang
 rr: vtyang-build
-	sudo rm -f /tmp/vtyang.log
-	sudo ./bin/vtyang agent --run-path /var/run/vtyang -y ./yang.frr2
-r:
-	GOOS=linux CGO_ENABLED=0 go build -o bin/linux-agent cmd/linux-agent/main.go
-	scp ./bin/linux-agent dev:/tmp
-	ssh -t dev sudo /tmp/linux-agent
+	sudo ./bin/vtyang agent --run-path /var/run/vtyang -y ./pkg/vtyang/testdata/yang/frr_mgmtd_minimal
 reset-netns:
 	ssh -t dev sudo ip netns del ns0 || true
 	ssh -t dev sudo ip netns add ns0

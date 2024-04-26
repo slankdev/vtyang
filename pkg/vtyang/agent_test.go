@@ -121,14 +121,13 @@ func TestXpathParse2(t *testing.T) {
 		OutputFile:  "./testdata/xpath_parse2_output.txt",
 		Inputs: []string{
 			"show-xpath values u08 100",
-			// TODO
-			// "show-xpath values u16 100",
-			// "show-xpath values u32 100",
-			// "show-xpath values u64 100",
-			// "show-xpath values i08 100",
-			// "show-xpath values i16 100",
-			// "show-xpath values i32 100",
-			// "show-xpath values i64 100",
+			"show-xpath values u16 100",
+			"show-xpath values u32 100",
+			"show-xpath values u64 100",
+			"show-xpath values i08 100",
+			"show-xpath values i16 100",
+			"show-xpath values i32 100",
+			"show-xpath values i64 100",
 		},
 	})
 }

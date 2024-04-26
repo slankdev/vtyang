@@ -14,3 +14,115 @@
     }
   ]
 }
+{
+  "Words": [
+    {
+      "Word": "values",
+      "Keys": null,
+      "Dbtype": "container",
+      "Dbvaluetype": 0
+    },
+    {
+      "Word": "u16",
+      "Keys": null,
+      "Dbtype": "leaf",
+      "Dbvaluetype": 6
+    }
+  ]
+}
+{
+  "Words": [
+    {
+      "Word": "values",
+      "Keys": null,
+      "Dbtype": "container",
+      "Dbvaluetype": 0
+    },
+    {
+      "Word": "u32",
+      "Keys": null,
+      "Dbtype": "leaf",
+      "Dbvaluetype": 7
+    }
+  ]
+}
+{
+  "Words": [
+    {
+      "Word": "values",
+      "Keys": null,
+      "Dbtype": "container",
+      "Dbvaluetype": 0
+    },
+    {
+      "Word": "u64",
+      "Keys": null,
+      "Dbtype": "leaf",
+      "Dbvaluetype": 4
+    }
+  ]
+}
+{
+  "Words": [
+    {
+      "Word": "values",
+      "Keys": null,
+      "Dbtype": "container",
+      "Dbvaluetype": 0
+    },
+    {
+      "Word": "i08",
+      "Keys": null,
+      "Dbtype": "leaf",
+      "Dbvaluetype": 1
+    }
+  ]
+}
+{
+  "Words": [
+    {
+      "Word": "values",
+      "Keys": null,
+      "Dbtype": "container",
+      "Dbvaluetype": 0
+    },
+    {
+      "Word": "i16",
+      "Keys": null,
+      "Dbtype": "leaf",
+      "Dbvaluetype": 2
+    }
+  ]
+}
+{
+  "Words": [
+    {
+      "Word": "values",
+      "Keys": null,
+      "Dbtype": "container",
+      "Dbvaluetype": 0
+    },
+    {
+      "Word": "i32",
+      "Keys": null,
+      "Dbtype": "leaf",
+      "Dbvaluetype": 3
+    }
+  ]
+}
+{
+  "Words": [
+    {
+      "Word": "values",
+      "Keys": null,
+      "Dbtype": "container",
+      "Dbvaluetype": 0
+    },
+    {
+      "Word": "i64",
+      "Keys": null,
+      "Dbtype": "leaf",
+      "Dbvaluetype": 4
+    }
+  ]
+}

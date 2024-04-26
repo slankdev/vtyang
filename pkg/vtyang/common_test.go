@@ -57,7 +57,7 @@ func executeTestCase(t *testing.T, tc *TestCase) {
 	}
 	if string(out) != result {
 		t.Errorf("Unexpected output")
-		p := fmt.Sprintf("/tmp/test_fail_output_%s", util.MakeRandomStr(10))
+		p := fmt.Sprintf("/tmp/test_fail_output_%s", t.Name())
 		if err := os.WriteFile(p+"_expected.txt", out, os.ModePerm); err != nil {
 			t.Fatal(err)
 		}

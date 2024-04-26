@@ -17,6 +17,5 @@ rr: vtyang-build
 		--run-path /var/run/vtyang \
 		--yang $(YANG) \
 		-c "configure" \
-		-c "set lib prefix-list ipv4 hoge entry 10 action permit" \
-		#-c "show-xpath lib prefix-list ipv4 hoge entry 10 action permit" \
+		-c "set values u8 10"
 		#END

@@ -166,7 +166,7 @@ var xpathTestDBRoot = DBNode{
 
 func TestXPathParse(t *testing.T) {
 	dbm := NewDatabaseManager()
-	dbm.LoadYangModuleOrDie("./testdata")
+	dbm.LoadYangModuleOrDie("./testdata/yang/accounting")
 	dbm.LoadDatabaseFromData(&xpathTestDBRoot)
 
 	testcases := []struct {
@@ -211,7 +211,7 @@ func TestXPathParse(t *testing.T) {
 
 func TestXPathParseCli(t *testing.T) {
 	dbm := NewDatabaseManager()
-	dbm.LoadYangModuleOrDie("./testdata")
+	dbm.LoadYangModuleOrDie("./testdata/yang/accounting")
 	dbm.LoadDatabaseFromData(&xpathTestDBRoot)
 
 	testcases := []struct {

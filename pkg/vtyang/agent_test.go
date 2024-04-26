@@ -14,8 +14,8 @@ const (
 
 func TestAgentNoDatabase(t *testing.T) {
 	executeTestCase(t, &TestCase{
-		YangPath:    "./testdata",
 		RuntimePath: "/tmp/run/vtyang",
+		YangPath:    "./testdata/yang/accounting",
 		OutputFile:  "./testdata/no_database/output.txt",
 		Inputs: []string{
 			"show running-config",
@@ -29,9 +29,9 @@ func TestAgentNoDatabase(t *testing.T) {
 
 func TestAgentLoadDatabase(t *testing.T) {
 	executeTestCase(t, &TestCase{
-		InitConfigFile: "./testdata/load_database/config.json",
-		YangPath:       "./testdata",
 		RuntimePath:    "/tmp/run/vtyang",
+		YangPath:       "./testdata/yang/accounting",
+		InitConfigFile: "./testdata/load_database/config.json",
 		OutputFile:     "./testdata/load_database/output.txt",
 		Inputs: []string{
 			"show running-config",
@@ -47,8 +47,8 @@ func TestAgentLoadDatabase(t *testing.T) {
 
 func TestAgentXPathCli(t *testing.T) {
 	executeTestCase(t, &TestCase{
-		YangPath:    "../../yang.frr/",
 		RuntimePath: "/tmp/run/vtyang",
+		YangPath:    "../../yang.frr/",
 		OutputFile:  "./testdata/xpath_cli/output.txt",
 		Inputs: []string{
 			"configure",
@@ -65,8 +65,8 @@ func TestAgentXPathCli(t *testing.T) {
 
 func TestAgentXPathCliFRR(t *testing.T) {
 	executeTestCase(t, &TestCase{
-		YangPath:    "./testdata/frr_isid_test1",
 		RuntimePath: "/tmp/run/vtyang",
+		YangPath:    "./testdata/frr_isid_test1",
 		OutputFile:  "./testdata/frr_isid_test1/output.json",
 		Inputs: []string{
 			"configure",
@@ -80,8 +80,8 @@ func TestAgentXPathCliFRR(t *testing.T) {
 
 func TestYangCompletion1(t *testing.T) {
 	executeTestCase(t, &TestCase{
-		YangPath:    "./testdata/same_container_name_in_different_modules/",
 		RuntimePath: "/tmp/run/vtyang",
+		YangPath:    "./testdata/same_container_name_in_different_modules/",
 		OutputFile:  "./testdata/same_container_name_in_different_modules/clitree.json",
 		Inputs: []string{
 			"show cli-tree",
@@ -91,8 +91,8 @@ func TestYangCompletion1(t *testing.T) {
 
 func TestLoadDatabaseFromFile(t *testing.T) {
 	executeTestCase(t, &TestCase{
-		YangPath:       "../../yang.frr/",
 		RuntimePath:    "/tmp/run/vtyang",
+		YangPath:       "../../yang.frr/",
 		InitConfigFile: "./testdata/runtime1/config.json",
 		OutputFile:     "./testdata/runtime1/output.txt",
 		Inputs: []string{

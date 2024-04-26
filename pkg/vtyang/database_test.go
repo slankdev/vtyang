@@ -74,7 +74,7 @@ var testDummyDBRoot = DBNode{
 
 func TestDBNodeGet(t *testing.T) {
 	dbm := NewDatabaseManager()
-	dbm.LoadYangModuleOrDie("./testdata")
+	dbm.LoadYangModuleOrDie("./testdata/yang/accounting")
 	dbm.LoadDatabaseFromData(&testDummyDBRoot)
 
 	testcases := []struct {
@@ -102,7 +102,7 @@ func TestDBNodeGet(t *testing.T) {
 
 func TestDBNodeCreate(t *testing.T) {
 	dbm := NewDatabaseManager()
-	dbm.LoadYangModuleOrDie("./testdata")
+	dbm.LoadYangModuleOrDie("./testdata/yang/accounting")
 	dbm.LoadDatabaseFromData(&testDummyDBRoot)
 
 	testcases := []struct {

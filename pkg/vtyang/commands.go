@@ -111,7 +111,7 @@ func installCommandsDefault(mode CliMode) {
 			fmt.Fprintf(stdout, "Error: %s\n", err.Error())
 			return
 		}
-		out, err := json.Marshal(xpath)
+		out, err := json.MarshalIndent(xpath, "", "  ")
 		if err != nil {
 			fmt.Fprintf(stdout, "Error: %s\n", err.Error())
 			return

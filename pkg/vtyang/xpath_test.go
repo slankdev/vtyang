@@ -178,13 +178,13 @@ func TestXPathParse(t *testing.T) {
 			xpath: XPath{
 				Words: []XWord{
 					{
-						dbtype: Container,
-						word:   "users",
+						Dbtype: Container,
+						Word:   "users",
 					},
 					{
-						dbtype: List,
-						word:   "user",
-						keys: map[string]DBValue{
+						Dbtype: List,
+						Word:   "user",
+						Keys: map[string]DBValue{
 							"name": {
 								Type:   YString,
 								String: "eva",
@@ -227,13 +227,13 @@ func TestXPathParseCli(t *testing.T) {
 			xpath: XPath{
 				Words: []XWord{
 					{
-						dbtype: Container,
-						word:   "users",
+						Dbtype: Container,
+						Word:   "users",
 					},
 					{
-						dbtype: List,
-						word:   "user",
-						keys: map[string]DBValue{
+						Dbtype: List,
+						Word:   "user",
+						Keys: map[string]DBValue{
 							"name": {
 								Type:   YString,
 								String: "eva",
@@ -241,9 +241,9 @@ func TestXPathParseCli(t *testing.T) {
 						},
 					},
 					{
-						dbtype:      Leaf,
-						word:        "age",
-						dbvaluetype: YInteger,
+						Dbtype:      Leaf,
+						Word:        "age",
+						Dbvaluetype: YInteger,
 					},
 				},
 			},

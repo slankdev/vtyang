@@ -9,11 +9,10 @@ import (
 )
 
 type XWord struct {
-	word string
-	keys map[string]DBValue
-
-	dbtype      DBNodeType
-	dbvaluetype DBValueType
+	Word        string
+	Keys        map[string]DBValue
+	Dbtype      DBNodeType
+	Dbvaluetype DBValueType
 }
 
 type XPath struct {
@@ -46,12 +45,12 @@ func ParseXPath(dbm *DatabaseManager, xpath *XPath, s string) error {
 	}
 
 	for len(words) != 0 {
-		xword := XWord{word: name(words[0])}
+		xword := XWord{Word: name(words[0])}
 		if hasKV(words[0]) {
 			k := key(words[0])
 			v := val(words[0])
-			xword.keys = map[string]DBValue{}
-			xword.keys[k] = DBValue{
+			xword.Keys = map[string]DBValue{}
+			xword.Keys[k] = DBValue{
 				Type:   YString,
 				String: v,
 			}
@@ -70,12 +69,12 @@ func ParseXPath(dbm *DatabaseManager, xpath *XPath, s string) error {
 
 		switch {
 		case foundNode.IsContainer():
-			xword.dbtype = Container
+			xword.Dbtype = Container
 		case foundNode.IsLeaf():
-			xword.dbtype = Leaf
-			xword.dbvaluetype = YangTypeKind2YType(foundNode.Type.Kind)
+			xword.Dbtype = Leaf
+			xword.Dbvaluetype = YangTypeKind2YType(foundNode.Type.Kind)
 		case foundNode.IsList():
-			xword.dbtype = List
+			xword.Dbtype = List
 		default:
 			panic("ASSERT")
 		}
@@ -91,9 +90,9 @@ func ParseXPath(dbm *DatabaseManager, xpath *XPath, s string) error {
 func (x XPath) String() string {
 	s := ""
 	for _, w := range x.Words {
-		s = fmt.Sprintf("%s/%s", s, w.word)
-		if w.keys != nil {
-			for k, v := range w.keys {
+		s = fmt.Sprintf("%s/%s", s, w.Word)
+		if w.Keys != nil {
+			for k, v := range w.Keys {
 				s = fmt.Sprintf("%s['%s'='%s']", s, k, v.ToString())
 			}
 		}
@@ -112,7 +111,7 @@ func ParseXPathArgs(dbm *DatabaseManager, args []string, setmode bool) (XPath, s
 	xpath := XPath{}
 	valueStr := ""
 	for len(words) != 0 {
-		xword := XWord{word: words[0]}
+		xword := XWord{Word: words[0]}
 
 		var foundNode *yang.Entry = nil
 		for n := range module.Dir {
@@ -129,7 +128,7 @@ func ParseXPathArgs(dbm *DatabaseManager, args []string, setmode bool) (XPath, s
 		argumentExist := false
 		switch {
 		case foundNode.IsContainer():
-			xword.dbtype = Container
+			xword.Dbtype = Container
 		case foundNode.IsLeaf():
 			if setmode {
 				if len(words) < 2 {
@@ -138,14 +137,14 @@ func ParseXPathArgs(dbm *DatabaseManager, args []string, setmode bool) (XPath, s
 				valueStr = words[argumentCount]
 				argumentExist = true
 			}
-			xword.dbtype = Leaf
-			xword.dbvaluetype = YangTypeKind2YType(foundNode.Type.Kind)
+			xword.Dbtype = Leaf
+			xword.Dbvaluetype = YangTypeKind2YType(foundNode.Type.Kind)
 		case foundNode.IsList():
 			if len(words) < 2 {
 				return XPath{}, "", fmt.Errorf("invalid args len")
 			}
-			xword.dbtype = List
-			xword.keys = map[string]DBValue{}
+			xword.Dbtype = List
+			xword.Keys = map[string]DBValue{}
 			for _, w := range strings.Fields(foundNode.Key) {
 				var keyLeafNode *yang.Entry
 				for _, ee := range foundNode.Dir {
@@ -157,17 +156,17 @@ func ParseXPathArgs(dbm *DatabaseManager, args []string, setmode bool) (XPath, s
 				tmpStr := words[argumentCount]
 				switch keyLeafNode.Type.Name {
 				case "string":
-					xword.keys[w] = DBValue{
+					xword.Keys[w] = DBValue{
 						Type:   YString,
 						String: tmpStr,
 					}
 				case "vrf-ref":
-					xword.keys[w] = DBValue{
+					xword.Keys[w] = DBValue{
 						Type:   YString,
 						String: tmpStr,
 					}
 				case "ip-prefix":
-					xword.keys[w] = DBValue{
+					xword.Keys[w] = DBValue{
 						Type:   YString,
 						String: tmpStr,
 					}
@@ -176,7 +175,7 @@ func ParseXPathArgs(dbm *DatabaseManager, args []string, setmode bool) (XPath, s
 					if err != nil {
 						return XPath{}, "", err
 					}
-					xword.keys[w] = DBValue{
+					xword.Keys[w] = DBValue{
 						Type:    YInteger,
 						Integer: int(intval),
 					}
@@ -201,8 +200,8 @@ func ParseXPathArgs(dbm *DatabaseManager, args []string, setmode bool) (XPath, s
 				valueStr = strings.Join(vals, " ")
 				argumentExist = true
 			}
-			xword.dbtype = LeafList
-			xword.dbvaluetype = YangTypeKind2YType(foundNode.Type.Kind)
+			xword.Dbtype = LeafList
+			xword.Dbvaluetype = YangTypeKind2YType(foundNode.Type.Kind)
 			//pp.Println(valueStr)
 		default:
 			panic("ASSERT")

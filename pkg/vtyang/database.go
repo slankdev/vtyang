@@ -114,7 +114,7 @@ func (dbm *DatabaseManager) GetNode(xpath XPath) (*DBNode, error) {
 			found := false
 			for idx := range n.Childs {
 				child := &n.Childs[idx]
-				if child.Name == xword.word {
+				if child.Name == xword.Word {
 					switch child.Type {
 					case Leaf:
 						fallthrough
@@ -127,10 +127,10 @@ func (dbm *DatabaseManager) GetNode(xpath XPath) (*DBNode, error) {
 							child2 := &child.Childs[idx2]
 							for idx3 := range child2.Childs {
 								child3 := &child2.Childs[idx3]
-								if xword.keys == nil {
+								if xword.Keys == nil {
 									panic("database is broken")
 								}
-								for k, v := range xword.keys {
+								for k, v := range xword.Keys {
 									if child3.Name == k && reflect.DeepEqual(child3.Value, v) {
 										n = child2
 										found = true
@@ -172,7 +172,7 @@ func (dbm *DatabaseManager) DeleteNode(xpath XPath) error {
 		found := false
 		for idx := range n.Childs {
 			child := &n.Childs[idx]
-			if child.Name == xword.word {
+			if child.Name == xword.Word {
 				found = true
 				switch child.Type {
 				case Container:
@@ -182,10 +182,10 @@ func (dbm *DatabaseManager) DeleteNode(xpath XPath) error {
 					}
 					n = child
 				case List:
-					if xword.keys == nil {
+					if xword.Keys == nil {
 						panic("database is broken")
 					}
-					cidx := lookupChildIdx(child, xword.keys)
+					cidx := lookupChildIdx(child, xword.Keys)
 					if cidx < 0 {
 						return fmt.Errorf("not found (1)")
 					}
@@ -193,7 +193,7 @@ func (dbm *DatabaseManager) DeleteNode(xpath XPath) error {
 						child.Childs = append(child.Childs[:cidx], child.Childs[cidx+1:]...)
 						return nil
 					}
-					n = EnsureListNode(child, xword.keys)
+					n = EnsureListNode(child, xword.Keys)
 				case Leaf:
 					if len(xwords) != 1 {
 						panic("ASSERT")
@@ -218,21 +218,21 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 	xwords := xpath.Words
 	for ; len(xwords) != 0; xwords = xwords[1:] {
 		xword := xwords[0]
-		switch xword.dbtype {
+		switch xword.Dbtype {
 		case Container:
 			found := false
 			for idx := range n.Childs {
 				child := &n.Childs[idx]
-				if child.Name == xword.word {
+				if child.Name == xword.Word {
 					found = true
 					switch child.Type {
 					case Container:
 						n = child
 					case List:
-						if xword.keys == nil {
+						if xword.Keys == nil {
 							panic("database is broken")
 						}
-						listElement := EnsureListNode(child, xword.keys)
+						listElement := EnsureListNode(child, xword.Keys)
 						if listElement == nil {
 							panic("ASSERTION")
 						}
@@ -256,10 +256,10 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 
 			// not found case
 			if !found {
-				newnode := DBNode{Name: xword.word}
-				newnode.Type = xword.dbtype
-				if xword.keys != nil {
-					for k, v := range xword.keys {
+				newnode := DBNode{Name: xword.Word}
+				newnode.Type = xword.Dbtype
+				if xword.Keys != nil {
+					for k, v := range xword.Keys {
 						newnode.Childs = []DBNode{
 							{
 								Type: Container,
@@ -274,9 +274,9 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 						}
 					}
 				}
-				if xword.dbtype == Leaf {
+				if xword.Dbtype == Leaf {
 					newnode.Value = DBValue{}
-					newnode.Value.Type = xword.dbvaluetype
+					newnode.Value.Type = xword.Dbvaluetype
 					(&newnode.Value).SetFromString(val)
 				}
 
@@ -287,7 +287,7 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 			// Ensure List's leaf
 			found1 := false
 			for idx := range n.Childs {
-				if n.Childs[idx].Name == xword.word {
+				if n.Childs[idx].Name == xword.Word {
 					found1 = true
 					n = &n.Childs[idx]
 					break
@@ -295,7 +295,7 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 			}
 			if !found1 {
 				n.Childs = append(n.Childs, DBNode{
-					Name: xword.word,
+					Name: xword.Word,
 					Type: List,
 				})
 				n = &n.Childs[len(n.Childs)-1]
@@ -305,7 +305,7 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 			found2 := false
 			for idx := range n.Childs {
 				match := true
-				for k, v := range xword.keys {
+				for k, v := range xword.Keys {
 					for _, c := range n.Childs[idx].Childs {
 						if c.Name == k && !reflect.DeepEqual(c.Value, v) {
 							match = false
@@ -320,7 +320,7 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 			}
 			if !found2 {
 				listChilds := []DBNode{}
-				for k, v := range xword.keys {
+				for k, v := range xword.Keys {
 					tmp := DBNode{
 						Name:  k,
 						Type:  Leaf,
@@ -335,14 +335,14 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 				n = &n.Childs[len(n.Childs)-1]
 			}
 		case Leaf:
-			switch xword.dbvaluetype {
+			switch xword.Dbvaluetype {
 			case YInteger:
 				ival, err := strconv.Atoi(val)
 				if err != nil {
 					return nil, err
 				}
 				n.Childs = append(n.Childs, DBNode{
-					Name: xword.word,
+					Name: xword.Word,
 					Type: Leaf,
 					Value: DBValue{
 						Type:    YInteger,
@@ -351,7 +351,7 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 				})
 			case YString:
 				n.Childs = append(n.Childs, DBNode{
-					Name: xword.word,
+					Name: xword.Word,
 					Type: Leaf,
 					Value: DBValue{
 						Type:   YString,
@@ -364,7 +364,7 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 					return nil, err
 				}
 				n.Childs = append(n.Childs, DBNode{
-					Name: xword.word,
+					Name: xword.Word,
 					Type: Leaf,
 					Value: DBValue{
 						Type:    YBoolean,
@@ -372,19 +372,19 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 					},
 				})
 			default:
-				return nil, fmt.Errorf("%s: unsupported(%s)", util.LINE(), xword.dbvaluetype)
+				return nil, fmt.Errorf("%s: unsupported(%s)", util.LINE(), xword.Dbvaluetype)
 			}
 		case LeafList:
 			var tmpNode *DBNode
 			for idx := range n.Childs {
-				if n.Childs[idx].Name == xword.word {
+				if n.Childs[idx].Name == xword.Word {
 					tmpNode = &n.Childs[idx]
 					break
 				}
 			}
 			if tmpNode == nil {
 				n.Childs = append(n.Childs, DBNode{
-					Name: xword.word,
+					Name: xword.Word,
 					Type: LeafList,
 				})
 				tmpNode = &n.Childs[len(n.Childs)-1]
@@ -394,7 +394,7 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 				StringArray: strings.Fields(val),
 			}
 		default:
-			return nil, fmt.Errorf("%s: unsupported(%s)", util.LINE(), xword.dbtype)
+			return nil, fmt.Errorf("%s: unsupported(%s)", util.LINE(), xword.Dbtype)
 		}
 	}
 
@@ -410,15 +410,15 @@ func (xpath XPath) CreateDBNodeTree() (*DBNode, error) {
 	var tail *DBNode = &root
 	for _, xword := range xpath.Words {
 		n := new(DBNode)
-		n.Name = xword.word
+		n.Name = xword.Word
 		n.Type = Container
 
-		if xword.keys != nil {
+		if xword.Keys != nil {
 			n.Type = List
 			n.Childs = []DBNode{
 				{Type: Container},
 			}
-			for k, v := range xword.keys {
+			for k, v := range xword.Keys {
 				n.Childs[0].Childs = []DBNode{
 					{
 						Name:  k,

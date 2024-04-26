@@ -292,12 +292,12 @@ func TestSetNode(t *testing.T) {
 	xpath := XPath{
 		Words: []XWord{
 			{
-				word:   "isis",
-				dbtype: "container",
+				Word:   "isis",
+				Dbtype: "container",
 			},
 			{
-				word: "instance",
-				keys: map[string]DBValue{
+				Word: "instance",
+				Keys: map[string]DBValue{
 					"area-tag": {
 						Type:   YString,
 						String: "1",
@@ -307,13 +307,13 @@ func TestSetNode(t *testing.T) {
 						String: "default",
 					},
 				},
-				dbtype: "list",
+				Dbtype: "list",
 			},
 			{
-				word:        "description",
-				keys:        map[string]DBValue{},
-				dbtype:      "leaf",
-				dbvaluetype: "string",
+				Word:        "description",
+				Keys:        map[string]DBValue{},
+				Dbtype:      "leaf",
+				Dbvaluetype: "string",
 			},
 		},
 	}

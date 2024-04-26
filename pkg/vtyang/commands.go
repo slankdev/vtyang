@@ -103,9 +103,7 @@ func installCommandsDefault(mode CliMode) {
 		}
 	})
 
-	installCommand(mode, "xpath-show", []string{
-		"Display xpath information",
-	}, func(args []string) {
+	installCommandNoCompletion(mode, "xpath-show", func(args []string) {
 		xpath, _, err := ParseXPathArgs(dbm, args[1:], true)
 		if err != nil {
 			fmt.Fprintf(stdout, "Error: %s\n", err.Error())
@@ -120,11 +118,17 @@ func installCommandsDefault(mode CliMode) {
 	})
 }
 
-func installCommand(mode CliMode, match string, helps []string,
+func installCommandNoCompletion(mode CliMode, match string,
 	f func(args []string)) {
 	cn := getCommandNode(mode)
 	cn.commands = append(cn.commands, Command{m: match, f: f})
+}
 
+func installCommand(mode CliMode, match string, helps []string,
+	f func(args []string)) {
+	installCommandNoCompletion(mode, match, f)
+
+	cn := getCommandNode(mode)
 	args := strings.Fields(match)
 	if len(args) != len(helps) {
 		panic(fmt.Sprintf("ERROR %s len(helps)=%d", match, len(helps)))

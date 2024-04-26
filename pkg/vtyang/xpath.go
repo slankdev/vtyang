@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/k0kubun/pp"
 	"github.com/openconfig/goyang/pkg/yang"
 )
 
@@ -192,6 +193,9 @@ func ParseXPathArgsImpl(module *yang.Entry, args []string, setmode bool) (XPath,
 						Type:    YInteger,
 						Integer: int(intval),
 					}
+				case "enumeration":
+					pp.Println(keyLeafNode.Type)
+					panic(fmt.Sprintf("NOT IMPLE (%+v)", keyLeafNode.Type.Name))
 				default:
 					panic(fmt.Sprintf("OKASHII (%+v)", keyLeafNode.Type.Name))
 				}

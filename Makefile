@@ -15,5 +15,7 @@ rr: vtyang-build
 	sudo ./bin/vtyang agent \
 		--run-path /var/run/vtyang \
 		--yang ./pkg/vtyang/testdata/yang/frr_mgmtd_minimal2 \
-		-c "xpath-show lib interface dum0 description dum0-comment" \
+		-c "show-xpath lib prefix-list ipv4 hoge entry 10 action permit" \
+		# -c "configure" \
+		# -c "set lib prefix-list ipv4 hoge entry 10 action permit" \
 		#END

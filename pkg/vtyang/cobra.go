@@ -29,6 +29,7 @@ var (
 	GlobalOptRunFilePath string
 	GlobalOptYangPath    string
 	GlobalOptDumpCliTree string
+	GlobalOptCommands    []string
 
 	actionCBs = map[string]func(args []string) error{
 		"uptime-callback": func(args []string) error {
@@ -175,6 +176,13 @@ func newCommandAgent() *cobra.Command {
 				return err
 			}
 
+			if len(GlobalOptCommands) > 0 {
+				for _, c := range GlobalOptCommands {
+					getCommandNodeCurrent().executeCommand(c)
+				}
+				return nil
+			}
+
 			if GlobalOptDumpCliTree != "" {
 				switch GlobalOptDumpCliTree {
 				case "configure":
@@ -229,6 +237,7 @@ func newCommandAgent() *cobra.Command {
 	fs.StringVarP(&GlobalOptRunFilePath, "run-path", "r", "", "Runtime file path")
 	fs.StringVarP(&GlobalOptYangPath, "yang", "y", "./yang", "Runtime file path")
 	fs.StringVarP(&GlobalOptDumpCliTree, "dump", "d", "", "[configure,view]")
+	fs.StringArrayVarP(&GlobalOptCommands, "command", "c", []string{}, "")
 	return cmd
 }
 

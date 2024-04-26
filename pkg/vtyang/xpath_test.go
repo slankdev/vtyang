@@ -176,7 +176,7 @@ func TestXPathParse(t *testing.T) {
 		{
 			in: "/users/user['name'='eva']",
 			xpath: XPath{
-				words: []XWord{
+				Words: []XWord{
 					{
 						dbtype: Container,
 						word:   "users",
@@ -225,7 +225,7 @@ func TestXPathParseCli(t *testing.T) {
 			val: "200",
 			set: true,
 			xpath: XPath{
-				words: []XWord{
+				Words: []XWord{
 					{
 						dbtype: Container,
 						word:   "users",

@@ -290,7 +290,7 @@ func TestSetNode(t *testing.T) {
 	}
 
 	xpath := XPath{
-		words: []XWord{
+		Words: []XWord{
 			{
 				word:   "isis",
 				dbtype: "container",

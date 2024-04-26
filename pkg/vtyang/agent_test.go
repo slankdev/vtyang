@@ -112,6 +112,24 @@ func TestXpathParse1(t *testing.T) {
 	})
 }
 
+func TestXpathParse2(t *testing.T) {
+	executeTestCase(t, &TestCase{
+		RuntimePath: "/tmp/run/vtyang",
+		YangPath:    "./testdata/yang/leaf_types",
+		OutputFile:  "./testdata/xpath_parse2_output.txt",
+		Inputs: []string{
+			"show-xpath values u08 100",
+			// "show-xpath values u16 100",
+			// "show-xpath values u32 100",
+			// "show-xpath values u64 100",
+			// "show-xpath values i08 100",
+			// "show-xpath values i16 100",
+			// "show-xpath values i32 100",
+			// "show-xpath values i64 100",
+		},
+	})
+}
+
 func TestFilterDbWithModule(t *testing.T) {
 	input := &DBNode{
 		Name: "",

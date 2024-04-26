@@ -101,6 +101,17 @@ func TestLoadDatabaseFromFile(t *testing.T) {
 	})
 }
 
+func TestXpathParse1(t *testing.T) {
+	executeTestCase(t, &TestCase{
+		RuntimePath: "/tmp/run/vtyang",
+		YangPath:    "./testdata/yang/frr_mgmtd_minimal",
+		OutputFile:  "./testdata/xpath_parse1_output.txt",
+		Inputs: []string{
+			"show-xpath lib interface dum0 description dum0-comment",
+		},
+	})
+}
+
 func TestFilterDbWithModule(t *testing.T) {
 	input := &DBNode{
 		Name: "",

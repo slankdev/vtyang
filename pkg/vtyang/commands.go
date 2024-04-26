@@ -103,7 +103,7 @@ func installCommandsDefault(mode CliMode) {
 		}
 	})
 
-	installCommandNoCompletion(mode, "xpath-show", func(args []string) {
+	installCommandNoCompletion(mode, "show-xpath", func(args []string) {
 		xpath, _, err := ParseXPathArgs(dbm, args[1:], true)
 		if err != nil {
 			fmt.Fprintf(stdout, "Error: %s\n", err.Error())

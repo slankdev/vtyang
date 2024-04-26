@@ -4,27 +4,33 @@
       "Word": "lib",
       "Keys": null,
       "Dbtype": "container",
-      "Dbvaluetype": ""
+      "Dbvaluetype": 0
     },
     {
       "Word": "interface",
       "Keys": {
         "name": {
-          "Type": "string",
-          "Integer": 0,
+          "Type": 18,
+          "Int8": 0,
+          "Int16": 0,
+          "Int32": 0,
+          "Int64": 0,
+          "Uint8": 0,
+          "Uint16": 0,
+          "Uint32": 0,
+          "Uint64": 0,
           "String": "dum0",
-          "Boolean": false,
-          "StringArray": null
+          "Boolean": false
         }
       },
       "Dbtype": "list",
-      "Dbvaluetype": ""
+      "Dbvaluetype": 0
     },
     {
       "Word": "description",
       "Keys": null,
       "Dbtype": "leaf",
-      "Dbvaluetype": "string"
+      "Dbvaluetype": 18
     }
   ]
 }

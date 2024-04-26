@@ -102,6 +102,22 @@ func installCommandsDefault(mode CliMode) {
 			fmt.Fprintf(stdout, "ERROR: %s", err.Error())
 		}
 	})
+
+	installCommand(mode, "xpath-show", []string{
+		"Display xpath information",
+	}, func(args []string) {
+		xpath, _, err := ParseXPathArgs(dbm, args[1:], true)
+		if err != nil {
+			fmt.Fprintf(stdout, "Error: %s\n", err.Error())
+			return
+		}
+		out, err := json.Marshal(xpath)
+		if err != nil {
+			fmt.Fprintf(stdout, "Error: %s\n", err.Error())
+			return
+		}
+		fmt.Fprintf(stdout, "%s\n", string(out))
+	})
 }
 
 func installCommand(mode CliMode, match string, helps []string,

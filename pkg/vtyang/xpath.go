@@ -17,7 +17,7 @@ type XWord struct {
 }
 
 type XPath struct {
-	words []XWord
+	Words []XWord
 }
 
 func NewXPath(dbm *DatabaseManager, s string) (XPath, error) {
@@ -80,7 +80,7 @@ func ParseXPath(dbm *DatabaseManager, xpath *XPath, s string) error {
 			panic("ASSERT")
 		}
 
-		xpath.words = append(xpath.words, xword)
+		xpath.Words = append(xpath.Words, xword)
 		words = words[1:]
 		module = foundNode
 	}
@@ -90,7 +90,7 @@ func ParseXPath(dbm *DatabaseManager, xpath *XPath, s string) error {
 
 func (x XPath) String() string {
 	s := ""
-	for _, w := range x.words {
+	for _, w := range x.Words {
 		s = fmt.Sprintf("%s/%s", s, w.word)
 		if w.keys != nil {
 			for k, v := range w.keys {
@@ -208,7 +208,7 @@ func ParseXPathArgs(dbm *DatabaseManager, args []string, setmode bool) (XPath, s
 			panic("ASSERT")
 		}
 
-		xpath.words = append(xpath.words, xword)
+		xpath.Words = append(xpath.Words, xword)
 		words = words[1:]
 		if argumentExist {
 			words = words[argumentCount:]

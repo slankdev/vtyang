@@ -105,7 +105,7 @@ func (m *DatabaseManager) DumpEntries() []*yang.Entry {
 
 func (dbm *DatabaseManager) GetNode(xpath XPath) (*DBNode, error) {
 	n := &dbm.root
-	xwords := xpath.words
+	xwords := xpath.Words
 
 	for ; len(xwords) != 0; xwords = xwords[1:] {
 		xword := xwords[0]
@@ -156,7 +156,7 @@ func (dbm *DatabaseManager) GetNode(xpath XPath) (*DBNode, error) {
 
 func (dbm *DatabaseManager) DeleteNode(xpath XPath) error {
 	n := dbm.candidateRoot
-	xwords := xpath.words
+	xwords := xpath.Words
 
 	if len(xwords) == 0 {
 		n.Childs = []DBNode{}
@@ -215,7 +215,7 @@ func (dbm *DatabaseManager) DeleteNode(xpath XPath) error {
 func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 	*DBNode, error) {
 	n := dbm.candidateRoot
-	xwords := xpath.words
+	xwords := xpath.Words
 	for ; len(xwords) != 0; xwords = xwords[1:] {
 		xword := xwords[0]
 		switch xword.dbtype {
@@ -408,7 +408,7 @@ func (xpath XPath) CreateDBNodeTree() (*DBNode, error) {
 	}
 
 	var tail *DBNode = &root
-	for _, xword := range xpath.words {
+	for _, xword := range xpath.Words {
 		n := new(DBNode)
 		n.Name = xword.word
 		n.Type = Container

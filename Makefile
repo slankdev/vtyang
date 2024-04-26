@@ -17,9 +17,3 @@ reset-netns:
 	ssh -t dev sudo ip netns exec ns0 ip link add dum2 type dummy
 frr-run: frr-agent-build
 	ssh -t dev sudo /home/ubuntu/git/vtyang/bin/frr-agent
-
-t:
-	sudo rm -f /tmp/vtyang.log
-	go test ./pkg/vtyang/ -count=1 -run TestYangCompletion1
-tt: vtyang-build
-	./bin/vtyang agent -y pkg/vtyang/testdata/same_container_name_in_different_modules/

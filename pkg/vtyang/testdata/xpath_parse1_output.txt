@@ -1,0 +1,30 @@
+{
+  "Words": [
+    {
+      "Word": "lib",
+      "Keys": null,
+      "Dbtype": "container",
+      "Dbvaluetype": ""
+    },
+    {
+      "Word": "interface",
+      "Keys": {
+        "name": {
+          "Type": "string",
+          "Integer": 0,
+          "String": "dum0",
+          "Boolean": false,
+          "StringArray": null
+        }
+      },
+      "Dbtype": "list",
+      "Dbvaluetype": ""
+    },
+    {
+      "Word": "description",
+      "Keys": null,
+      "Dbtype": "leaf",
+      "Dbvaluetype": "string"
+    }
+  ]
+}

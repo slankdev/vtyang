@@ -101,12 +101,25 @@ func (x XPath) String() string {
 }
 
 func ParseXPathArgs(dbm *DatabaseManager, args []string, setmode bool) (XPath, string, error) {
-	module := &yang.Entry{}
-	module.Dir = map[string]*yang.Entry{}
+	var xpath XPath
+	var val string
+	var err error
 	for _, ent := range dbm.DumpEntries() {
+		module := &yang.Entry{}
+		module.Dir = map[string]*yang.Entry{}
 		module.Dir[ent.Name] = ent
+		xpath, val, err = ParseXPathArgsImpl(module, args, setmode)
+		if err == nil {
+			break
+		}
 	}
+	if err != nil {
+		return XPath{}, "", err
+	}
+	return xpath, val, nil
+}
 
+func ParseXPathArgsImpl(module *yang.Entry, args []string, setmode bool) (XPath, string, error) {
 	words := args
 	xpath := XPath{}
 	valueStr := ""

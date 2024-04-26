@@ -201,5 +201,10 @@ mgmt commit apply
 do show mgmt datastore-contents json 
 ```
 
+```
+set lib interface dum0 description dum0-comment
+set lib prefix-list ipv4 hoge entry 10 action permit
+```
+
 ## References
 - https://web.sfc.wide.ad.jp/~irino/blog/2023/04/02/frr-grpc/

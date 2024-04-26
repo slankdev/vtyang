@@ -97,6 +97,7 @@ module ietf-interfaces {
 
   /*
    * Data nodes
+   * NOTE(slankdev): deleted
    */
 
   /*

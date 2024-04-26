@@ -66,8 +66,9 @@ func TestAgentXPathCli(t *testing.T) {
 func TestAgentXPathCliFRR(t *testing.T) {
 	executeTestCase(t, &TestCase{
 		RuntimePath: "/tmp/run/vtyang",
-		YangPath:    "./testdata/frr_isid_test1",
-		OutputFile:  "./testdata/frr_isid_test1/output.json",
+		// YangPath:    "./testdata/frr_isid_test1",
+		YangPath:   "./testdata/yang/frr_isisd_minimal",
+		OutputFile: "./testdata/frr_isid_test1/output.json",
 		Inputs: []string{
 			"configure",
 			"set isis instance 1 default area-address 10.0000.0000.0000.0000.0000.0000.0000.0000.0000.00",

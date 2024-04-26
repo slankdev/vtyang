@@ -1,0 +1,16 @@
+{
+  "Words": [
+    {
+      "Word": "values",
+      "Keys": null,
+      "Dbtype": "container",
+      "Dbvaluetype": 0
+    },
+    {
+      "Word": "u08",
+      "Keys": null,
+      "Dbtype": "leaf",
+      "Dbvaluetype": 5
+    }
+  ]
+}

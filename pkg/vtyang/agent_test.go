@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/openconfig/goyang/pkg/yang"
 	"github.com/slankdev/vtyang/pkg/util"
 )
 
@@ -143,8 +144,8 @@ func TestFilterDbWithModule(t *testing.T) {
 						Name: "as-number",
 						Type: Leaf,
 						Value: DBValue{
-							Type:    YInteger,
-							Integer: 65001,
+							Type:  yang.Yint32,
+							Int32: 65001,
 						},
 					},
 				},
@@ -157,8 +158,8 @@ func TestFilterDbWithModule(t *testing.T) {
 						Name: "ignored",
 						Type: Leaf,
 						Value: DBValue{
-							Type:    YInteger,
-							Integer: 65001,
+							Type:  yang.Yint32,
+							Int32: 65001,
 						},
 					},
 					{
@@ -173,7 +174,7 @@ func TestFilterDbWithModule(t *testing.T) {
 										Name: "area-tag",
 										Type: Leaf,
 										Value: DBValue{
-											Type:   YString,
+											Type:   yang.Ystring,
 											String: "1",
 										},
 									},
@@ -181,17 +182,17 @@ func TestFilterDbWithModule(t *testing.T) {
 										Name: "vrf",
 										Type: Leaf,
 										Value: DBValue{
-											Type:   YString,
+											Type:   yang.Ystring,
 											String: "default",
 										},
 									},
 									{
 										Name: "area-address",
 										Type: LeafList,
-										Value: DBValue{
-											Type: YStringArray,
-											StringArray: []string{
-												"10.0000.0000.0000.0000.0000.0000.0000.0000.0000.00",
+										ArrayValue: []DBValue{
+											{
+												Type:   yang.Ystring,
+												String: "10.0000.0000.0000.0000.0000.0000.0000.0000.0000.00",
 											},
 										},
 									},
@@ -224,7 +225,7 @@ func TestFilterDbWithModule(t *testing.T) {
 										Name: "area-tag",
 										Type: Leaf,
 										Value: DBValue{
-											Type:   YString,
+											Type:   yang.Ystring,
 											String: "1",
 										},
 									},
@@ -232,17 +233,17 @@ func TestFilterDbWithModule(t *testing.T) {
 										Name: "vrf",
 										Type: Leaf,
 										Value: DBValue{
-											Type:   YString,
+											Type:   yang.Ystring,
 											String: "default",
 										},
 									},
 									{
 										Name: "area-address",
 										Type: LeafList,
-										Value: DBValue{
-											Type: YStringArray,
-											StringArray: []string{
-												"10.0000.0000.0000.0000.0000.0000.0000.0000.0000.00",
+										ArrayValue: []DBValue{
+											{
+												Type:   yang.Ystring,
+												String: "10.0000.0000.0000.0000.0000.0000.0000.0000.0000.00",
 											},
 										},
 									},

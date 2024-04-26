@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/k0kubun/pp"
+	"github.com/openconfig/goyang/pkg/yang"
 )
 
 var xpathTestDBRoot = DBNode{
@@ -26,7 +27,7 @@ var xpathTestDBRoot = DBNode{
 									Name: "name",
 									Type: Leaf,
 									Value: DBValue{
-										Type:   YString,
+										Type:   yang.Ystring,
 										String: "hiroki",
 									},
 								},
@@ -34,8 +35,8 @@ var xpathTestDBRoot = DBNode{
 									Name: "age",
 									Type: Leaf,
 									Value: DBValue{
-										Type:    YInteger,
-										Integer: 26,
+										Type:  yang.Yint32,
+										Int32: 26,
 									},
 								},
 								{
@@ -49,7 +50,7 @@ var xpathTestDBRoot = DBNode{
 													Name: "name",
 													Type: Leaf,
 													Value: DBValue{
-														Type:   YString,
+														Type:   yang.Ystring,
 														String: "tennis",
 													},
 												},
@@ -57,7 +58,7 @@ var xpathTestDBRoot = DBNode{
 													Name: "finished",
 													Type: Leaf,
 													Value: DBValue{
-														Type:    YBoolean,
+														Type:    yang.Ybool,
 														Boolean: true,
 													},
 												},
@@ -70,7 +71,7 @@ var xpathTestDBRoot = DBNode{
 													Name: "name",
 													Type: Leaf,
 													Value: DBValue{
-														Type:   YString,
+														Type:   yang.Ystring,
 														String: "driving",
 													},
 												},
@@ -78,7 +79,7 @@ var xpathTestDBRoot = DBNode{
 													Name: "finished",
 													Type: Leaf,
 													Value: DBValue{
-														Type:    YBoolean,
+														Type:    yang.Ybool,
 														Boolean: false,
 													},
 												},
@@ -95,7 +96,7 @@ var xpathTestDBRoot = DBNode{
 									Name: "name",
 									Type: Leaf,
 									Value: DBValue{
-										Type:   YString,
+										Type:   yang.Ystring,
 										String: "slankdev",
 									},
 								},
@@ -103,8 +104,8 @@ var xpathTestDBRoot = DBNode{
 									Name: "age",
 									Type: Leaf,
 									Value: DBValue{
-										Type:    YInteger,
-										Integer: 36,
+										Type:  yang.Yint32,
+										Int32: 36,
 									},
 								},
 								{
@@ -118,7 +119,7 @@ var xpathTestDBRoot = DBNode{
 													Name: "name",
 													Type: Leaf,
 													Value: DBValue{
-														Type:   YString,
+														Type:   yang.Ystring,
 														String: "kloudnfv",
 													},
 												},
@@ -126,7 +127,7 @@ var xpathTestDBRoot = DBNode{
 													Name: "finished",
 													Type: Leaf,
 													Value: DBValue{
-														Type:    YBoolean,
+														Type:    yang.Ybool,
 														Boolean: false,
 													},
 												},
@@ -139,7 +140,7 @@ var xpathTestDBRoot = DBNode{
 													Name: "name",
 													Type: Leaf,
 													Value: DBValue{
-														Type:   YString,
+														Type:   yang.Ystring,
 														String: "wide",
 													},
 												},
@@ -147,7 +148,7 @@ var xpathTestDBRoot = DBNode{
 													Name: "finished",
 													Type: Leaf,
 													Value: DBValue{
-														Type:    YBoolean,
+														Type:    yang.Ybool,
 														Boolean: false,
 													},
 												},
@@ -186,7 +187,7 @@ func TestXPathParse(t *testing.T) {
 						Word:   "user",
 						Keys: map[string]DBValue{
 							"name": {
-								Type:   YString,
+								Type:   yang.Ystring,
 								String: "eva",
 							},
 						},
@@ -235,7 +236,7 @@ func TestXPathParseCli(t *testing.T) {
 						Word:   "user",
 						Keys: map[string]DBValue{
 							"name": {
-								Type:   YString,
+								Type:   yang.Ystring,
 								String: "eva",
 							},
 						},
@@ -243,7 +244,7 @@ func TestXPathParseCli(t *testing.T) {
 					{
 						Dbtype:      Leaf,
 						Word:        "age",
-						Dbvaluetype: YInteger,
+						Dbvaluetype: yang.Yint32,
 					},
 				},
 			},

@@ -336,7 +336,17 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 			}
 		case Leaf:
 			switch xword.Dbvaluetype {
-			case YInteger:
+
+			// case yang.Ybits:
+			// case yang.Ydecimal64:
+			// case yang.Yempty:
+			// case yang.Yenum:
+			// case yang.Yidentityref:
+			// case yang.YinstanceIdentifier:
+			// case yang.Yleafref:
+			// case yang.Yunion:
+
+			case yang.Yint8:
 				ival, err := strconv.Atoi(val)
 				if err != nil {
 					return nil, err
@@ -345,20 +355,111 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 					Name: xword.Word,
 					Type: Leaf,
 					Value: DBValue{
-						Type:    YInteger,
-						Integer: ival,
+						Type: yang.Yint8,
+						Int8: int8(ival),
 					},
 				})
-			case YString:
+			case yang.Yint16:
+				ival, err := strconv.Atoi(val)
+				if err != nil {
+					return nil, err
+				}
 				n.Childs = append(n.Childs, DBNode{
 					Name: xword.Word,
 					Type: Leaf,
 					Value: DBValue{
-						Type:   YString,
+						Type:  yang.Yint16,
+						Int16: int16(ival),
+					},
+				})
+			case yang.Yint32:
+				ival, err := strconv.Atoi(val)
+				if err != nil {
+					return nil, err
+				}
+				n.Childs = append(n.Childs, DBNode{
+					Name: xword.Word,
+					Type: Leaf,
+					Value: DBValue{
+						Type:  yang.Yint32,
+						Int32: int32(ival),
+					},
+				})
+			case yang.Yint64:
+				ival, err := strconv.Atoi(val)
+				if err != nil {
+					return nil, err
+				}
+				n.Childs = append(n.Childs, DBNode{
+					Name: xword.Word,
+					Type: Leaf,
+					Value: DBValue{
+						Type:  yang.Yint64,
+						Int64: int64(ival),
+					},
+				})
+			case yang.Yuint8:
+				ival, err := strconv.Atoi(val)
+				if err != nil {
+					return nil, err
+				}
+				n.Childs = append(n.Childs, DBNode{
+					Name: xword.Word,
+					Type: Leaf,
+					Value: DBValue{
+						Type: yang.Yuint8,
+						Int8: int8(ival),
+					},
+				})
+			case yang.Yuint16:
+				ival, err := strconv.Atoi(val)
+				if err != nil {
+					return nil, err
+				}
+				n.Childs = append(n.Childs, DBNode{
+					Name: xword.Word,
+					Type: Leaf,
+					Value: DBValue{
+						Type:  yang.Yuint16,
+						Int16: int16(ival),
+					},
+				})
+			case yang.Yuint32:
+				ival, err := strconv.Atoi(val)
+				if err != nil {
+					return nil, err
+				}
+				n.Childs = append(n.Childs, DBNode{
+					Name: xword.Word,
+					Type: Leaf,
+					Value: DBValue{
+						Type:  yang.Yuint32,
+						Int32: int32(ival),
+					},
+				})
+			case yang.Yuint64:
+				ival, err := strconv.Atoi(val)
+				if err != nil {
+					return nil, err
+				}
+				n.Childs = append(n.Childs, DBNode{
+					Name: xword.Word,
+					Type: Leaf,
+					Value: DBValue{
+						Type:  yang.Yuint64,
+						Int64: int64(ival),
+					},
+				})
+			case yang.Ystring:
+				n.Childs = append(n.Childs, DBNode{
+					Name: xword.Word,
+					Type: Leaf,
+					Value: DBValue{
+						Type:   yang.Ystring,
 						String: val,
 					},
 				})
-			case YBoolean:
+			case yang.Ybool:
 				bval, err := strconv.ParseBool(val)
 				if err != nil {
 					return nil, err
@@ -367,7 +468,7 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 					Name: xword.Word,
 					Type: Leaf,
 					Value: DBValue{
-						Type:    YBoolean,
+						Type:    yang.Ybool,
 						Boolean: bval,
 					},
 				})
@@ -389,10 +490,15 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 				})
 				tmpNode = &n.Childs[len(n.Childs)-1]
 			}
-			tmpNode.Value = DBValue{
-				Type:        YStringArray,
-				StringArray: strings.Fields(val),
+
+			arrayvalue := []DBValue{}
+			for _, s := range strings.Fields(val) {
+				arrayvalue = append(arrayvalue, DBValue{
+					Type:   yang.Ystring,
+					String: s,
+				})
 			}
+			tmpNode.ArrayValue = arrayvalue
 		default:
 			return nil, fmt.Errorf("%s: unsupported(%s)", util.LINE(), xword.Dbtype)
 		}
@@ -592,34 +698,88 @@ type DBNode struct {
 	Type   DBNodeType
 	Childs []DBNode
 	Value  DBValue
+	// leaf-list
+	ArrayValue []DBValue
 }
 
-type DBValueType string
+// // type DBValueType string
+// type DBValueType yang.TypeKind
 
-const (
-	YString      DBValueType = "string"
-	YInteger     DBValueType = "integer"
-	YBoolean     DBValueType = "boolean"
-	YStringArray DBValueType = "stringarray"
-	YEnum        DBValueType = "enum"
-)
+// const (
+// 	YString      DBValueType = "string"
+// 	YInteger     DBValueType = "integer"
+// 	YBoolean     DBValueType = "boolean"
+// 	YStringArray DBValueType = "stringarray"
+// 	YEnum        DBValueType = "enum"
+// )
+
+// yang.Yint8
+// yang.Yint16
+// yang.Yint32
+// yang.Yint64
+// yang.Yuint8
+// yang.Yuint16
+// yang.Yuint32
+// yang.Yuint64
+// yang.Ybinary
+// yang.Ybits
+// yang.Ybool
+// yang.Ydecimal64
+// yang.Yempty
+// yang.Yenum
+// yang.Yidentityref
+// yang.YinstanceIdentifier
+// yang.Yleafref
+// yang.Ystring
+// yang.Yunion
 
 type DBValue struct {
-	Type DBValueType
+	Type yang.TypeKind
 
 	// Union
-	Integer     int
-	String      string
-	Boolean     bool
-	StringArray []string
+	Int8    int8
+	Int16   int16
+	Int32   int32
+	Int64   int64
+	Uint8   uint8
+	Uint16  uint16
+	Uint32  uint32
+	Uint64  uint64
+	String  string
+	Boolean bool
 }
 
 func (v *DBValue) ToString() string {
 	switch v.Type {
-	case YString:
+	case yang.Ystring:
 		return v.String
-	case YInteger:
-		return fmt.Sprintf("%d", v.Integer)
+	case yang.Yint8:
+		return fmt.Sprintf("%d", v.Int8)
+	case yang.Yint16:
+		return fmt.Sprintf("%d", v.Int16)
+	case yang.Yint32:
+		return fmt.Sprintf("%d", v.Int32)
+	case yang.Yint64:
+		return fmt.Sprintf("%d", v.Int64)
+	case yang.Yuint8:
+		return fmt.Sprintf("%d", v.Uint8)
+	case yang.Yuint16:
+		return fmt.Sprintf("%d", v.Uint16)
+	case yang.Yuint32:
+		return fmt.Sprintf("%d", v.Uint32)
+	case yang.Yuint64:
+		return fmt.Sprintf("%d", v.Uint64)
+	case yang.Ybool:
+		return fmt.Sprintf("%v", v.Boolean)
+	// case yang.Ybinary:
+	// case yang.Ybits:
+	// case yang.Ydecimal64:
+	// case yang.Yempty:
+	// case yang.Yenum:
+	// case yang.Yidentityref:
+	// case yang.YinstanceIdentifier:
+	// case yang.Yleafref:
+	// case yang.Yunion:
 	default:
 		panic(fmt.Sprintf("OKASHI (%s)", v.Type))
 	}
@@ -654,7 +814,11 @@ func (n *DBNode) ToMap() interface{} {
 	case Leaf:
 		return n.Value.ToValue()
 	case LeafList:
-		return n.Value.ToValue()
+		array := []string{}
+		for _, a := range n.ArrayValue {
+			array = append(array, a.String)
+		}
+		return array
 	case "":
 		return nil
 	default:
@@ -721,7 +885,7 @@ func Interface2DBNode(i interface{}) (*DBNode, error) {
 				return nil, err
 			}
 			n.Type = LeafList
-			n.Value = v
+			n.ArrayValue = v
 		} else {
 			n.Type = List
 			n.Childs = append(n.Childs, childCandidates...)
@@ -729,32 +893,50 @@ func Interface2DBNode(i interface{}) (*DBNode, error) {
 	case bool:
 		n.Type = Leaf
 		n.Value = DBValue{
-			Type:    YBoolean,
+			Type:    yang.Ybool,
 			Boolean: g,
 		}
 	case int:
 		n.Type = Leaf
 		n.Value = DBValue{
-			Type:    YInteger,
-			Integer: g,
+			Type:  yang.Yint32,
+			Int32: int32(g),
 		}
-	case float64:
+	case int32:
 		n.Type = Leaf
 		n.Value = DBValue{
-			Type:    YInteger,
-			Integer: int(g),
+			Type:  yang.Yint32,
+			Int32: int32(g),
+		}
+	case uint32:
+		n.Type = Leaf
+		n.Value = DBValue{
+			Type:   yang.Yuint32,
+			Uint32: uint32(g),
 		}
 	case string:
 		n.Type = Leaf
 		n.Value = DBValue{
-			Type:   YString,
+			Type:   yang.Ystring,
 			String: g,
 		}
 	case []string:
+		a := []DBValue{}
+		for _, s := range g {
+			a = append(a, DBValue{
+				Type:   yang.Ystring,
+				String: s,
+			})
+		}
 		n.Type = LeafList
+		n.ArrayValue = a
+
+	// TODO(slankdev)
+	case float64:
+		n.Type = Leaf
 		n.Value = DBValue{
-			Type:        YStringArray,
-			StringArray: g,
+			Type:  yang.Yint32,
+			Int32: int32(g),
 		}
 	case nil:
 		n.Type = Container
@@ -766,14 +948,26 @@ func Interface2DBNode(i interface{}) (*DBNode, error) {
 
 func (v DBValue) ToValue() interface{} {
 	switch v.Type {
-	case YInteger:
-		return v.Integer
-	case YBoolean:
+	case yang.Yint8:
+		return v.Int8
+	case yang.Yint16:
+		return v.Int16
+	case yang.Yint32:
+		return v.Int32
+	case yang.Yint64:
+		return v.Int64
+	case yang.Yuint8:
+		return v.Uint8
+	case yang.Yuint16:
+		return v.Uint16
+	case yang.Yuint32:
+		return v.Uint32
+	case yang.Yuint64:
+		return v.Uint64
+	case yang.Ybool:
 		return v.Boolean
-	case YString:
+	case yang.Ystring:
 		return v.String
-	case YStringArray:
-		return v.StringArray
 	default:
 		panic(fmt.Sprintf("ASSERT(%s)", v.Type))
 	}
@@ -781,20 +975,73 @@ func (v DBValue) ToValue() interface{} {
 
 func (v *DBValue) SetFromString(s string) error {
 	switch v.Type {
-	case YInteger:
-		i, err := strconv.Atoi(s)
+	case yang.Yint8:
+		ival, err := strconv.Atoi(s)
 		if err != nil {
 			return err
 		}
-		v.Integer = i
-	case YBoolean:
-		b, err := strconv.ParseBool(s)
+		v.Int8 = int8(ival)
+	case yang.Yint16:
+		ival, err := strconv.Atoi(s)
 		if err != nil {
 			return err
 		}
-		v.Boolean = b
-	case YString:
+		v.Int16 = int16(ival)
+	case yang.Yint32:
+		ival, err := strconv.Atoi(s)
+		if err != nil {
+			return err
+		}
+		v.Int32 = int32(ival)
+	case yang.Yint64:
+		ival, err := strconv.Atoi(s)
+		if err != nil {
+			return err
+		}
+		v.Int64 = int64(ival)
+	case yang.Yuint8:
+		ival, err := strconv.Atoi(s)
+		if err != nil {
+			return err
+		}
+		v.Uint8 = uint8(ival)
+	case yang.Yuint16:
+		ival, err := strconv.Atoi(s)
+		if err != nil {
+			return err
+		}
+		v.Uint16 = uint16(ival)
+	case yang.Yuint32:
+		ival, err := strconv.Atoi(s)
+		if err != nil {
+			return err
+		}
+		v.Uint32 = uint32(ival)
+	case yang.Yuint64:
+		ival, err := strconv.Atoi(s)
+		if err != nil {
+			return err
+		}
+		v.Uint64 = uint64(ival)
+	case yang.Ystring:
 		v.String = s
+	case yang.Ybool:
+		bval, err := strconv.ParseBool(s)
+		if err != nil {
+			return err
+		}
+		v.Boolean = bval
+
+	// case yang.Ybits:
+	// case yang.Ydecimal64:
+	// case yang.Yempty:
+	// case yang.Yenum:
+	// case yang.Yidentityref:
+	// case yang.YinstanceIdentifier:
+	// case yang.Yleafref:
+	// case yang.Yunion:
+	default:
+		panic(fmt.Sprintf("OKASHI (%s)", v.Type))
 	}
 	return nil
 }
@@ -891,19 +1138,19 @@ func filterDbWithModuleImpl(n *DBNode, root *yang.Entry) *DBNode {
 	return n
 }
 
-func squashListToLeafList(items []DBNode) (DBValue, error) {
-	typesMap := map[DBValueType]bool{}
+func squashListToLeafList(items []DBNode) ([]DBValue, error) {
+	typesMap := map[yang.TypeKind]bool{}
 	for _, item := range items {
 		typesMap[item.Value.Type] = true
 	}
-	types := []DBValueType{}
+	types := []yang.TypeKind{}
 	for key, val := range typesMap {
 		if val {
 			types = append(types, key)
 		}
 	}
 	if len(types) != 1 {
-		return DBValue{}, fmt.Errorf("invalid list items (%+v)", types)
+		return []DBValue{}, fmt.Errorf("invalid list items (%+v)", types)
 	}
 
 	switch types[0] {
@@ -911,16 +1158,15 @@ func squashListToLeafList(items []DBNode) (DBValue, error) {
 	// case YInteger:
 	// case YBoolean:
 
-	case YString:
-		g := []string{}
+	case yang.Ystring:
+		a := []DBValue{}
 		for _, item := range items {
-			g = append(g, item.Value.String)
+			a = append(a, DBValue{
+				Type:   yang.Ystring,
+				String: item.Value.String,
+			})
 		}
-		ret := DBValue{
-			Type:        YStringArray,
-			StringArray: g,
-		}
-		return ret, nil
+		return a, nil
 	default:
 		panic(fmt.Sprintf("OKASHII %s", types[0]))
 	}

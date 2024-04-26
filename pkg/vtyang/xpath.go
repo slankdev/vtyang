@@ -12,7 +12,7 @@ type XWord struct {
 	Word        string
 	Keys        map[string]DBValue
 	Dbtype      DBNodeType
-	Dbvaluetype DBValueType
+	Dbvaluetype yang.TypeKind
 }
 
 type XPath struct {
@@ -51,7 +51,7 @@ func ParseXPath(dbm *DatabaseManager, xpath *XPath, s string) error {
 			v := val(words[0])
 			xword.Keys = map[string]DBValue{}
 			xword.Keys[k] = DBValue{
-				Type:   YString,
+				Type:   yang.Ystring,
 				String: v,
 			}
 		}
@@ -72,7 +72,7 @@ func ParseXPath(dbm *DatabaseManager, xpath *XPath, s string) error {
 			xword.Dbtype = Container
 		case foundNode.IsLeaf():
 			xword.Dbtype = Leaf
-			xword.Dbvaluetype = YangTypeKind2YType(foundNode.Type.Kind)
+			xword.Dbvaluetype = foundNode.Type.Kind
 		case foundNode.IsList():
 			xword.Dbtype = List
 		default:
@@ -151,7 +151,7 @@ func ParseXPathArgsImpl(module *yang.Entry, args []string, setmode bool) (XPath,
 				argumentExist = true
 			}
 			xword.Dbtype = Leaf
-			xword.Dbvaluetype = YangTypeKind2YType(foundNode.Type.Kind)
+			xword.Dbvaluetype = foundNode.Type.Kind
 		case foundNode.IsList():
 			if len(words) < 2 {
 				return XPath{}, "", fmt.Errorf("invalid args len")
@@ -167,20 +167,21 @@ func ParseXPathArgsImpl(module *yang.Entry, args []string, setmode bool) (XPath,
 					}
 				}
 				tmpStr := words[argumentCount]
+				// TODO(slankdev): support typedef natively
 				switch keyLeafNode.Type.Name {
 				case "string":
 					xword.Keys[w] = DBValue{
-						Type:   YString,
+						Type:   yang.Ystring,
 						String: tmpStr,
 					}
 				case "vrf-ref":
 					xword.Keys[w] = DBValue{
-						Type:   YString,
+						Type:   yang.Ystring,
 						String: tmpStr,
 					}
 				case "ip-prefix":
 					xword.Keys[w] = DBValue{
-						Type:   YString,
+						Type:   yang.Ystring,
 						String: tmpStr,
 					}
 				case "uint32":
@@ -189,19 +190,19 @@ func ParseXPathArgsImpl(module *yang.Entry, args []string, setmode bool) (XPath,
 						return XPath{}, "", err
 					}
 					xword.Keys[w] = DBValue{
-						Type:    YInteger,
-						Integer: int(intval),
+						Type:   yang.Yuint32,
+						Uint32: uint32(intval),
 					}
 				case "enumeration":
 					// XXX(slankdev)
 					xword.Keys[w] = DBValue{
-						Type:   YString,
+						Type:   yang.Ystring,
 						String: tmpStr,
 					}
 				case "access-list-name":
 					// XXX(slankdev)
 					xword.Keys[w] = DBValue{
-						Type:   YString,
+						Type:   yang.Ystring,
 						String: tmpStr,
 					}
 				case "access-list-sequence":
@@ -211,8 +212,8 @@ func ParseXPathArgsImpl(module *yang.Entry, args []string, setmode bool) (XPath,
 						return XPath{}, "", err
 					}
 					xword.Keys[w] = DBValue{
-						Type:    YInteger,
-						Integer: int(intval),
+						Type:  yang.Yint32,
+						Int32: int32(intval),
 					}
 				case "HOGE":
 					//pp.Println(keyLeafNode.Type)
@@ -241,7 +242,7 @@ func ParseXPathArgsImpl(module *yang.Entry, args []string, setmode bool) (XPath,
 				argumentExist = true
 			}
 			xword.Dbtype = LeafList
-			xword.Dbvaluetype = YangTypeKind2YType(foundNode.Type.Kind)
+			xword.Dbvaluetype = foundNode.Type.Kind
 			//pp.Println(valueStr)
 		default:
 			panic("ASSERT")

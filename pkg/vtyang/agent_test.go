@@ -133,6 +133,20 @@ func TestXpathParse2(t *testing.T) {
 			"commit",
 			"quit",
 			"show running-config",
+
+			"configure",
+			"set values u08 255",
+			"set values u16 65535",
+			"set values u32 4294967295",
+			"set values u64 18446744073709551615",
+			"set values i08 127",
+			"set values i16 32767",
+			"set values i32 2147483647",
+			"set values i64 9223372036854775807",
+			"set values percentage 0",
+			"commit",
+			"quit",
+			"show running-config",
 		},
 	})
 }

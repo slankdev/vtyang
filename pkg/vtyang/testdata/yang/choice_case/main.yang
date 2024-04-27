@@ -4,14 +4,14 @@ module main {
 
   container values {
     container transport-proto {
-      choice transport-proto {
-        case tcp {
-          leaf http-app {
+      choice transport-proto-choice {
+        case tcp-case {
+          leaf tcp-app {
             type string;
           }
         }
-        case udp {
-          leaf dns-app {
+        case udp-case {
+          leaf udp-app {
             type string;
           }
         }

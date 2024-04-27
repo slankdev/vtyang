@@ -131,17 +131,17 @@
               "Modules": null,
               "Childs": [
                 {
-                  "Name": "transport-proto",
+                  "Name": "transport-proto-choice",
                   "Description": "",
                   "Modules": null,
                   "Childs": [
                     {
-                      "Name": "tcp",
+                      "Name": "tcp-case",
                       "Description": "",
                       "Modules": null,
                       "Childs": [
                         {
-                          "Name": "http-app",
+                          "Name": "tcp-app",
                           "Description": "",
                           "Modules": null,
                           "Childs": [
@@ -163,12 +163,12 @@
                       ]
                     },
                     {
-                      "Name": "udp",
+                      "Name": "udp-case",
                       "Description": "",
                       "Modules": null,
                       "Childs": [
                         {
-                          "Name": "dns-app",
+                          "Name": "udp-app",
                           "Description": "",
                           "Modules": null,
                           "Childs": [
@@ -215,21 +215,21 @@
                   ],
                   "Childs": [
                     {
-                      "Name": "transport-proto",
+                      "Name": "transport-proto-choice",
                       "Description": "",
                       "Modules": [
                         "main"
                       ],
                       "Childs": [
                         {
-                          "Name": "tcp",
+                          "Name": "tcp-case",
                           "Description": "",
                           "Modules": [
                             "main"
                           ],
                           "Childs": [
                             {
-                              "Name": "http-app",
+                              "Name": "tcp-app",
                               "Description": "",
                               "Modules": [
                                 "main"
@@ -253,14 +253,14 @@
                           ]
                         },
                         {
-                          "Name": "udp",
+                          "Name": "udp-case",
                           "Description": "",
                           "Modules": [
                             "main"
                           ],
                           "Childs": [
                             {
-                              "Name": "dns-app",
+                              "Name": "udp-app",
                               "Description": "",
                               "Modules": [
                                 "main"

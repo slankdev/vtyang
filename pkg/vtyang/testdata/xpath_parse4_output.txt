@@ -58,7 +58,7 @@
       "Word": "u64",
       "Keys": null,
       "Dbtype": "leaf",
-      "Dbvaluetype": 4
+      "Dbvaluetype": 8
     }
   ]
 }

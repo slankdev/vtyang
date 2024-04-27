@@ -192,6 +192,7 @@ func TestXpathParse4(t *testing.T) {
 			"show-xpath values i16 100",
 			"show-xpath values i32 100",
 			"show-xpath values i64 100",
+			"show-xpath values month 12",
 		},
 	})
 }

@@ -376,17 +376,14 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 					Value: v,
 				})
 			case yang.Yint64:
-				ival, err := strconv.Atoi(val)
-				if err != nil {
-					return nil, err
+				v := DBValue{Type: xword.Dbvaluetype}
+				if err := v.SetFromString(val); err != nil {
+					return nil, errors.Wrap(err, "SetFromString")
 				}
 				n.Childs = append(n.Childs, DBNode{
-					Name: xword.Word,
-					Type: Leaf,
-					Value: DBValue{
-						Type:  yang.Yint64,
-						Int64: int64(ival),
-					},
+					Name:  xword.Word,
+					Type:  Leaf,
+					Value: v,
 				})
 			case yang.Yuint8:
 				v := DBValue{Type: xword.Dbvaluetype}

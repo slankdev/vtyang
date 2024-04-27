@@ -1060,6 +1060,12 @@ func (v *DBValue) SetFromString(s string) error {
 			return errors.Wrap(err, "strconv.ParseUint(s,10,64)")
 		}
 		v.Uint64 = uint64(ival)
+	case yang.Ydecimal64:
+		ival, err := strconv.ParseFloat(s, 64)
+		if err != nil {
+			return errors.Wrap(err, "strconv.ParseFloat(s,64)")
+		}
+		v.Decimal64 = float64(ival)
 	case yang.Ystring:
 		v.String = s
 	case yang.Ybool:

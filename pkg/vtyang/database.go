@@ -474,7 +474,7 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 					},
 				})
 			default:
-				return nil, fmt.Errorf("%s: unsupported(%s)", util.LINE(), xword.Dbvaluetype)
+				panic(fmt.Sprintf("OKASHI (%s)", xword.Dbvaluetype))
 			}
 		case LeafList:
 			var tmpNode *DBNode

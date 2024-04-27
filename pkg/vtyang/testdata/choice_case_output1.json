@@ -131,61 +131,40 @@
               "Modules": null,
               "Childs": [
                 {
-                  "Name": "transport-proto-choice",
+                  "Name": "tcp-app",
                   "Description": "",
                   "Modules": null,
                   "Childs": [
                     {
-                      "Name": "tcp-case",
+                      "Name": "VALUE",
                       "Description": "",
                       "Modules": null,
                       "Childs": [
                         {
-                          "Name": "tcp-app",
+                          "Name": "\u003ccr\u003e",
                           "Description": "",
                           "Modules": null,
-                          "Childs": [
-                            {
-                              "Name": "VALUE",
-                              "Description": "",
-                              "Modules": null,
-                              "Childs": [
-                                {
-                                  "Name": "\u003ccr\u003e",
-                                  "Description": "",
-                                  "Modules": null,
-                                  "Childs": null
-                                }
-                              ]
-                            }
-                          ]
+                          "Childs": null
                         }
                       ]
-                    },
+                    }
+                  ]
+                },
+                {
+                  "Name": "udp-app",
+                  "Description": "",
+                  "Modules": null,
+                  "Childs": [
                     {
-                      "Name": "udp-case",
+                      "Name": "VALUE",
                       "Description": "",
                       "Modules": null,
                       "Childs": [
                         {
-                          "Name": "udp-app",
+                          "Name": "\u003ccr\u003e",
                           "Description": "",
                           "Modules": null,
-                          "Childs": [
-                            {
-                              "Name": "VALUE",
-                              "Description": "",
-                              "Modules": null,
-                              "Childs": [
-                                {
-                                  "Name": "\u003ccr\u003e",
-                                  "Description": "",
-                                  "Modules": null,
-                                  "Childs": null
-                                }
-                              ]
-                            }
-                          ]
+                          "Childs": null
                         }
                       ]
                     }
@@ -215,71 +194,44 @@
                   ],
                   "Childs": [
                     {
-                      "Name": "transport-proto-choice",
+                      "Name": "tcp-app",
                       "Description": "",
                       "Modules": [
                         "main"
                       ],
                       "Childs": [
                         {
-                          "Name": "tcp-case",
+                          "Name": "VALUE",
                           "Description": "",
-                          "Modules": [
-                            "main"
-                          ],
+                          "Modules": null,
                           "Childs": [
                             {
-                              "Name": "tcp-app",
+                              "Name": "\u003ccr\u003e",
                               "Description": "",
-                              "Modules": [
-                                "main"
-                              ],
-                              "Childs": [
-                                {
-                                  "Name": "VALUE",
-                                  "Description": "",
-                                  "Modules": null,
-                                  "Childs": [
-                                    {
-                                      "Name": "\u003ccr\u003e",
-                                      "Description": "",
-                                      "Modules": null,
-                                      "Childs": null
-                                    }
-                                  ]
-                                }
-                              ]
+                              "Modules": null,
+                              "Childs": null
                             }
                           ]
-                        },
+                        }
+                      ]
+                    },
+                    {
+                      "Name": "udp-app",
+                      "Description": "",
+                      "Modules": [
+                        "main"
+                      ],
+                      "Childs": [
                         {
-                          "Name": "udp-case",
+                          "Name": "VALUE",
                           "Description": "",
-                          "Modules": [
-                            "main"
-                          ],
+                          "Modules": null,
                           "Childs": [
                             {
-                              "Name": "udp-app",
+                              "Name": "\u003ccr\u003e",
                               "Description": "",
-                              "Modules": [
-                                "main"
-                              ],
-                              "Childs": [
-                                {
-                                  "Name": "VALUE",
-                                  "Description": "",
-                                  "Modules": null,
-                                  "Childs": [
-                                    {
-                                      "Name": "\u003ccr\u003e",
-                                      "Description": "",
-                                      "Modules": null,
-                                      "Childs": null
-                                    }
-                                  ]
-                                }
-                              ]
+                              "Modules": null,
+                              "Childs": null
                             }
                           ]
                         }

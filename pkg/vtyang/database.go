@@ -448,17 +448,16 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 					},
 				})
 
-			// // TODO(slankdev)
-			// case yang.Yenum:
-			// 	n.Childs = append(n.Childs, DBNode{
-			// 		Name: xword.Word,
-			// 		Type: Leaf,
-			// 		Value: DBValue{
-			// 			Type:   yang.Ystring,
-			// 			String: val,
-			// 		},
-			// 	})
-
+			// TODO(slankdev)
+			case yang.Yenum:
+				n.Childs = append(n.Childs, DBNode{
+					Name: xword.Word,
+					Type: Leaf,
+					Value: DBValue{
+						Type:   yang.Ystring,
+						String: val,
+					},
+				})
 			default:
 				return nil, fmt.Errorf("%s: unsupported(%s)", util.LINE(), xword.Dbvaluetype)
 			}

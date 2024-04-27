@@ -9,12 +9,23 @@ import (
 )
 
 func getCommandOperState(modules *yang.Modules) *CompletionNode {
-	child := []*CompletionNode{}
-	for fullname, m := range modules.Modules {
-		if strings.Contains(fullname, "@") {
-			continue
+	fullnames := []string{}
+	for fullname := range modules.Modules {
+		if !strings.Contains(fullname, "@") {
+			fullnames = append(fullnames, fullname)
 		}
-		for _, e := range yang.ToEntry(m).Dir {
+	}
+	sort.Strings(fullnames)
+	child := []*CompletionNode{}
+	for _, fullname := range fullnames {
+		m := modules.Modules[fullname]
+		entnames := []string{}
+		for entname := range yang.ToEntry(m).Dir {
+			entnames = append(entnames, entname)
+		}
+		sort.Strings(entnames)
+		for _, entname := range entnames {
+			e := yang.ToEntry(m).Dir[entname]
 			child = append(child, resolveCompletionNodeOperState(e, 0))
 		}
 	}
@@ -62,6 +73,7 @@ func resolveCompletionNodeOperState(e *yang.Entry, depth int) *CompletionNode {
 			}
 		}
 		n.Childs = append(n.Childs, wildcardNode)
+		sort.Slice(n.Childs, func(i, j int) bool { return n.Childs[i].Name < n.Childs[j].Name })
 
 	case e.IsLeaf():
 		child := &CompletionNode{
@@ -69,6 +81,7 @@ func resolveCompletionNodeOperState(e *yang.Entry, depth int) *CompletionNode {
 			Childs: []*CompletionNode{newCR()},
 		}
 		n.Childs = append(n.Childs, child)
+		sort.Slice(n.Childs, func(i, j int) bool { return n.Childs[i].Name < n.Childs[j].Name })
 
 	default:
 		childs := []*CompletionNode{}
@@ -87,6 +100,7 @@ func resolveCompletionNodeOperState(e *yang.Entry, depth int) *CompletionNode {
 			}
 		}
 		n.Childs = childs
+		sort.Slice(n.Childs, func(i, j int) bool { return n.Childs[i].Name < n.Childs[j].Name })
 	}
 	return &n
 }

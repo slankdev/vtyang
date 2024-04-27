@@ -122,6 +122,7 @@ func resolveCompletionNodeConfig(e *yang.Entry, depth int, modName string) *Comp
 			Childs: []*CompletionNode{newCR()},
 		}
 		n.Childs = append(n.Childs, child)
+		sort.Slice(n.Childs, func(i, j int) bool { return n.Childs[i].Name < n.Childs[j].Name })
 
 	default:
 		childs := []*CompletionNode{}

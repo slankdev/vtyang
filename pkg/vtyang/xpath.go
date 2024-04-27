@@ -128,8 +128,27 @@ func ParseXPathArgsImpl(module *yang.Entry, args []string, setmode bool) (XPath,
 
 		var foundNode *yang.Entry = nil
 		for n := range module.Dir {
-			if n == words[0] {
-				foundNode = module.Dir[n]
+			e := module.Dir[n]
+			switch {
+			case e.IsChoice():
+				for _, ee := range e.Dir {
+					switch {
+					case ee.IsCase():
+						for _, eee := range ee.Dir {
+							if eee.Name == words[0] {
+								foundNode = eee
+							}
+						}
+					default:
+						panic("OKASHII")
+					}
+				}
+			default:
+				if n == words[0] {
+					foundNode = module.Dir[n]
+				}
+			}
+			if foundNode != nil {
 				break
 			}
 		}

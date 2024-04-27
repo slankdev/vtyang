@@ -198,7 +198,7 @@
               "Modules": null,
               "Childs": [
                 {
-                  "Name": "udp-app",
+                  "Name": "tcp-app",
                   "Description": "",
                   "Modules": null,
                   "Childs": [
@@ -218,7 +218,7 @@
                   ]
                 },
                 {
-                  "Name": "tcp-app",
+                  "Name": "udp-app",
                   "Description": "",
                   "Modules": null,
                   "Childs": [

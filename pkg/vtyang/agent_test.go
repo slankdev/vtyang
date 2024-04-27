@@ -211,6 +211,26 @@ func TestChoiceCase1(t *testing.T) {
 	})
 }
 
+func TestChoiceCase2(t *testing.T) {
+	executeTestCase(t, &TestCase{
+		RuntimePath: "/tmp/run/vtyang",
+		LogFile:     "/tmp/run/vtyang/vtyang.log",
+		YangPath:    "./testdata/yang/choice_case",
+		OutputFile:  "./testdata/choice_case_output2.txt",
+		Inputs: []string{
+			"show-xpath values transport-proto tcp-app http",
+			"show-xpath items items hoge ipv4-proto icmp",
+			"configure",
+			"set values transport-proto udp-app dns",
+			"set items items icmp4 ipv4-proto icmp",
+			"set items items icmp6 ipv6-proto icmp",
+			"commit",
+			"quit",
+			"show running-config",
+		},
+	})
+}
+
 func TestFilterDbWithModule(t *testing.T) {
 	input := &DBNode{
 		Name: "",

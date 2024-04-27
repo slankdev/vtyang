@@ -8,7 +8,8 @@ include ./cmd/*/sub.mk
 
 YANG1 := ./pkg/vtyang/testdata/yang/leaf_types
 YANG2 := ./pkg/vtyang/testdata/yang/frr_mgmtd_minimal
-YANG := $(YANG1)
+YANG3 := ./pkg/vtyang/testdata/yang/choice_case
+YANG := $(YANG3)
 r: vtyang-build
 	sudo ./bin/vtyang agent \
 		--run-path /var/run/vtyang \

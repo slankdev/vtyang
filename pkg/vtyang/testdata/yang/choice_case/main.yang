@@ -1,0 +1,21 @@
+module main {
+  namespace "http://slank.dev/vtyang";
+  prefix main;
+
+  container values {
+    container transport-proto {
+      choice transport-proto {
+        case tcp {
+          leaf http-app {
+            type string;
+          }
+        }
+        case udp {
+          leaf dns-app {
+            type string;
+          }
+        }
+      }
+    }
+  }
+}

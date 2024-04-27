@@ -199,6 +199,18 @@ func TestXpathParse4(t *testing.T) {
 	})
 }
 
+func TestChoiceCase1(t *testing.T) {
+	executeTestCase(t, &TestCase{
+		RuntimePath: "/tmp/run/vtyang",
+		LogFile:     "/tmp/run/vtyang/vtyang.log",
+		YangPath:    "./testdata/yang/choice_case",
+		OutputFile:  "./testdata/choice_case_output1.json",
+		Inputs: []string{
+			"show cli-tree",
+		},
+	})
+}
+
 func TestFilterDbWithModule(t *testing.T) {
 	input := &DBNode{
 		Name: "",

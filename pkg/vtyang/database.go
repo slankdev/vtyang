@@ -340,9 +340,7 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 			switch xword.Dbvaluetype {
 
 			// case yang.Ybits:
-			// case yang.Ydecimal64:
 			// case yang.Yempty:
-			// case yang.Yidentityref:
 			// case yang.YinstanceIdentifier:
 			// case yang.Yleafref:
 			// case yang.Yunion:
@@ -469,7 +467,7 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 					Name: xword.Word,
 					Type: Leaf,
 					Value: DBValue{
-						Type:   yang.Ystring,
+						Type:   yang.Yenum,
 						String: val,
 					},
 				})
@@ -479,7 +477,7 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 					Name: xword.Word,
 					Type: Leaf,
 					Value: DBValue{
-						Type:   yang.Ystring,
+						Type:   yang.Yidentityref,
 						String: val,
 					},
 				})
@@ -1052,6 +1050,8 @@ func (v DBValue) ToValue() interface{} {
 		return v.Decimal64
 	case yang.Yleafref:
 		return v.String
+	case yang.Yidentityref:
+		return v.String
 	default:
 		panic(fmt.Sprintf("ASSERT(%s)", v.Type))
 	}
@@ -1127,12 +1127,11 @@ func (v *DBValue) SetFromString(s string) error {
 		v.String = s
 	case yang.Yleafref:
 		v.String = s
+	case yang.Yidentityref:
+		v.String = s
 
 	// case yang.Ybits:
-	// case yang.Ydecimal64:
 	// case yang.Yempty:
-	// case yang.Yenum:
-	// case yang.Yidentityref:
 	// case yang.YinstanceIdentifier:
 	// case yang.Yunion:
 	default:

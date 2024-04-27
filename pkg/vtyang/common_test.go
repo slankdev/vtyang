@@ -3,6 +3,7 @@ package vtyang
 import (
 	"fmt"
 	"os"
+	"path"
 	"testing"
 
 	"github.com/slankdev/vtyang/pkg/util"
@@ -67,6 +68,8 @@ func executeTestCase(t *testing.T, tc *TestCase) {
 		t.Errorf("expect(len=%d) %s_expected.txt", len(string(out)), p)
 		t.Errorf("result(len=%d) %s_result.txt", len(result), p)
 		t.Errorf("KINDLY_CLI diff -u %s_expected.txt %s_result.txt", p, p)
+		t.Errorf("KINDLY_CLI vim -O %s_expected.txt %s_result.txt %s",
+			p, p, path.Join("./pkg/vtyang", tc.OutputFile))
 		t.Fatal("quiting test with FAILED result")
 	}
 

@@ -128,6 +128,10 @@ func TestXpathParse2(t *testing.T) {
 			"show-xpath values i16 100",
 			"show-xpath values i32 100",
 			"show-xpath values i64 100",
+			"configure",
+			"set values percentage 100",
+			"commit",
+			"do show running-config",
 		},
 	})
 }

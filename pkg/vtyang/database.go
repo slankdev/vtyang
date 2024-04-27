@@ -908,6 +908,12 @@ func Interface2DBNode(i interface{}) (*DBNode, error) {
 			Type:  yang.Yint32,
 			Int32: int32(g),
 		}
+	case uint8:
+		n.Type = Leaf
+		n.Value = DBValue{
+			Type:  yang.Yuint8,
+			Uint8: uint8(g),
+		}
 	case uint32:
 		n.Type = Leaf
 		n.Value = DBValue{

@@ -16,6 +16,11 @@ module main {
       enum bgp;
     }
   }
+  typedef month {
+    type uint8 {
+      range "1..12";
+    }
+  }
 
   container values {
 		leaf name { type string;  }
@@ -44,6 +49,9 @@ module main {
         type route-types-v4;
         type route-types-v6;
       }
+    }
+    leaf month {
+      type month;
     }
   }
 

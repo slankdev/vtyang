@@ -2,7 +2,6 @@ package vtyang
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/openconfig/goyang/pkg/yang"
@@ -205,61 +204,35 @@ func ParseXPathArgsImpl(module *yang.Entry, args []string, setmode bool) (XPath,
 					}
 				}
 				tmpStr := words[argumentCount]
-				// TODO(slankdev): support typedef natively
-				switch keyLeafNode.Type.Name {
-				case "string":
-					xword.Keys[w] = DBValue{
-						Type:   yang.Ystring,
-						String: tmpStr,
+
+				switch keyLeafNode.Type.Kind {
+				case yang.Ystring:
+					v := DBValue{Type: keyLeafNode.Type.Kind}
+					if err := v.SetFromString(tmpStr); err != nil {
+						return XPath{}, "", errors.Wrap(err, "SetFromString")
 					}
-				case "vrf-ref":
-					xword.Keys[w] = DBValue{
-						Type:   yang.Ystring,
-						String: tmpStr,
+					xword.Keys[w] = v
+				case yang.Yuint32:
+					v := DBValue{Type: keyLeafNode.Type.Kind}
+					if err := v.SetFromString(tmpStr); err != nil {
+						return XPath{}, "", errors.Wrap(err, "SetFromString")
 					}
-				case "ip-prefix":
-					xword.Keys[w] = DBValue{
-						Type:   yang.Ystring,
-						String: tmpStr,
-					}
-				case "uint32":
-					intval, err := strconv.ParseInt(tmpStr, 10, 32)
-					if err != nil {
-						return XPath{}, "", err
-					}
-					xword.Keys[w] = DBValue{
-						Type:   yang.Yuint32,
-						Uint32: uint32(intval),
-					}
-				case "enumeration":
-					// XXX(slankdev)
-					xword.Keys[w] = DBValue{
-						Type:   yang.Ystring,
-						String: tmpStr,
-					}
-				case "access-list-name":
-					// XXX(slankdev)
-					xword.Keys[w] = DBValue{
-						Type:   yang.Ystring,
-						String: tmpStr,
-					}
-				case "access-list-sequence":
-					// XXX(slankdev)
-					intval, err := strconv.ParseInt(tmpStr, 10, 32)
-					if err != nil {
-						return XPath{}, "", err
-					}
-					xword.Keys[w] = DBValue{
-						Type:  yang.Yint32,
-						Int32: int32(intval),
-					}
-				case "HOGE":
-					//pp.Println(keyLeafNode.Type)
-					// pp.Println(keyLeafNode.Type.Enum)
-					// pp.Println(keyLeafNode.Type.Enum.Names())
-					// panic(fmt.Sprintf("NOT IMPLE (%+v)", keyLeafNode.Type.Name))
+					xword.Keys[w] = v
+
+				// XXX(slankdev)
+				case yang.Yenum:
+					v := DBValue{Type: keyLeafNode.Type.Kind}
+					v.String = tmpStr
+					xword.Keys[w] = v
+				// XXX(slankdev)
+				case yang.Yleafref:
+					v := DBValue{Type: keyLeafNode.Type.Kind}
+					v.String = tmpStr
+					xword.Keys[w] = v
+
 				default:
-					panic(fmt.Sprintf("OKASHII (%+v)", keyLeafNode.Type.Name))
+					panic(fmt.Sprintf("OKASHII (%+v/%+v)", keyLeafNode.Type.Kind,
+						keyLeafNode.Type.Kind.String()))
 				}
 				argumentCount++
 			}

@@ -1040,6 +1040,8 @@ func (v DBValue) ToValue() interface{} {
 		return v.String
 	case yang.Ydecimal64:
 		return v.Decimal64
+	case yang.Yleafref:
+		return v.String
 	default:
 		panic(fmt.Sprintf("ASSERT(%s)", v.Type))
 	}

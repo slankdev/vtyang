@@ -180,6 +180,7 @@ func TestXpathParse3(t *testing.T) {
 func TestXpathParse4(t *testing.T) {
 	executeTestCase(t, &TestCase{
 		RuntimePath: "/tmp/run/vtyang",
+		LogFile:     "/tmp/run/vtyang/vtyang.log",
 		YangPath:    "./testdata/yang/leaf_types",
 		OutputFile:  "./testdata/xpath_parse4_output.txt",
 		Inputs: []string{

@@ -447,6 +447,19 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 						Boolean: bval,
 					},
 				})
+			case yang.Ydecimal64:
+				dval, err := strconv.ParseFloat(val, 64)
+				if err != nil {
+					return nil, err
+				}
+				n.Childs = append(n.Childs, DBNode{
+					Name: xword.Word,
+					Type: Leaf,
+					Value: DBValue{
+						Type:      yang.Ydecimal64,
+						Decimal64: dval,
+					},
+				})
 
 			// TODO(slankdev)
 			case yang.Yenum:
@@ -758,9 +771,10 @@ func (v *DBValue) ToString() string {
 		return fmt.Sprintf("%d", v.Uint64)
 	case yang.Ybool:
 		return fmt.Sprintf("%v", v.Boolean)
+	case yang.Ydecimal64:
+		return fmt.Sprintf("%f", v.Decimal64)
 	// case yang.Ybinary:
 	// case yang.Ybits:
-	// case yang.Ydecimal64:
 	// case yang.Yempty:
 	// case yang.Yenum:
 	// case yang.Yidentityref:

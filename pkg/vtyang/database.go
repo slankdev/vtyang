@@ -389,9 +389,9 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 					},
 				})
 			case yang.Yuint8:
-				ival, err := strconv.Atoi(val)
-				if err != nil {
-					return nil, err
+				v := DBValue{Type: xword.Dbvaluetype}
+				if err := v.SetFromString(val); err != nil {
+					return nil, errors.Wrap(err, "SetFromString")
 				}
 				n.Childs = append(n.Childs, DBNode{
 					Name:  xword.Word,

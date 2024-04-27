@@ -155,6 +155,7 @@ func TestXpathParse2(t *testing.T) {
 func TestXpathParse3(t *testing.T) {
 	executeTestCase(t, &TestCase{
 		RuntimePath: "/tmp/run/vtyang",
+		LogFile:     "/tmp/run/vtyang/vtyang.log",
 		YangPath:    "./testdata/yang/frr_mgmtd_minimal",
 		OutputFile:  "./testdata/xpath_parse3_output.txt",
 		Inputs: []string{

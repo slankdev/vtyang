@@ -723,16 +723,17 @@ type DBValue struct {
 	Type yang.TypeKind
 
 	// Union
-	Int8    int8
-	Int16   int16
-	Int32   int32
-	Int64   int64
-	Uint8   uint8
-	Uint16  uint16
-	Uint32  uint32
-	Uint64  uint64
-	String  string
-	Boolean bool
+	Int8      int8
+	Int16     int16
+	Int32     int32
+	Int64     int64
+	Uint8     uint8
+	Uint16    uint16
+	Uint32    uint32
+	Uint64    uint64
+	String    string
+	Boolean   bool
+	Decimal64 float64
 }
 
 func (v *DBValue) ToString() string {
@@ -952,13 +953,11 @@ func Interface2DBNode(i interface{}) (*DBNode, error) {
 		}
 		n.Type = LeafList
 		n.ArrayValue = a
-
-	// TODO(slankdev)
 	case float64:
 		n.Type = Leaf
 		n.Value = DBValue{
-			Type:  yang.Yint32,
-			Int32: int32(g),
+			Type:      yang.Ydecimal64,
+			Decimal64: float64(g),
 		}
 	case nil:
 		n.Type = Container
@@ -990,6 +989,8 @@ func (v DBValue) ToValue() interface{} {
 		return v.Boolean
 	case yang.Ystring:
 		return v.String
+	case yang.Ydecimal64:
+		return v.Decimal64
 	default:
 		panic(fmt.Sprintf("ASSERT(%s)", v.Type))
 	}

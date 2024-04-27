@@ -20,7 +20,8 @@
           "Uint32": 0,
           "Uint64": 0,
           "String": "dum0",
-          "Boolean": false
+          "Boolean": false,
+          "Decimal64": 0
         }
       },
       "Dbtype": "list",

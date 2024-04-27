@@ -1116,6 +1116,10 @@ func (v *DBValue) SetFromString(s string) error {
 		}
 		v.Boolean = bval
 
+	// TODO(slankdev)
+	case yang.Yenum:
+		v.String = s
+
 	// case yang.Ybits:
 	// case yang.Ydecimal64:
 	// case yang.Yempty:

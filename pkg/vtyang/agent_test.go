@@ -1,7 +1,6 @@
 package vtyang
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
@@ -375,9 +374,6 @@ func TestFilterDbWithModule(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	fmt.Println(result.String())
-
 	diff := DBNodeDiff(result, expected)
 	if diff != "" {
 		t.Fatalf("diff %s\n", diff)

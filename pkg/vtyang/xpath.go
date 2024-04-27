@@ -204,36 +204,11 @@ func ParseXPathArgsImpl(module *yang.Entry, args []string, setmode bool) (XPath,
 					}
 				}
 				tmpStr := words[argumentCount]
-
-				switch keyLeafNode.Type.Kind {
-				case yang.Ystring:
-					v := DBValue{Type: keyLeafNode.Type.Kind}
-					if err := v.SetFromString(tmpStr); err != nil {
-						return XPath{}, "", errors.Wrap(err, "SetFromString")
-					}
-					xword.Keys[w] = v
-				case yang.Yuint32:
-					v := DBValue{Type: keyLeafNode.Type.Kind}
-					if err := v.SetFromString(tmpStr); err != nil {
-						return XPath{}, "", errors.Wrap(err, "SetFromString")
-					}
-					xword.Keys[w] = v
-
-				// XXX(slankdev)
-				case yang.Yenum:
-					v := DBValue{Type: keyLeafNode.Type.Kind}
-					v.String = tmpStr
-					xword.Keys[w] = v
-				// XXX(slankdev)
-				case yang.Yleafref:
-					v := DBValue{Type: keyLeafNode.Type.Kind}
-					v.String = tmpStr
-					xword.Keys[w] = v
-
-				default:
-					panic(fmt.Sprintf("OKASHII (%+v/%+v)", keyLeafNode.Type.Kind,
-						keyLeafNode.Type.Kind.String()))
+				v := DBValue{Type: keyLeafNode.Type.Kind}
+				if err := v.SetFromString(tmpStr); err != nil {
+					return XPath{}, "", errors.Wrap(err, "SetFromString")
 				}
+				xword.Keys[w] = v
 				argumentCount++
 			}
 			argumentCount--
@@ -254,7 +229,6 @@ func ParseXPathArgsImpl(module *yang.Entry, args []string, setmode bool) (XPath,
 			}
 			xword.Dbtype = LeafList
 			xword.Dbvaluetype = foundNode.Type.Kind
-			//pp.Println(valueStr)
 		default:
 			panic("ASSERT")
 		}

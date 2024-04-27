@@ -1115,6 +1115,8 @@ func (v *DBValue) SetFromString(s string) error {
 	// TODO(slankdev)
 	case yang.Yenum:
 		v.String = s
+	case yang.Yleafref:
+		v.String = s
 
 	// case yang.Ybits:
 	// case yang.Ydecimal64:
@@ -1122,7 +1124,6 @@ func (v *DBValue) SetFromString(s string) error {
 	// case yang.Yenum:
 	// case yang.Yidentityref:
 	// case yang.YinstanceIdentifier:
-	// case yang.Yleafref:
 	// case yang.Yunion:
 	default:
 		panic(fmt.Sprintf("OKASHI (%s)", v.Type))

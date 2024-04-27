@@ -340,7 +340,6 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 			// case yang.Ybits:
 			// case yang.Ydecimal64:
 			// case yang.Yempty:
-			// case yang.Yenum:
 			// case yang.Yidentityref:
 			// case yang.YinstanceIdentifier:
 			// case yang.Yleafref:
@@ -472,6 +471,18 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 						Boolean: bval,
 					},
 				})
+
+			// TODO(slankdev)
+			case yang.Yenum:
+				n.Childs = append(n.Childs, DBNode{
+					Name: xword.Word,
+					Type: Leaf,
+					Value: DBValue{
+						Type:   yang.Ystring,
+						String: val,
+					},
+				})
+
 			default:
 				return nil, fmt.Errorf("%s: unsupported(%s)", util.LINE(), xword.Dbvaluetype)
 			}
@@ -896,11 +907,23 @@ func Interface2DBNode(i interface{}) (*DBNode, error) {
 			Type:    yang.Ybool,
 			Boolean: g,
 		}
-	case int:
+	// case int:
+	// 	n.Type = Leaf
+	// 	n.Value = DBValue{
+	// 		Type:  yang.Yint32,
+	// 		Int32: int32(g),
+	// 	}
+	case int8:
 		n.Type = Leaf
 		n.Value = DBValue{
-			Type:  yang.Yint32,
-			Int32: int32(g),
+			Type: yang.Yint8,
+			Int8: int8(g),
+		}
+	case int16:
+		n.Type = Leaf
+		n.Value = DBValue{
+			Type:  yang.Yint16,
+			Int16: int16(g),
 		}
 	case int32:
 		n.Type = Leaf
@@ -908,17 +931,35 @@ func Interface2DBNode(i interface{}) (*DBNode, error) {
 			Type:  yang.Yint32,
 			Int32: int32(g),
 		}
+	case int64:
+		n.Type = Leaf
+		n.Value = DBValue{
+			Type:  yang.Yint64,
+			Int64: int64(g),
+		}
 	case uint8:
 		n.Type = Leaf
 		n.Value = DBValue{
 			Type:  yang.Yuint8,
 			Uint8: uint8(g),
 		}
+	case uint16:
+		n.Type = Leaf
+		n.Value = DBValue{
+			Type:   yang.Yuint16,
+			Uint16: uint16(g),
+		}
 	case uint32:
 		n.Type = Leaf
 		n.Value = DBValue{
 			Type:   yang.Yuint32,
 			Uint32: uint32(g),
+		}
+	case uint64:
+		n.Type = Leaf
+		n.Value = DBValue{
+			Type:   yang.Yuint64,
+			Uint64: uint64(g),
 		}
 	case string:
 		n.Type = Leaf

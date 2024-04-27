@@ -70,6 +70,20 @@ module main {
         base crypto-algo;
       }
     }
+    container transport-proto {
+      choice transport-proto {
+        case tcp {
+          leaf http-app {
+            type string;
+          }
+        }
+        case udp {
+          leaf dns-app {
+            type string;
+          }
+        }
+      }
+    }
   }
 
   // TODO(slankdev): this is in frr modules

@@ -120,14 +120,6 @@ func TestXpathParse2(t *testing.T) {
 		YangPath:    "./testdata/yang/leaf_types",
 		OutputFile:  "./testdata/xpath_parse2_output.txt",
 		Inputs: []string{
-			"show-xpath values u08 100",
-			"show-xpath values u16 100",
-			"show-xpath values u32 100",
-			"show-xpath values u64 100",
-			"show-xpath values i08 100",
-			"show-xpath values i16 100",
-			"show-xpath values i32 100",
-			"show-xpath values i64 100",
 			"configure",
 			"set values u08 0",
 			"set values u16 0",
@@ -139,7 +131,8 @@ func TestXpathParse2(t *testing.T) {
 			"set values i64 -9223372036854775808",
 			"set values percentage 0",
 			"commit",
-			"do show running-config",
+			"quit",
+			"show running-config",
 		},
 	})
 }
@@ -158,6 +151,24 @@ func TestXpathParse3(t *testing.T) {
 			// "set lib prefix-list ipv4 hoge entry 20 ipv4-prefix 10.254.0.0/16",
 			// "set lib prefix-list ipv4 hoge entry 20 ipv4-prefix-length-lesser-or-equal 32",
 			// "show configuration diff",
+		},
+	})
+}
+
+func TestXpathParse4(t *testing.T) {
+	executeTestCase(t, &TestCase{
+		RuntimePath: "/tmp/run/vtyang",
+		YangPath:    "./testdata/yang/leaf_types",
+		OutputFile:  "./testdata/xpath_parse4_output.txt",
+		Inputs: []string{
+			"show-xpath values u08 100",
+			"show-xpath values u16 100",
+			"show-xpath values u32 100",
+			"show-xpath values u64 100",
+			"show-xpath values i08 100",
+			"show-xpath values i16 100",
+			"show-xpath values i32 100",
+			"show-xpath values i64 100",
 		},
 	})
 }

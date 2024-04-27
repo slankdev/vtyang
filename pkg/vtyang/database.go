@@ -1023,51 +1023,51 @@ func (v DBValue) ToValue() interface{} {
 func (v *DBValue) SetFromString(s string) error {
 	switch v.Type {
 	case yang.Yint8:
-		ival, err := strconv.Atoi(s)
+		ival, err := strconv.ParseInt(s, 10, 8)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "strconv.ParseInt(s,10,8)")
 		}
 		v.Int8 = int8(ival)
 	case yang.Yint16:
-		ival, err := strconv.Atoi(s)
+		ival, err := strconv.ParseInt(s, 10, 16)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "strconv.ParseInt(s,10,16)")
 		}
 		v.Int16 = int16(ival)
 	case yang.Yint32:
-		ival, err := strconv.Atoi(s)
+		ival, err := strconv.ParseInt(s, 10, 32)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "strconv.ParseInt(s,10,32)")
 		}
 		v.Int32 = int32(ival)
 	case yang.Yint64:
-		ival, err := strconv.Atoi(s)
+		ival, err := strconv.ParseInt(s, 10, 64)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "strconv.ParseInt(s,10,64)")
 		}
 		v.Int64 = int64(ival)
 	case yang.Yuint8:
-		ival, err := strconv.Atoi(s)
+		ival, err := strconv.ParseUint(s, 10, 8)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "strconv.ParseUint(s,10,8)")
 		}
 		v.Uint8 = uint8(ival)
 	case yang.Yuint16:
-		ival, err := strconv.Atoi(s)
+		ival, err := strconv.ParseUint(s, 10, 16)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "strconv.ParseUint(s,10,16)")
 		}
 		v.Uint16 = uint16(ival)
 	case yang.Yuint32:
-		ival, err := strconv.Atoi(s)
+		ival, err := strconv.ParseUint(s, 10, 32)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "strconv.ParseUint(s,10,32)")
 		}
 		v.Uint32 = uint32(ival)
 	case yang.Yuint64:
-		ival, err := strconv.Atoi(s)
+		ival, err := strconv.ParseUint(s, 10, 64)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "strconv.ParseUint(s,10,64)")
 		}
 		v.Uint64 = uint64(ival)
 	case yang.Ystring:

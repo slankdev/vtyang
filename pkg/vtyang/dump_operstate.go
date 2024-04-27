@@ -56,7 +56,18 @@ func resolveCompletionNodeOperState(e *yang.Entry, depth int) *CompletionNode {
 	default:
 		childs := []*CompletionNode{}
 		for _, ee := range e.Dir {
-			childs = append(childs, resolveCompletionNodeOperState(ee, depth+1))
+			switch {
+			case ee.IsChoice():
+				for _, ee2 := range ee.Dir {
+					for _, ee3 := range ee2.Dir {
+						if !ee3.ReadOnly() && ee3.RPC == nil {
+							childs = append(childs, resolveCompletionNodeOperState(ee3, depth+1))
+						}
+					}
+				}
+			default:
+				childs = append(childs, resolveCompletionNodeOperState(ee, depth+1))
+			}
 		}
 		n.Childs = childs
 	}

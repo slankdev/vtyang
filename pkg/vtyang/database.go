@@ -1052,6 +1052,8 @@ func (v DBValue) ToValue() interface{} {
 		return v.String
 	case yang.Yidentityref:
 		return v.String
+	case yang.Yenum:
+		return v.String
 	default:
 		panic(fmt.Sprintf("ASSERT(%s)", v.Type))
 	}

@@ -111,7 +111,19 @@ func resolveCompletionNodeConfig(e *yang.Entry, depth int, modName string) *Comp
 		childs := []*CompletionNode{}
 		for _, ee := range e.Dir {
 			if !ee.ReadOnly() && ee.RPC == nil {
-				childs = append(childs, resolveCompletionNodeConfig(ee, depth+1, modName))
+				switch {
+				case ee.IsChoice():
+					for _, ee2 := range ee.Dir {
+						for _, ee3 := range ee2.Dir {
+							if !ee3.ReadOnly() && ee3.RPC == nil {
+								childs = append(childs, resolveCompletionNodeConfig(ee3, depth+1, modName))
+							}
+						}
+					}
+				default:
+					childs = append(childs, resolveCompletionNodeConfig(ee, depth+1, modName))
+
+				}
 			}
 		}
 		sort.Slice(childs, func(i, j int) bool { return childs[i].Name < childs[j].Name })

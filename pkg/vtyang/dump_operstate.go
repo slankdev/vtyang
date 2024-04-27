@@ -2,6 +2,7 @@ package vtyang
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/openconfig/goyang/pkg/yang"
@@ -39,8 +40,24 @@ func resolveCompletionNodeOperState(e *yang.Entry, depth int) *CompletionNode {
 		wildcardNode.Childs = []*CompletionNode{newCR()}
 		for _, ee := range e.Dir {
 			if ee.Name != e.Key {
-				if nn := resolveCompletionNodeOperState(ee, depth+1); nn != nil {
-					wildcardNode.Childs = append(wildcardNode.Childs, nn)
+				switch {
+				case ee.IsChoice():
+					for _, ee2 := range ee.Dir {
+						for _, ee3 := range ee2.Dir {
+							if !ee3.ReadOnly() && ee3.RPC == nil {
+								wildcardNode.Childs = append(wildcardNode.Childs,
+									resolveCompletionNodeOperState(ee3, depth+1))
+								sort.Slice(wildcardNode.Childs,
+									func(i, j int) bool {
+										return wildcardNode.Childs[i].Name < wildcardNode.Childs[j].Name
+									})
+							}
+						}
+					}
+				default:
+					if nn := resolveCompletionNodeOperState(ee, depth+1); nn != nil {
+						wildcardNode.Childs = append(wildcardNode.Childs, nn)
+					}
 				}
 			}
 		}

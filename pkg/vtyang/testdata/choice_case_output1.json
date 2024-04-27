@@ -121,6 +121,73 @@
           ]
         },
         {
+          "Name": "items",
+          "Description": "",
+          "Modules": null,
+          "Childs": [
+            {
+              "Name": "items",
+              "Description": "",
+              "Modules": null,
+              "Childs": [
+                {
+                  "Name": "NAME",
+                  "Description": "",
+                  "Modules": null,
+                  "Childs": [
+                    {
+                      "Name": "\u003ccr\u003e",
+                      "Description": "",
+                      "Modules": null,
+                      "Childs": null
+                    },
+                    {
+                      "Name": "ipv4-proto",
+                      "Description": "",
+                      "Modules": null,
+                      "Childs": [
+                        {
+                          "Name": "VALUE",
+                          "Description": "",
+                          "Modules": null,
+                          "Childs": [
+                            {
+                              "Name": "\u003ccr\u003e",
+                              "Description": "",
+                              "Modules": null,
+                              "Childs": null
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "Name": "ipv6-proto",
+                      "Description": "",
+                      "Modules": null,
+                      "Childs": [
+                        {
+                          "Name": "VALUE",
+                          "Description": "",
+                          "Modules": null,
+                          "Childs": [
+                            {
+                              "Name": "\u003ccr\u003e",
+                              "Description": "",
+                              "Modules": null,
+                              "Childs": null
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
           "Name": "values",
           "Description": "",
           "Modules": null,
@@ -131,7 +198,7 @@
               "Modules": null,
               "Childs": [
                 {
-                  "Name": "tcp-app",
+                  "Name": "udp-app",
                   "Description": "",
                   "Modules": null,
                   "Childs": [
@@ -151,7 +218,7 @@
                   ]
                 },
                 {
-                  "Name": "udp-app",
+                  "Name": "tcp-app",
                   "Description": "",
                   "Modules": null,
                   "Childs": [
@@ -179,6 +246,81 @@
           "Description": "",
           "Modules": null,
           "Childs": [
+            {
+              "Name": "items",
+              "Description": "",
+              "Modules": [
+                "main"
+              ],
+              "Childs": [
+                {
+                  "Name": "items",
+                  "Description": "",
+                  "Modules": [
+                    "main"
+                  ],
+                  "Childs": [
+                    {
+                      "Name": "NAME",
+                      "Description": "name",
+                      "Modules": null,
+                      "Childs": [
+                        {
+                          "Name": "\u003ccr\u003e",
+                          "Description": "",
+                          "Modules": null,
+                          "Childs": null
+                        },
+                        {
+                          "Name": "ipv4-proto",
+                          "Description": "",
+                          "Modules": [
+                            "main"
+                          ],
+                          "Childs": [
+                            {
+                              "Name": "VALUE",
+                              "Description": "",
+                              "Modules": null,
+                              "Childs": [
+                                {
+                                  "Name": "\u003ccr\u003e",
+                                  "Description": "",
+                                  "Modules": null,
+                                  "Childs": null
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "Name": "ipv6-proto",
+                          "Description": "",
+                          "Modules": [
+                            "main"
+                          ],
+                          "Childs": [
+                            {
+                              "Name": "VALUE",
+                              "Description": "",
+                              "Modules": null,
+                              "Childs": [
+                                {
+                                  "Name": "\u003ccr\u003e",
+                                  "Description": "",
+                                  "Modules": null,
+                                  "Childs": null
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
             {
               "Name": "values",
               "Description": "",

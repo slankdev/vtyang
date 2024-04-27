@@ -90,10 +90,26 @@ func resolveCompletionNodeConfig(e *yang.Entry, depth int, modName string) *Comp
 		}
 		for _, ee := range e.Dir {
 			if ee.Name != e.Key {
-				nn := resolveCompletionNodeConfig(ee, depth+1, modName)
-				if nn != nil {
-					tail.Childs = append(tail.Childs, nn)
-					sort.Slice(tail.Childs, func(i, j int) bool { return tail.Childs[i].Name < tail.Childs[j].Name })
+				switch {
+				case ee.IsChoice():
+					for _, ee2 := range ee.Dir {
+						for _, ee3 := range ee2.Dir {
+							if !ee3.ReadOnly() && ee3.RPC == nil {
+								tail.Childs = append(tail.Childs,
+									resolveCompletionNodeConfig(ee3, depth+1, modName))
+								sort.Slice(tail.Childs,
+									func(i, j int) bool {
+										return tail.Childs[i].Name < tail.Childs[j].Name
+									})
+							}
+						}
+					}
+				default:
+					nn := resolveCompletionNodeConfig(ee, depth+1, modName)
+					if nn != nil {
+						tail.Childs = append(tail.Childs, nn)
+						sort.Slice(tail.Childs, func(i, j int) bool { return tail.Childs[i].Name < tail.Childs[j].Name })
+					}
 				}
 			}
 		}

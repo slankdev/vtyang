@@ -2,20 +2,22 @@ module main {
   namespace "http://slank.dev/vtyang";
   prefix main;
 
-  list items {
-    key "name";
-    leaf name {
-      type string;
-    }
-    choice ip-version-choice {
-      case ipv4-case {
-        leaf ipv4-proto {
-          type string;
-        }
+  container items {
+    list items {
+      key "name";
+      leaf name {
+        type string;
       }
-      case ipv6-case {
-        leaf ipv6-proto {
-          type string;
+      choice ip-version-choice {
+        case ipv4-case {
+          leaf ipv4-proto {
+            type string;
+          }
+        }
+        case ipv6-case {
+          leaf ipv6-proto {
+            type string;
+          }
         }
       }
     }

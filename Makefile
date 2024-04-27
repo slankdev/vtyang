@@ -7,6 +7,7 @@ generate:
 include ./cmd/*/sub.mk
 
 YANG := ./pkg/vtyang/testdata/yang/leaf_types
+YANG := ./pkg/vtyang/testdata/yang/frr_mgmtd_minimal
 r: vtyang-build
 	sudo ./bin/vtyang agent \
 		--run-path /var/run/vtyang \

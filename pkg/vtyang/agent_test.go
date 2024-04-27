@@ -132,6 +132,24 @@ func TestXpathParse2(t *testing.T) {
 	})
 }
 
+func TestXpathParse3(t *testing.T) {
+	executeTestCase(t, &TestCase{
+		RuntimePath: "/tmp/run/vtyang",
+		YangPath:    "./testdata/yang/frr_mgmtd_minimal",
+		OutputFile:  "./testdata/xpath_parse3_output.txt",
+		Inputs: []string{
+			"configure",
+			"set lib prefix-list ipv4 hoge entry 10 action permit",
+			//"set lib prefix-list ipv4 hoge entry 10 value ipv4-prefix ipv4-prefix 10.255.0.0/16",
+			"set lib prefix-list ipv4 hoge entry 10 ipv4-prefix 10.255.0.0/16",
+			// "set lib prefix-list ipv4 hoge entry 10 ipv4-prefix-length-lesser-or-equal 32",
+			// "set lib prefix-list ipv4 hoge entry 20 ipv4-prefix 10.254.0.0/16",
+			// "set lib prefix-list ipv4 hoge entry 20 ipv4-prefix-length-lesser-or-equal 32",
+			"show configuration diff",
+		},
+	})
+}
+
 func TestFilterDbWithModule(t *testing.T) {
 	input := &DBNode{
 		Name: "",

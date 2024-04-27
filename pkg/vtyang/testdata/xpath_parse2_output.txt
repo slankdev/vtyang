@@ -1,6 +1,7 @@
 {
   "values": {
     "bool": false,
+    "crypto": "des3",
     "decimal": -0.22,
     "i08": -128,
     "i16": -32768,
@@ -17,6 +18,7 @@
 {
   "values": {
     "bool": true,
+    "crypto": "aes",
     "decimal": 3.14,
     "i08": 127,
     "i16": 32767,

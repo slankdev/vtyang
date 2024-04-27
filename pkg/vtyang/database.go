@@ -473,6 +473,16 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 						String: val,
 					},
 				})
+			// TODO(slankdev)
+			case yang.Yidentityref:
+				n.Childs = append(n.Childs, DBNode{
+					Name: xword.Word,
+					Type: Leaf,
+					Value: DBValue{
+						Type:   yang.Ystring,
+						String: val,
+					},
+				})
 			default:
 				panic(fmt.Sprintf("OKASHI (%s)", xword.Dbvaluetype))
 			}

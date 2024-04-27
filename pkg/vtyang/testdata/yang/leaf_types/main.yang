@@ -21,6 +21,13 @@ module main {
       range "1..12";
     }
   }
+  identity crypto-algo;
+  identity aes {
+    base crypto-algo;
+  }
+  identity des3 {
+    base crypto-algo;
+  }
 
   container values {
 		leaf name { type string;  }
@@ -57,6 +64,11 @@ module main {
     }
     leaf month {
       type month;
+    }
+    leaf crypto {
+      type identityref {
+        base crypto-algo;
+      }
     }
   }
 

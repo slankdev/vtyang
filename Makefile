@@ -6,8 +6,9 @@ generate:
 	go generate ./...
 include ./cmd/*/sub.mk
 
-YANG := ./pkg/vtyang/testdata/yang/frr_mgmtd_minimal
-YANG := ./pkg/vtyang/testdata/yang/leaf_types
+YANG1 := ./pkg/vtyang/testdata/yang/leaf_types
+YANG2 := ./pkg/vtyang/testdata/yang/frr_mgmtd_minimal
+YANG := $(YANG1)
 r: vtyang-build
 	sudo ./bin/vtyang agent \
 		--run-path /var/run/vtyang \
@@ -19,4 +20,9 @@ rr: vtyang-build
 		--yang $(YANG) \
 		-c "configure" \
 		-c "set values u08 10"
+		#END
+run-mgmt: vtyang-build
+	sudo ./bin/vtyang agent \
+		--run-path /var/run/vtyang \
+		--yang $(YANG2) \
 		#END

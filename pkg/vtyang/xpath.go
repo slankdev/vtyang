@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/openconfig/goyang/pkg/yang"
+	"github.com/pkg/errors"
 )
 
 type XWord struct {
@@ -152,6 +153,43 @@ func ParseXPathArgsImpl(module *yang.Entry, args []string, setmode bool) (XPath,
 			}
 			xword.Dbtype = Leaf
 			xword.Dbvaluetype = foundNode.Type.Kind
+
+			// Additional Validatation for Number-types
+			// - range (A)..(B)
+			switch foundNode.Type.Kind {
+			case yang.Yint8, yang.Yint16, yang.Yint32, yang.Yint64,
+				yang.Yuint8, yang.Yuint16, yang.Yuint32, yang.Yuint64,
+				yang.Ydecimal64:
+				val := DBValue{Type: foundNode.Type.Kind}
+				if err := val.SetFromString(valueStr); err != nil {
+					return XPath{}, "", errors.Wrap(err, "SetFromString")
+				}
+				n, err := val.ToYangNumber()
+				if err != nil {
+					return XPath{}, "", errors.Wrap(err, "ToYangNumber")
+				}
+				for _, valRange := range foundNode.Type.Range {
+					// Validate Min
+					if n.Less(valRange.Min) {
+						return XPath{}, "", errors.Errorf(
+							"min validation failed min=%v input=%v",
+							valRange.Min, n)
+					}
+					// Validate Min
+					if valRange.Max.Less(*n) {
+						return XPath{}, "", errors.Errorf(
+							"max validation failed max=%v input=%v",
+							valRange.Max, n)
+					}
+				}
+			}
+
+			// Additional Validation for String-types
+			// - length
+			// - pattern
+			// - pattern(invert-match)
+			// TODO(slankdev): IMPLEMENT ME
+
 		case foundNode.IsList():
 			if len(words) < 2 {
 				return XPath{}, "", fmt.Errorf("invalid args len")

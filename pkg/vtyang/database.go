@@ -6,6 +6,8 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"math"
+	"math/big"
 	"os"
 	"reflect"
 	"sort"
@@ -747,6 +749,45 @@ type DBValue struct {
 	String    string
 	Boolean   bool
 	Decimal64 float64
+}
+
+func (v *DBValue) ToAbsoluteNumber() (uint64, bool, error) {
+	switch v.Type {
+	case yang.Ydecimal64:
+		return uint64(math.Abs(float64(v.Decimal64))), v.Decimal64 < 0, nil
+	case yang.Yint8:
+		return uint64(math.Abs(float64(v.Int8))), v.Int8 < 0, nil
+	case yang.Yint16:
+		return uint64(math.Abs(float64(v.Int16))), v.Int16 < 0, nil
+	case yang.Yint32:
+		return uint64(math.Abs(float64(v.Int32))), v.Int32 < 0, nil
+	case yang.Yint64:
+		b := big.NewInt(v.Int64)
+		return b.Abs(b).Uint64(), v.Int64 < 0, nil
+
+	case yang.Yuint8:
+		return uint64(v.Uint8), false, nil
+	case yang.Yuint16:
+		return uint64(v.Uint16), false, nil
+	case yang.Yuint32:
+		return uint64(v.Uint32), false, nil
+	case yang.Yuint64:
+		return (v.Uint64), false, nil
+	default:
+		panic(fmt.Sprintf("OKASHI (%s)", v.Type))
+	}
+}
+
+func (v *DBValue) ToYangNumber() (*yang.Number, error) {
+	uv, neg, err := v.ToAbsoluteNumber()
+	if err != nil {
+		return nil, errors.Wrap(err, "ToAbsoluteNumber")
+	}
+	n := yang.Number{
+		Value:    uv,
+		Negative: neg,
+	}
+	return &n, nil
 }
 
 func (v *DBValue) ToString() string {

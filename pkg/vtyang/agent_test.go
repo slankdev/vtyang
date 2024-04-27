@@ -131,7 +131,7 @@ func TestXpathParse2(t *testing.T) {
 			"set values i32 -2147483648",
 			"set values i64 -9223372036854775808",
 			"set values percentage 0",
-			"set values month 0",
+			"set values month 1",
 			"set values decimal -0.22",
 			"set values bool false",
 			"commit",

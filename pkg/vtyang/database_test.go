@@ -358,3 +358,46 @@ func TestDBNodeDeepCopy(t *testing.T) {
 		t.Errorf("DeepCopy failed: modifying the copy modified the original")
 	}
 }
+
+func Test_DBValue_ToAbsoluteNumber(t *testing.T) {
+	inputs := []struct {
+		Abs     uint64
+		DBValue DBValue
+	}{
+		{
+			Abs: 128,
+			DBValue: DBValue{
+				Type: yang.Yint8,
+				Int8: -128,
+			},
+		},
+		{
+			Abs: 127,
+			DBValue: DBValue{
+				Type: yang.Yint8,
+				Int8: 127,
+			},
+		},
+		{
+			Abs: 0,
+			DBValue: DBValue{
+				Type:  yang.Yuint8,
+				Uint8: 0,
+			},
+		},
+		{
+			Abs: 255,
+			DBValue: DBValue{
+				Type:  yang.Yuint8,
+				Uint8: 255,
+			},
+		},
+	}
+
+	for _, input := range inputs {
+		v, _, _ := input.DBValue.ToAbsoluteNumber()
+		if v != uint64(input.Abs) {
+			t.Errorf("OKASHII %v v.s. %v", v, input.Abs)
+		}
+	}
+}

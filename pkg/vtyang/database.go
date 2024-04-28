@@ -338,13 +338,6 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 			}
 		case Leaf:
 			switch xword.Dbvaluetype {
-
-			// case yang.Ybits:
-			// case yang.Yempty:
-			// case yang.YinstanceIdentifier:
-			// case yang.Yleafref:
-			// case yang.Yunion:
-
 			case yang.Yint8:
 				v := DBValue{Type: xword.Dbvaluetype}
 				if err := v.SetFromString(val); err != nil {
@@ -460,6 +453,19 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 						Decimal64: dval,
 					},
 				})
+			case yang.Yunion:
+				v := DBValue{
+					Type:      xword.Dbvaluetype,
+					UnionType: xword.Dbuniontype,
+				}
+				if err := v.SetFromString(val); err != nil {
+					return nil, errors.Wrap(err, "SetFromString")
+				}
+				n.Childs = append(n.Childs, DBNode{
+					Name:  xword.Word,
+					Type:  Leaf,
+					Value: v,
+				})
 
 			// TODO(slankdev)
 			case yang.Yenum:
@@ -481,6 +487,11 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 						String: val,
 					},
 				})
+
+			// case yang.Ybits:
+			// case yang.Yempty:
+			// case yang.YinstanceIdentifier:
+			// case yang.Yleafref:
 			default:
 				panic(fmt.Sprintf("OKASHI (%s)", xword.Dbvaluetype))
 			}
@@ -744,6 +755,8 @@ type DBNode struct {
 
 type DBValue struct {
 	Type yang.TypeKind
+
+	UnionType yang.TypeKind
 
 	// Union
 	Int8      int8
@@ -1054,6 +1067,39 @@ func (v DBValue) ToValue() interface{} {
 		return v.String
 	case yang.Yenum:
 		return v.String
+	case yang.Yunion:
+		switch v.UnionType {
+		case yang.Yint8:
+			return v.Int8
+		case yang.Yint16:
+			return v.Int16
+		case yang.Yint32:
+			return v.Int32
+		case yang.Yint64:
+			return v.Int64
+		case yang.Yuint8:
+			return v.Uint8
+		case yang.Yuint16:
+			return v.Uint16
+		case yang.Yuint32:
+			return v.Uint32
+		case yang.Yuint64:
+			return v.Uint64
+		case yang.Ybool:
+			return v.Boolean
+		case yang.Ystring:
+			return v.String
+		case yang.Ydecimal64:
+			return v.Decimal64
+		case yang.Yleafref:
+			return v.String
+		case yang.Yidentityref:
+			return v.String
+		case yang.Yenum:
+			return v.String
+		default:
+			panic(fmt.Sprintf("ASSERT(%s)", v.UnionType))
+		}
 	default:
 		panic(fmt.Sprintf("ASSERT(%s)", v.Type))
 	}
@@ -1123,6 +1169,80 @@ func (v *DBValue) SetFromString(s string) error {
 			return err
 		}
 		v.Boolean = bval
+	case yang.Yunion:
+		switch v.UnionType {
+		case yang.Yint8:
+			ival, err := strconv.ParseInt(s, 10, 8)
+			if err != nil {
+				return errors.Wrap(err, "strconv.ParseInt(s,10,8)")
+			}
+			v.Int8 = int8(ival)
+		case yang.Yint16:
+			ival, err := strconv.ParseInt(s, 10, 16)
+			if err != nil {
+				return errors.Wrap(err, "strconv.ParseInt(s,10,16)")
+			}
+			v.Int16 = int16(ival)
+		case yang.Yint32:
+			ival, err := strconv.ParseInt(s, 10, 32)
+			if err != nil {
+				return errors.Wrap(err, "strconv.ParseInt(s,10,32)")
+			}
+			v.Int32 = int32(ival)
+		case yang.Yint64:
+			ival, err := strconv.ParseInt(s, 10, 64)
+			if err != nil {
+				return errors.Wrap(err, "strconv.ParseInt(s,10,64)")
+			}
+			v.Int64 = int64(ival)
+		case yang.Yuint8:
+			ival, err := strconv.ParseUint(s, 10, 8)
+			if err != nil {
+				return errors.Wrap(err, "strconv.ParseUint(s,10,8)")
+			}
+			v.Uint8 = uint8(ival)
+		case yang.Yuint16:
+			ival, err := strconv.ParseUint(s, 10, 16)
+			if err != nil {
+				return errors.Wrap(err, "strconv.ParseUint(s,10,16)")
+			}
+			v.Uint16 = uint16(ival)
+		case yang.Yuint32:
+			ival, err := strconv.ParseUint(s, 10, 32)
+			if err != nil {
+				return errors.Wrap(err, "strconv.ParseUint(s,10,32)")
+			}
+			v.Uint32 = uint32(ival)
+		case yang.Yuint64:
+			ival, err := strconv.ParseUint(s, 10, 64)
+			if err != nil {
+				return errors.Wrap(err, "strconv.ParseUint(s,10,64)")
+			}
+			v.Uint64 = uint64(ival)
+		case yang.Ydecimal64:
+			ival, err := strconv.ParseFloat(s, 64)
+			if err != nil {
+				return errors.Wrap(err, "strconv.ParseFloat(s,64)")
+			}
+			v.Decimal64 = float64(ival)
+		case yang.Ystring:
+			v.String = s
+		case yang.Ybool:
+			bval, err := strconv.ParseBool(s)
+			if err != nil {
+				return err
+			}
+			v.Boolean = bval
+		// TODO(slankdev)
+		case yang.Yenum:
+			v.String = s
+		case yang.Yleafref:
+			v.String = s
+		case yang.Yidentityref:
+			v.String = s
+		default:
+			panic(fmt.Sprintf("PANIC (%s)", v.UnionType))
+		}
 
 	// TODO(slankdev)
 	case yang.Yenum:
@@ -1135,7 +1255,6 @@ func (v *DBValue) SetFromString(s string) error {
 	// case yang.Ybits:
 	// case yang.Yempty:
 	// case yang.YinstanceIdentifier:
-	// case yang.Yunion:
 	default:
 		panic(fmt.Sprintf("OKASHI (%s)", v.Type))
 	}

@@ -14,6 +14,7 @@ type XWord struct {
 	Keys        map[string]DBValue
 	Dbtype      DBNodeType
 	Dbvaluetype yang.TypeKind
+	Dbuniontype yang.TypeKind
 }
 
 type XPath struct {
@@ -183,10 +184,12 @@ func ParseXPathArgsImpl(module *yang.Entry, args []string, setmode bool) (XPath,
 					switch ytype.Kind {
 					case yang.Ystring:
 						if err := validateStringValue(valueStr, ytype); err == nil {
+							xword.Dbuniontype = ytype.Kind
 							validated = true
 						}
 					case yang.Yenum:
 						if err := validateEnumValue(valueStr, ytype); err == nil {
+							xword.Dbuniontype = ytype.Kind
 							validated = true
 						}
 					case
@@ -200,6 +203,7 @@ func ParseXPathArgsImpl(module *yang.Entry, args []string, setmode bool) (XPath,
 						yang.Yuint64,
 						yang.Ydecimal64:
 						if err := validateNumberValue(valueStr, ytype); err == nil {
+							xword.Dbuniontype = ytype.Kind
 							validated = true
 						}
 					default:

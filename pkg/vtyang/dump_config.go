@@ -77,16 +77,18 @@ func resolveCompletionNodeConfig(e *yang.Entry, depth int, modName string, chain
 		var top *CompletionNode = nil
 		var tail *CompletionNode = nil
 		for _, word := range strings.Fields(e.Key) {
-			tail = &CompletionNode{
+			newTail := &CompletionNode{
 				Name:        "NAME",
 				Description: word,
 				Childs:      []*CompletionNode{newCR()},
 			}
 			if top == nil {
-				top = tail
+				top = newTail
+				tail = newTail
 			} else {
-				top.Childs = append(top.Childs, tail)
-				sort.Slice(top.Childs, func(i, j int) bool { return top.Childs[i].Name < top.Childs[j].Name })
+				tail.Childs = append(tail.Childs, newTail)
+				sort.Slice(tail.Childs, func(i, j int) bool { return tail.Childs[i].Name < tail.Childs[j].Name })
+				tail = newTail
 			}
 		}
 		for _, ee := range e.Dir {

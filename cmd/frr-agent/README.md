@@ -209,24 +209,8 @@ set lib prefix-list ipv4 hoge entry 15 action permit
 set lib prefix-list ipv4 hoge entry 15 ipv4-prefix 10.254.0.0/16
 set lib prefix-list ipv4 hoge entry 15 ipv4-prefix-length-lesser-or-equal 32
 
-! staticd
-set routing control-plane-protocols control-plane-protocol frr-staticd:staticd staticd default {}
-set routing control-plane-protocols control-plane-protocol frr-staticd:staticd staticd default frr-staticd:staticd route-list 1.1.1.1/32 frr-routing:ipv4-unicast {}
-set routing control-plane-protocols control-plane-protocol frr-staticd:staticd staticd default frr-staticd:staticd route-list 1.1.1.1/32 frr-routing:ipv4-unicast path-list 0 1  {}
-set routing control-plane-protocols control-plane-protocol frr-staticd:staticd staticd default frr-staticd:staticd route-list 1.1.1.1/32 frr-routing:ipv4-unicast path-list 0 1 frr-nexthops nexthop blackhole default ''
+set routing control-plane-protocols control-plane-protocol staticd staticd default staticd route-list 1.1.1.1/32 ipv4-unicast path-list 0 1 frr-nexthops nexthop blackhole default "" ""
 
-set routing control-plane-protocols control-plane-protocol \
-  frr-staticd:staticd staticd default frr-staticd:staticd \
-  route-list 1.1.1.1/32 frr-routing:ipv4-unicast {}
-set routing control-plane-protocols control-plane-protocol \
-  frr-staticd:staticd staticd default frr-staticd:staticd \
-  route-list 1.1.1.1/32 frr-routing:ipv4-unicast path-list 0 1  {}
-set routing control-plane-protocols control-plane-protocol \
-  frr-staticd:staticd staticd default frr-staticd:staticd \
-  route-list 1.1.1.1/32 frr-routing:ipv4-unicast path-list 0 1 \
-  frr-nexthops nexthop blackhole default ''
-
-! zebra
 set lib interface dum0 description dum0-interface-comment
 set lib interface dum0 zebra ipv4-addrs 10.255.10.1 24
 set lib interface dum1 description dum1-interface-comment

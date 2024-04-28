@@ -140,6 +140,24 @@ module main {
         type month;
       }
     }
+
+    leaf union-multiple {
+      type union {
+        type union {
+          type enumeration {
+            enum eva;
+          }
+          type enumeration {
+            enum foo;
+            enum bar;
+          }
+        }
+        type enumeration {
+          enum hoge;
+          enum fuga;
+        }
+      }
+    }
   }
 
   // TODO(slankdev): this is in frr modules

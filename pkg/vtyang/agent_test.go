@@ -200,6 +200,16 @@ func TestXpathParse2(t *testing.T) {
 			"commit",
 			"quit",
 			"show running-config",
+
+			"configure",
+			"delete",
+			"set values union-multiple eva",
+			"set values union-multiple foo",
+			"set values union-multiple bar",
+			"set values union-multiple hoge",
+			"set values union-multiple fuga",
+			"delete",
+			"quit",
 		},
 	})
 }

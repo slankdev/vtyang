@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/k0kubun/pp"
+	"github.com/openconfig/goyang/pkg/yang"
 	"github.com/slankdev/vtyang/pkg/util"
 )
 
@@ -30,7 +31,7 @@ var testDummyDBRoot = DBNode{
 									Name: "name",
 									Type: Leaf,
 									Value: DBValue{
-										Type:   YString,
+										Type:   yang.Ystring,
 										String: "alice",
 									},
 								},
@@ -38,8 +39,8 @@ var testDummyDBRoot = DBNode{
 									Name: "age",
 									Type: Leaf,
 									Value: DBValue{
-										Type:    YInteger,
-										Integer: 26,
+										Type:  yang.Yint32,
+										Int32: 26,
 									},
 								},
 							},
@@ -51,7 +52,7 @@ var testDummyDBRoot = DBNode{
 									Name: "name",
 									Type: Leaf,
 									Value: DBValue{
-										Type:   YString,
+										Type:   yang.Ystring,
 										String: "bob",
 									},
 								},
@@ -59,8 +60,8 @@ var testDummyDBRoot = DBNode{
 									Name: "age",
 									Type: Leaf,
 									Value: DBValue{
-										Type:    YInteger,
-										Integer: 36,
+										Type:  yang.Yint32,
+										Int32: 36,
 									},
 								},
 							},
@@ -74,7 +75,7 @@ var testDummyDBRoot = DBNode{
 
 func TestDBNodeGet(t *testing.T) {
 	dbm := NewDatabaseManager()
-	dbm.LoadYangModuleOrDie("./testdata")
+	dbm.LoadYangModuleOrDie("./testdata/yang/accounting")
 	dbm.LoadDatabaseFromData(&testDummyDBRoot)
 
 	testcases := []struct {
@@ -102,7 +103,7 @@ func TestDBNodeGet(t *testing.T) {
 
 func TestDBNodeCreate(t *testing.T) {
 	dbm := NewDatabaseManager()
-	dbm.LoadYangModuleOrDie("./testdata")
+	dbm.LoadYangModuleOrDie("./testdata/yang/accounting")
 	dbm.LoadDatabaseFromData(&testDummyDBRoot)
 
 	testcases := []struct {
@@ -132,7 +133,7 @@ func TestDBNodeCreate(t *testing.T) {
 												Name: "name",
 												Type: Leaf,
 												Value: DBValue{
-													Type:   YString,
+													Type:   yang.Ystring,
 													String: "hoge",
 												},
 											},
@@ -231,7 +232,7 @@ func TestSetNode(t *testing.T) {
 										Name: "area-tag",
 										Type: "leaf",
 										Value: DBValue{
-											Type:   "string",
+											Type:   yang.Ystring,
 											String: "1",
 										},
 									},
@@ -239,7 +240,7 @@ func TestSetNode(t *testing.T) {
 										Name: "vrf",
 										Type: "leaf",
 										Value: DBValue{
-											Type:   "string",
+											Type:   yang.Ystring,
 											String: "default",
 										},
 									},
@@ -247,7 +248,7 @@ func TestSetNode(t *testing.T) {
 										Name: "description",
 										Type: "leaf",
 										Value: DBValue{
-											Type:   "string",
+											Type:   yang.Ystring,
 											String: "area1-default-hoge",
 										},
 									},
@@ -260,7 +261,7 @@ func TestSetNode(t *testing.T) {
 										Name: "area-tag",
 										Type: "leaf",
 										Value: DBValue{
-											Type:   "string",
+											Type:   yang.Ystring,
 											String: "1",
 										},
 									},
@@ -268,7 +269,7 @@ func TestSetNode(t *testing.T) {
 										Name: "vrf",
 										Type: "leaf",
 										Value: DBValue{
-											Type:   "string",
+											Type:   yang.Ystring,
 											String: "vrf0",
 										},
 									},
@@ -276,7 +277,7 @@ func TestSetNode(t *testing.T) {
 										Name: "description",
 										Type: "leaf",
 										Value: DBValue{
-											Type:   "string",
+											Type:   yang.Ystring,
 											String: "area1-vrf0-hoge",
 										},
 									},
@@ -290,24 +291,30 @@ func TestSetNode(t *testing.T) {
 	}
 
 	xpath := XPath{
-		words: []XWord{
+		Words: []XWord{
 			{
-				word:   "isis",
-				dbtype: "container",
+				Word:   "isis",
+				Dbtype: "container",
 			},
 			{
-				word: "instance",
-				keys: map[string]string{
-					"area-tag": "1",
-					"vrf":      "default",
+				Word: "instance",
+				Keys: map[string]DBValue{
+					"area-tag": {
+						Type:   yang.Ystring,
+						String: "1",
+					},
+					"vrf": {
+						Type:   yang.Ystring,
+						String: "default",
+					},
 				},
-				dbtype: "list",
+				Dbtype: "list",
 			},
 			{
-				word:        "description",
-				keys:        map[string]string{},
-				dbtype:      "leaf",
-				dbvaluetype: "string",
+				Word:        "description",
+				Keys:        map[string]DBValue{},
+				Dbtype:      "leaf",
+				Dbvaluetype: yang.Ystring,
 			},
 		},
 	}
@@ -324,7 +331,7 @@ func TestDBNodeDeepCopy(t *testing.T) {
 				Name: "child1",
 				Type: Leaf,
 				Value: DBValue{
-					Type:   YString,
+					Type:   yang.Ystring,
 					String: "value1",
 				},
 			},
@@ -332,8 +339,8 @@ func TestDBNodeDeepCopy(t *testing.T) {
 				Name: "child2",
 				Type: Leaf,
 				Value: DBValue{
-					Type:    YInteger,
-					Integer: 42,
+					Type:  yang.Yint32,
+					Int32: 42,
 				},
 			},
 		},
@@ -349,5 +356,48 @@ func TestDBNodeDeepCopy(t *testing.T) {
 	copy.Childs[0].Value.String = "modified value"
 	if reflect.DeepEqual(original, copy) {
 		t.Errorf("DeepCopy failed: modifying the copy modified the original")
+	}
+}
+
+func Test_DBValue_ToAbsoluteNumber(t *testing.T) {
+	inputs := []struct {
+		Abs     uint64
+		DBValue DBValue
+	}{
+		{
+			Abs: 128,
+			DBValue: DBValue{
+				Type: yang.Yint8,
+				Int8: -128,
+			},
+		},
+		{
+			Abs: 127,
+			DBValue: DBValue{
+				Type: yang.Yint8,
+				Int8: 127,
+			},
+		},
+		{
+			Abs: 0,
+			DBValue: DBValue{
+				Type:  yang.Yuint8,
+				Uint8: 0,
+			},
+		},
+		{
+			Abs: 255,
+			DBValue: DBValue{
+				Type:  yang.Yuint8,
+				Uint8: 255,
+			},
+		},
+	}
+
+	for _, input := range inputs {
+		v, _, _ := input.DBValue.ToAbsoluteNumber()
+		if v != uint64(input.Abs) {
+			t.Errorf("OKASHII %v v.s. %v", v, input.Abs)
+		}
 	}
 }

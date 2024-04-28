@@ -1,0 +1,14 @@
+{
+  "users": {
+    "user": [
+      {
+        "age": 22,
+        "name": "hiroki"
+      },
+      {
+        "age": 30,
+        "name": "slank"
+      }
+    ]
+  }
+}

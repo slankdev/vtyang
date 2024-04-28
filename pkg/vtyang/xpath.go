@@ -265,8 +265,52 @@ func ParseXPathArgsImpl(module *yang.Entry, args []string, setmode bool) (XPath,
 						break
 					}
 				}
+
+				// Check union type
 				tmpStr := words[argumentCount]
-				v := DBValue{Type: keyLeafNode.Type.Kind}
+				unionType := yang.Ynone
+				if keyLeafNode.Type.Kind == yang.Yunion {
+					validated := false
+					for _, ytype := range keyLeafNode.Type.Type {
+						switch ytype.Kind {
+						case yang.Ystring:
+							if err := validateStringValue(valueStr, ytype); err == nil {
+								unionType = ytype.Kind
+								validated = true
+							}
+						case yang.Yenum:
+							if err := validateEnumValue(valueStr, ytype); err == nil {
+								unionType = ytype.Kind
+								validated = true
+							}
+						case
+							yang.Yint8,
+							yang.Yint16,
+							yang.Yint32,
+							yang.Yint64,
+							yang.Yuint8,
+							yang.Yuint16,
+							yang.Yuint32,
+							yang.Yuint64,
+							yang.Ydecimal64:
+							if err := validateNumberValue(valueStr, ytype); err == nil {
+								unionType = ytype.Kind
+								validated = true
+							}
+						default:
+							panic(fmt.Sprintf("PANIC %s", ytype.Kind.String()))
+						}
+					}
+					if !validated {
+						return XPath{}, "", errors.Errorf("union not validated")
+					}
+				}
+
+				// Prase from string
+				v := DBValue{
+					Type:      keyLeafNode.Type.Kind,
+					UnionType: unionType,
+				}
 				if err := v.SetFromString(tmpStr); err != nil {
 					return XPath{}, "", errors.Wrap(err, "SetFromString")
 				}

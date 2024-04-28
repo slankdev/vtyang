@@ -178,6 +178,14 @@ func TestXpathParse2(t *testing.T) {
 			"commit",
 			"quit",
 			"show running-config",
+
+			"configure",
+			"delete values",
+			"set values ipv4-address 10.1.2.30",
+			"set values ipv6-address 2001:db8::1",
+			"commit",
+			"quit",
+			"show running-config",
 		},
 	})
 }

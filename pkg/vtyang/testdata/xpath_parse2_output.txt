@@ -73,3 +73,9 @@
     }
   }
 }
+{
+  "values": {
+    "ipv4-address": "10.1.2.30",
+    "ipv6-address": "2001:db8::1"
+  }
+}

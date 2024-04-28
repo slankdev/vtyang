@@ -177,10 +177,9 @@ func ParseXPathArgsImpl(module *yang.Entry, args []string, setmode bool) (XPath,
 			// Additional Validation for Union
 			switch foundNode.Type.Kind {
 			case yang.Yunion:
-				// pp.Println("UNION")
 				validated := false
-				for _, ytype := range foundNode.Type.Type {
-					// pp.Println("TYPE", ytype.Kind.String())
+				ytypes := resolveUnionTypes(foundNode.Type.Type)
+				for _, ytype := range ytypes {
 					switch ytype.Kind {
 					case yang.Ystring:
 						if err := validateStringValue(valueStr, ytype); err == nil {
@@ -271,7 +270,8 @@ func ParseXPathArgsImpl(module *yang.Entry, args []string, setmode bool) (XPath,
 				unionType := yang.Ynone
 				if keyLeafNode.Type.Kind == yang.Yunion {
 					validated := false
-					for _, ytype := range keyLeafNode.Type.Type {
+					ytypes := resolveUnionTypes(keyLeafNode.Type.Type)
+					for _, ytype := range ytypes {
 						switch ytype.Kind {
 						case yang.Ystring:
 							if err := validateStringValue(valueStr, ytype); err == nil {
@@ -408,4 +408,18 @@ func validateNumberValue(valueStr string, yangType *yang.YangType) error {
 		}
 	}
 	return nil
+}
+
+func resolveUnionTypes(yangTypes []*yang.YangType) []*yang.YangType {
+	ret := []*yang.YangType{}
+	for _, ytype := range yangTypes {
+		switch ytype.Kind {
+		case yang.Yunion:
+			ret1 := resolveUnionTypes(ytype.Type)
+			ret = append(ret, ret1...)
+		default:
+			ret = append(ret, ytype)
+		}
+	}
+	return ret
 }

@@ -155,6 +155,27 @@ func TestXpathParse2(t *testing.T) {
 			"commit",
 			"quit",
 			"show running-config",
+
+			"configure",
+			"delete values",
+			"set values items item1 hiroki description hello1",
+			"commit",
+			"quit",
+			"show running-config",
+
+			"configure",
+			"delete values",
+			"set values items item2 hiroki staticd description hello2",
+			"commit",
+			"quit",
+			"show running-config",
+
+			"configure",
+			"delete values",
+			"set values items item3 hiroki staticd vrf0 description hello3",
+			"commit",
+			"quit",
+			"show running-config",
 		},
 	})
 }

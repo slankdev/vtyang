@@ -32,3 +32,42 @@
     "u64": 18446744073709551615
   }
 }
+{
+  "values": {
+    "items": {
+      "item1": [
+        {
+          "description": "hello1",
+          "name": "hiroki"
+        }
+      ]
+    }
+  }
+}
+{
+  "values": {
+    "items": {
+      "item2": [
+        {
+          "description": "hello2",
+          "name": "hiroki",
+          "type": "staticd"
+        }
+      ]
+    }
+  }
+}
+{
+  "values": {
+    "items": {
+      "item3": [
+        {
+          "description": "hello3",
+          "name": "hiroki",
+          "type": "staticd",
+          "vrf": "vrf0"
+        }
+      ]
+    }
+  }
+}

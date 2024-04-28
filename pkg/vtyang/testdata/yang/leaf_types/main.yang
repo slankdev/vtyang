@@ -87,6 +87,7 @@ module main {
     container items {
       list item1 {
         key "name";
+        leaf name { type string; }
         leaf description { type string; }
       }
       list item2 {

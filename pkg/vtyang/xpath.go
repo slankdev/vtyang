@@ -14,7 +14,7 @@ type XWord struct {
 	Keys        map[string]DBValue
 	Dbtype      DBNodeType
 	Dbvaluetype yang.TypeKind
-	Dbuniontype yang.TypeKind
+	Dbuniontype yang.TypeKind `json:"Dbuniontype,omitempty"`
 }
 
 type XPath struct {

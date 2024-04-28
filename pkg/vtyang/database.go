@@ -756,7 +756,7 @@ type DBNode struct {
 type DBValue struct {
 	Type yang.TypeKind
 
-	UnionType yang.TypeKind
+	UnionType yang.TypeKind `json:"UnionType,omitempty"`
 
 	// Union
 	Int8      int8

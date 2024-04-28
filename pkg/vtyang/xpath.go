@@ -172,6 +172,23 @@ func ParseXPathArgsImpl(module *yang.Entry, args []string, setmode bool) (XPath,
 			xword.Dbtype = Leaf
 			xword.Dbvaluetype = foundNode.Type.Kind
 
+			// Additional Validation for Enum
+			switch foundNode.Type.Kind {
+			case yang.Yenum:
+				valid := false
+				for _, n := range foundNode.Type.Enum.Names() {
+					if n == valueStr {
+						valid = true
+						break
+					}
+				}
+				if !valid {
+					return XPath{}, "", errors.Errorf(
+						"enum value is not valid available=%+v",
+						foundNode.Type.Enum.Names())
+				}
+			}
+
 			// Additional Validatation for Number-types
 			// - range (A)..(B)
 			switch foundNode.Type.Kind {

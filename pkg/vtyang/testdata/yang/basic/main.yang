@@ -7,6 +7,22 @@ module main {
       range "1..12";
     }
   }
+  typedef month-str {
+    type enumeration {
+      enum January;
+      enum February;
+      enum March;
+      enum April;
+      enum May;
+      enum June;
+      enum July;
+      enum August;
+      enum September;
+      enum October;
+      enum November;
+      enum December;
+    }
+  }
   identity crypto-algo;
   identity aes {
     base crypto-algo;
@@ -44,6 +60,9 @@ module main {
     }
     leaf month {
       type month;
+    }
+    leaf month-str {
+      type month-str;
     }
     leaf crypto {
       type identityref {
@@ -95,7 +114,20 @@ module main {
     // according to the rules for that type.
     leaf union {
       type union {
-        type string;
+        type enumeration {
+          enum January;
+          enum February;
+          enum March;
+          enum April;
+          enum May;
+          enum June;
+          enum July;
+          enum August;
+          enum September;
+          enum October;
+          enum November;
+          enum December;
+        }
         type uint8 {
           range "1..12";
         }

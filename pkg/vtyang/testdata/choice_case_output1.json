@@ -1,0 +1,476 @@
+{
+  "Name": "",
+  "Description": "",
+  "Modules": null,
+  "Childs": [
+    {
+      "Name": "list",
+      "Description": "List cli nodes",
+      "Modules": null,
+      "Childs": [
+        {
+          "Name": "\u003ccr\u003e",
+          "Description": "",
+          "Modules": null,
+          "Childs": null
+        }
+      ]
+    },
+    {
+      "Name": "quit",
+      "Description": "Quit system",
+      "Modules": null,
+      "Childs": [
+        {
+          "Name": "\u003ccr\u003e",
+          "Description": "",
+          "Modules": null,
+          "Childs": null
+        }
+      ]
+    },
+    {
+      "Name": "show",
+      "Description": "Display information",
+      "Modules": null,
+      "Childs": [
+        {
+          "Name": "cli-tree",
+          "Description": "Display completion tree",
+          "Modules": null,
+          "Childs": [
+            {
+              "Name": "\u003ccr\u003e",
+              "Description": "",
+              "Modules": null,
+              "Childs": null
+            }
+          ]
+        },
+        {
+          "Name": "yang",
+          "Description": "Display yang information",
+          "Modules": null,
+          "Childs": [
+            {
+              "Name": "modules",
+              "Description": "Display yang modules",
+              "Modules": null,
+              "Childs": [
+                {
+                  "Name": "\u003ccr\u003e",
+                  "Description": "",
+                  "Modules": null,
+                  "Childs": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "Name": "startup-config",
+          "Description": "Display startup configuration",
+          "Modules": null,
+          "Childs": [
+            {
+              "Name": "\u003ccr\u003e",
+              "Description": "",
+              "Modules": null,
+              "Childs": null
+            }
+          ]
+        },
+        {
+          "Name": "configuration",
+          "Description": "Display configuration",
+          "Modules": null,
+          "Childs": [
+            {
+              "Name": "commit",
+              "Description": "Display configuration commit",
+              "Modules": null,
+              "Childs": [
+                {
+                  "Name": "list",
+                  "Description": "Display commit history",
+                  "Modules": null,
+                  "Childs": [
+                    {
+                      "Name": "\u003ccr\u003e",
+                      "Description": "",
+                      "Modules": null,
+                      "Childs": null
+                    }
+                  ]
+                },
+                {
+                  "Name": "diff",
+                  "Description": "Display configuration diff with history",
+                  "Modules": null,
+                  "Childs": [
+                    {
+                      "Name": "\u003ccr\u003e",
+                      "Description": "",
+                      "Modules": null,
+                      "Childs": null
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "Name": "items",
+          "Description": "",
+          "Modules": null,
+          "Childs": [
+            {
+              "Name": "items",
+              "Description": "",
+              "Modules": null,
+              "Childs": [
+                {
+                  "Name": "NAME",
+                  "Description": "",
+                  "Modules": null,
+                  "Childs": [
+                    {
+                      "Name": "\u003ccr\u003e",
+                      "Description": "",
+                      "Modules": null,
+                      "Childs": null
+                    },
+                    {
+                      "Name": "ipv4-proto",
+                      "Description": "",
+                      "Modules": null,
+                      "Childs": [
+                        {
+                          "Name": "VALUE",
+                          "Description": "",
+                          "Modules": null,
+                          "Childs": [
+                            {
+                              "Name": "\u003ccr\u003e",
+                              "Description": "",
+                              "Modules": null,
+                              "Childs": null
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "Name": "ipv6-proto",
+                      "Description": "",
+                      "Modules": null,
+                      "Childs": [
+                        {
+                          "Name": "VALUE",
+                          "Description": "",
+                          "Modules": null,
+                          "Childs": [
+                            {
+                              "Name": "\u003ccr\u003e",
+                              "Description": "",
+                              "Modules": null,
+                              "Childs": null
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "Name": "values",
+          "Description": "",
+          "Modules": null,
+          "Childs": [
+            {
+              "Name": "transport-proto",
+              "Description": "",
+              "Modules": null,
+              "Childs": [
+                {
+                  "Name": "tcp-app",
+                  "Description": "",
+                  "Modules": null,
+                  "Childs": [
+                    {
+                      "Name": "VALUE",
+                      "Description": "",
+                      "Modules": null,
+                      "Childs": [
+                        {
+                          "Name": "\u003ccr\u003e",
+                          "Description": "",
+                          "Modules": null,
+                          "Childs": null
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Name": "udp-app",
+                  "Description": "",
+                  "Modules": null,
+                  "Childs": [
+                    {
+                      "Name": "VALUE",
+                      "Description": "",
+                      "Modules": null,
+                      "Childs": [
+                        {
+                          "Name": "\u003ccr\u003e",
+                          "Description": "",
+                          "Modules": null,
+                          "Childs": null
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "Name": "running-config",
+          "Description": "",
+          "Modules": null,
+          "Childs": [
+            {
+              "Name": "items",
+              "Description": "",
+              "Modules": [
+                "main"
+              ],
+              "Childs": [
+                {
+                  "Name": "items",
+                  "Description": "",
+                  "Modules": [
+                    "main"
+                  ],
+                  "Childs": [
+                    {
+                      "Name": "NAME",
+                      "Description": "name",
+                      "Modules": null,
+                      "Childs": [
+                        {
+                          "Name": "\u003ccr\u003e",
+                          "Description": "",
+                          "Modules": null,
+                          "Childs": null
+                        },
+                        {
+                          "Name": "ipv4-proto",
+                          "Description": "",
+                          "Modules": [
+                            "main"
+                          ],
+                          "Childs": [
+                            {
+                              "Name": "VALUE",
+                              "Description": "",
+                              "Modules": null,
+                              "Childs": [
+                                {
+                                  "Name": "\u003ccr\u003e",
+                                  "Description": "",
+                                  "Modules": null,
+                                  "Childs": null
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "Name": "ipv6-proto",
+                          "Description": "",
+                          "Modules": [
+                            "main"
+                          ],
+                          "Childs": [
+                            {
+                              "Name": "VALUE",
+                              "Description": "",
+                              "Modules": null,
+                              "Childs": [
+                                {
+                                  "Name": "\u003ccr\u003e",
+                                  "Description": "",
+                                  "Modules": null,
+                                  "Childs": null
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "Name": "values",
+              "Description": "",
+              "Modules": [
+                "main"
+              ],
+              "Childs": [
+                {
+                  "Name": "transport-proto",
+                  "Description": "",
+                  "Modules": [
+                    "main"
+                  ],
+                  "Childs": [
+                    {
+                      "Name": "tcp-app",
+                      "Description": "",
+                      "Modules": [
+                        "main"
+                      ],
+                      "Childs": [
+                        {
+                          "Name": "VALUE",
+                          "Description": "",
+                          "Modules": null,
+                          "Childs": [
+                            {
+                              "Name": "\u003ccr\u003e",
+                              "Description": "",
+                              "Modules": null,
+                              "Childs": null
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "Name": "udp-app",
+                      "Description": "",
+                      "Modules": [
+                        "main"
+                      ],
+                      "Childs": [
+                        {
+                          "Name": "VALUE",
+                          "Description": "",
+                          "Modules": null,
+                          "Childs": [
+                            {
+                              "Name": "\u003ccr\u003e",
+                              "Description": "",
+                              "Modules": null,
+                              "Childs": null
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "Name": "running-config-frr",
+          "Description": "",
+          "Modules": null,
+          "Childs": [
+            {
+              "Name": "\u003ccr\u003e",
+              "Description": "",
+              "Modules": null,
+              "Childs": null
+            }
+          ]
+        },
+        {
+          "Name": "running-config-raw",
+          "Description": "",
+          "Modules": null,
+          "Childs": [
+            {
+              "Name": "\u003ccr\u003e",
+              "Description": "",
+              "Modules": null,
+              "Childs": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "save",
+      "Description": "Save information",
+      "Modules": null,
+      "Childs": [
+        {
+          "Name": "cli-tree",
+          "Description": "Save completion tree",
+          "Modules": null,
+          "Childs": [
+            {
+              "Name": "\u003ccr\u003e",
+              "Description": "",
+              "Modules": null,
+              "Childs": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "configure",
+      "Description": "Enable configure mode",
+      "Modules": null,
+      "Childs": [
+        {
+          "Name": "\u003ccr\u003e",
+          "Description": "",
+          "Modules": null,
+          "Childs": null
+        }
+      ]
+    },
+    {
+      "Name": "write",
+      "Description": "Write system parameter",
+      "Modules": null,
+      "Childs": [
+        {
+          "Name": "memory",
+          "Description": "Write system parameter to memory",
+          "Modules": null,
+          "Childs": [
+            {
+              "Name": "\u003ccr\u003e",
+              "Description": "",
+              "Modules": null,
+              "Childs": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "rpc",
+      "Description": "",
+      "Modules": null,
+      "Childs": []
+    }
+  ]
+}

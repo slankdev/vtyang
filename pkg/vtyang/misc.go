@@ -9,24 +9,8 @@ import (
 	"strings"
 
 	"github.com/olekukonko/tablewriter"
-	"github.com/openconfig/goyang/pkg/yang"
 	"github.com/slankdev/vtyang/pkg/util"
 )
-
-func YangTypeKind2YType(t yang.TypeKind) DBValueType {
-	switch t {
-	case yang.Yint32:
-		return YInteger
-	case yang.Yuint32:
-		return YInteger
-	case yang.Ystring:
-		return YString
-	case yang.Ybool:
-		return YBoolean
-	default:
-		panic(fmt.Sprintf("TODO(%s)", t))
-	}
-}
 
 func name(s string) string {
 	ret := util.SplitMultiSep(s, []string{"'", "[", "]", "="})

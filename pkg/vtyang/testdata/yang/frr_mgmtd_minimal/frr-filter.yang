@@ -1,0 +1,415 @@
+// SPDX-License-Identifier: BSD-2-Clause
+module frr-filter {
+  yang-version 1.1;
+  namespace "http://frrouting.org/yang/filter";
+  prefix frr-filter;
+
+  import ietf-inet-types {
+    prefix inet;
+  }
+  import ietf-yang-types {
+    prefix yang;
+  }
+  import frr-interface {
+    prefix frr-interface;
+  }
+
+  organization "FRRouting";
+  contact
+    "FRR Users List:       <mailto:frog@lists.frrouting.org>
+     FRR Development List: <mailto:dev@lists.frrouting.org>";
+  description
+    "This module defines filter settings
+
+     Copyright 2020 FRRouting
+
+     Redistribution and use in source and binary forms, with or without
+     modification, are permitted provided that the following conditions
+     are met:
+
+     1. Redistributions of source code must retain the above copyright notice,
+     this list of conditions and the following disclaimer.
+
+     2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in the
+     documentation and/or other materials provided with the distribution.
+
+     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+     \"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+     LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+     A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+     HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+     SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+     LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+     DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+     THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+     OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.";
+
+  revision 2019-07-04 {
+    description "Initial revision";
+    reference "FRRouting";
+  }
+
+  /*
+   * Types.
+   */
+  typedef access-list-name {
+    type string {
+      length 1..128;
+    }
+    description "Access list name formatting";
+  }
+
+  typedef access-list-sequence {
+    type uint32 {
+      range "1..4294967295";
+    }
+    description "Access list sequence number";
+  }
+
+  typedef access-list-action {
+    type enumeration {
+      enum deny {
+        value 0;
+        description "Deny an entry";
+      }
+      enum permit {
+        value 1;
+        description "Accept an entry";
+      }
+    }
+    description "Access list return action on match";
+  }
+
+  typedef access-list-ref {
+    type leafref {
+      path "/frr-filter:lib/frr-filter:access-list/frr-filter:name";
+      require-instance false;
+    }
+    description "IPv4 or IPv6 access list reference";
+  }
+
+  typedef prefix-list-ref {
+    type leafref {
+      path "/frr-filter:lib/frr-filter:prefix-list/frr-filter:name";
+      require-instance false;
+    }
+    description "IPv4 or IPv6 prefix list reference";
+  }
+
+  /*
+   * Grouping.
+   */
+  grouping distribute-list-group {
+    description "Distribute list grouping";
+    list distribute-list {
+      key "interface";
+      description "Distribute list configuration";
+
+      leaf interface {
+        type union {
+          type frr-interface:interface-ref;
+          type empty;
+        }
+        description
+          "Interface to attach list to or empty for global.";
+      }
+
+      container in {
+        description "Inbound filter list";
+        leaf access-list {
+          type access-list-ref;
+          description "inbound access list";
+        }
+        leaf prefix-list {
+          type prefix-list-ref;
+          description "inbound prefix list";
+        }
+      }
+      container out {
+        description "Outbound filter list";
+        leaf access-list {
+          type access-list-ref;
+          description "outbound access list";
+        }
+        leaf prefix-list {
+          type prefix-list-ref;
+          description "outbound prefix list";
+        }
+      }
+    }
+  }
+
+  /*
+   * Configuration data.
+   */
+  container lib {
+    description "Filter library";
+    list access-list {
+      key "type name";
+      description "Access list instance";
+
+      leaf type {
+        type enumeration {
+          enum ipv4 {
+              value 0;
+              description "Internet Protocol address version 4";
+            }
+            enum ipv6 {
+              value 1;
+              description "Internet Protocol address version 6";
+          }
+          enum mac {
+            value 2;
+            description "Media Access Control address";
+          }
+        }
+        description "Access list content type";
+      }
+
+      leaf name {
+        type access-list-name;
+        description "Access list name";
+      }
+
+      leaf remark {
+        type string;
+        description "Access list remark";
+      }
+
+      list entry {
+        key "sequence";
+        description "Access list entry";
+        leaf sequence {
+          type access-list-sequence;
+          description "Access list sequence value";
+        }
+        leaf action {
+          type access-list-action;
+          mandatory true;
+          description "Access list action on match";
+        }
+
+        choice value {
+          mandatory true;
+          description "Access list value to match";
+
+          case ipv4-prefix {
+            when "../type = 'ipv4'";
+
+            choice style {
+              mandatory true;
+              description "Access list entry style selection: zebra or cisco.";
+
+              case zebra {
+                leaf ipv4-prefix {
+                  type inet:ipv4-prefix;
+                  mandatory true;
+                  description "Configure IPv4 prefix to match";
+                }
+
+                leaf ipv4-exact-match {
+                  type boolean;
+                  default false;
+                  description "Exact match of prefix";
+                }
+              }
+              case cisco {
+                choice standard-value {
+                  description "Source value to match";
+
+                  leaf host {
+                    type inet:ipv4-address;
+                    description "Host to match";
+                  }
+                  container network {
+                    description "Network to match";
+                    leaf address {
+                      type inet:ipv4-address;
+                      mandatory true;
+                      description "Network address part.";
+                    }
+                    leaf mask {
+                      type inet:ipv4-address;
+                      mandatory true;
+                      description "Network mask/wildcard part.";
+                    }
+                  }
+                  leaf source-any {
+                    /*
+                     * Was `any`, however it conflicts with `any` leaf
+                     * outside this choice.
+                     */
+                    type empty;
+                    description "Match any";
+                  }
+                }
+
+                choice extended-value {
+                  description "Destination value to match";
+
+                  leaf destination-host {
+                    type inet:ipv4-address;
+                    description "Host to match";
+                  }
+                  container destination-network {
+                    description "Destination network to match";
+                    leaf address {
+                      type inet:ipv4-address;
+                      mandatory true;
+                      description "Network address part.";
+                    }
+                    leaf mask {
+                      type inet:ipv4-address;
+                      mandatory true;
+                      description "Network mask/wildcard part.";
+                    }
+                  }
+                  leaf destination-any {
+                    type empty;
+                    description "Match any";
+                  }
+                }
+              }
+            }
+          }
+          case ipv6-prefix {
+            when "../type = 'ipv6'";
+
+            leaf ipv6-prefix {
+              type inet:ipv6-prefix;
+              mandatory true;
+              description "Configure IPv6 prefix to match";
+            }
+
+            leaf ipv6-exact-match {
+              type boolean;
+              default false;
+              description "Exact match of prefix";
+            }
+          }
+          case mac {
+            when "../type = 'mac'";
+
+            leaf mac {
+              type yang:mac-address;
+              description "Configure MAC address to match";
+            }
+          }
+          case any {
+            leaf any {
+              type empty;
+              description "Match anything";
+            }
+          }
+        }
+      }
+    }
+
+    list prefix-list {
+      key "type name";
+      description "Prefix list instance";
+      leaf type {
+        type enumeration {
+          enum ipv4 {
+            value 0;
+            description "Internet Protocol address version 4";
+          }
+          enum ipv6 {
+            value 1;
+            description "Internet Protocol address version 6";
+          }
+        }
+        description "Prefix list type";
+      }
+
+      leaf name {
+        type access-list-name;
+        description "Prefix list name";
+      }
+
+      leaf remark {
+        type string;
+        description "Prefix list user description";
+      }
+
+      list entry {
+        key "sequence";
+        description "Prefix list entry";
+        leaf sequence {
+          type access-list-sequence;
+          description "Prefix list sequence value";
+        }
+
+        leaf action {
+          type access-list-action;
+          mandatory true;
+          description "Prefix list action on match";
+        }
+
+        choice value {
+          mandatory true;
+          description "Prefix list value to match";
+
+          case ipv4-prefix {
+            leaf ipv4-prefix {
+              type inet:ipv4-prefix;
+              mandatory true;
+              description "Configure IPv4 prefix to match";
+            }
+
+            leaf ipv4-prefix-length-greater-or-equal {
+              type uint8 {
+                range "0..32";
+              }
+              description
+                "Specifies if matching prefixes with length greater than
+                 or equal to value";
+            }
+
+            leaf ipv4-prefix-length-lesser-or-equal {
+              type uint8 {
+                range "0..32";
+              }
+              description
+                "Specifies if matching prefixes with length lesser than
+                 or equal to value";
+            }
+          }
+          case ipv6-prefix {
+            leaf ipv6-prefix {
+              type inet:ipv6-prefix;
+              mandatory true;
+              description "Configure IPv6 prefix to match";
+            }
+
+            leaf ipv6-prefix-length-greater-or-equal {
+              type uint8 {
+                range "0..128";
+              }
+              description
+                "Specifies if matching prefixes with length greater than
+                 or equal to value";
+            }
+
+            leaf ipv6-prefix-length-lesser-or-equal {
+              type uint8 {
+                range "0..128";
+              }
+              description
+                "Specifies if matching prefixes with length lesser than
+                 or equal to value";
+            }
+          }
+          case any {
+            leaf any {
+              type empty;
+              description "Match anything";
+            }
+          }
+        }
+      }
+    }
+  }
+}

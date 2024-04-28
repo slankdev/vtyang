@@ -12,6 +12,7 @@ import (
 
 	"github.com/k0kubun/pp"
 	"github.com/openconfig/goyang/pkg/yang"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -24,9 +25,12 @@ import (
 )
 
 var (
+	GlobalOptEnableGrpc  bool
+	GlobalOptLogFile     string
 	GlobalOptRunFilePath string
 	GlobalOptYangPath    string
 	GlobalOptDumpCliTree string
+	GlobalOptCommands    []string
 
 	actionCBs = map[string]func(args []string) error{
 		"uptime-callback": func(args []string) error {
@@ -79,7 +83,17 @@ func NewCommand() *cobra.Command {
 	return rootCmd
 }
 
-func InitAgent(runtimePath, yangPath string) error {
+func InitAgent(runtimePath, yangPath, logFile string) error {
+	if logFile != "" {
+		logfile, err := os.OpenFile(logFile,
+			os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+		if err != nil {
+			return errors.Wrapf(err, "os.OpenFile(%s)", logFile)
+		}
+		log.SetOutput(logfile)
+		log.Printf("starting vtyang...\n")
+	}
+
 	if runtimePath != "" {
 		if err := os.MkdirAll(runtimePath, 0777); err != nil {
 			return err
@@ -100,6 +114,7 @@ func InitAgent(runtimePath, yangPath string) error {
 	}
 
 	cliMode = CliModeView
+	commandnodes = nil
 	installCommandsDefault(CliModeView)
 	installCommandsDefault(CliModeConfigure)
 	installCommands()
@@ -157,8 +172,16 @@ func newCommandAgent() *cobra.Command {
 	cmd := &cobra.Command{
 		Use: "agent",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := InitAgent(GlobalOptRunFilePath, GlobalOptYangPath); err != nil {
+			if err := InitAgent(GlobalOptRunFilePath, GlobalOptYangPath,
+				GlobalOptLogFile); err != nil {
 				return err
+			}
+
+			if len(GlobalOptCommands) > 0 {
+				for _, c := range GlobalOptCommands {
+					getCommandNodeCurrent().executeCommand(c)
+				}
+				return nil
 			}
 
 			if GlobalOptDumpCliTree != "" {
@@ -186,7 +209,9 @@ func newCommandAgent() *cobra.Command {
 			line.SetTabCompletionStyle(liner.TabPrints)
 			line.SetBinder(QUESTION_MARK, completionLister)
 
-			go startRPCServer()
+			if GlobalOptEnableGrpc {
+				go startRPCServer()
+			}
 			for {
 				if name, err := line.Prompt(getPrompt()); err == nil {
 					line.AppendHistory(name)
@@ -211,20 +236,13 @@ func newCommandAgent() *cobra.Command {
 		},
 	}
 	fs := cmd.Flags()
+	fs.BoolVar(&GlobalOptEnableGrpc, "grpc", false, "Enable gRPC server")
+	fs.StringVarP(&GlobalOptLogFile, "logfile", "l", "/tmp/vtyang.log", "Log file")
 	fs.StringVarP(&GlobalOptRunFilePath, "run-path", "r", "", "Runtime file path")
 	fs.StringVarP(&GlobalOptYangPath, "yang", "y", "./yang", "Runtime file path")
 	fs.StringVarP(&GlobalOptDumpCliTree, "dump", "d", "", "[configure,view]")
+	fs.StringArrayVarP(&GlobalOptCommands, "command", "c", []string{}, "")
 	return cmd
-}
-
-func init() {
-	logfile, err := os.OpenFile("/tmp/vtyang.log",
-		os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
-	if err != nil {
-		panic("cannnot open test.log:" + err.Error())
-	}
-	log.SetOutput(logfile)
-	log.Printf("starting vtyang...\n")
 }
 
 func ErrorOnDie(err error) {

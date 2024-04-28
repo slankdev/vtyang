@@ -45,3 +45,20 @@ expected frr config data
 configure cli
 ```
 ```
+
+## Development Env Setup
+
+```
+go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28
+go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
+
+PROTOC_VERSION=25.3
+PROTOC_OS=linux
+PROTOC_ARCH=aarch_64
+mkdir -p /tmp/protoc
+pushd /tmp/protoc
+curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/protoc-${PROTOC_VERSION}-${PROTOC_OS}-${PROTOC_ARCH}.zip
+unzip protoc-${PROTOC_VERSION}-${PROTOC_OS}-${PROTOC_ARCH}.zip
+cp ./bin/protoc /usr/bin
+protoc --version
+```

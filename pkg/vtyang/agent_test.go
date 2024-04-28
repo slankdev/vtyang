@@ -117,7 +117,7 @@ func TestXpathParse2(t *testing.T) {
 	executeTestCase(t, &TestCase{
 		RuntimePath: "/tmp/run/vtyang",
 		LogFile:     "/tmp/run/vtyang/vtyang.log",
-		YangPath:    "./testdata/yang/leaf_types",
+		YangPath:    "./testdata/yang/basic",
 		OutputFile:  "./testdata/xpath_parse2_output.txt",
 		Inputs: []string{
 			"configure",
@@ -203,7 +203,7 @@ func TestXpathParse4(t *testing.T) {
 	executeTestCase(t, &TestCase{
 		RuntimePath: "/tmp/run/vtyang",
 		LogFile:     "/tmp/run/vtyang/vtyang.log",
-		YangPath:    "./testdata/yang/leaf_types",
+		YangPath:    "./testdata/yang/basic",
 		OutputFile:  "./testdata/xpath_parse4_output.txt",
 		Inputs: []string{
 			"show-xpath values u08 100",

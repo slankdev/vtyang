@@ -6,7 +6,7 @@ generate:
 	go generate ./...
 include ./cmd/*/sub.mk
 
-YANG1 := ./pkg/vtyang/testdata/yang/leaf_types
+YANG1 := ./pkg/vtyang/testdata/yang/basic
 YANG2 := ./pkg/vtyang/testdata/yang/frr_mgmtd_minimal
 YANG3 := ./pkg/vtyang/testdata/yang/choice_case
 YANG := $(YANG1)

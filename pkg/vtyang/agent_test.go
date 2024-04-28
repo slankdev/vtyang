@@ -186,6 +186,20 @@ func TestXpathParse2(t *testing.T) {
 			"commit",
 			"quit",
 			"show running-config",
+
+			"configure",
+			"delete values",
+			"set values month-union 1",
+			"commit",
+			"quit",
+			"show running-config",
+
+			"configure",
+			"delete values",
+			"set values month-union January",
+			"commit",
+			"quit",
+			"show running-config",
 		},
 	})
 }

@@ -79,3 +79,13 @@
     "ipv6-address": "2001:db8::1"
   }
 }
+{
+  "values": {
+    "month-union": 1
+  }
+}
+{
+  "values": {
+    "month-union": "January"
+  }
+}

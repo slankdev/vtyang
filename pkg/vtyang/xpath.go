@@ -2,6 +2,7 @@ package vtyang
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/openconfig/goyang/pkg/yang"
@@ -171,6 +172,25 @@ func ParseXPathArgsImpl(module *yang.Entry, args []string, setmode bool) (XPath,
 			}
 			xword.Dbtype = Leaf
 			xword.Dbvaluetype = foundNode.Type.Kind
+
+			// Additional Validation for String
+			switch foundNode.Type.Kind {
+			case yang.Ystring:
+				valid := true
+				for _, pattern := range foundNode.Type.Pattern {
+					re, err := regexp.Compile("^" + pattern + "$")
+					if err != nil {
+						return XPath{}, "", errors.Wrap(err, "regexp.Compile")
+					}
+					if re.FindString(valueStr) != valueStr {
+						valid = false
+						break
+					}
+				}
+				if !valid {
+					return XPath{}, "", errors.Errorf("string value is not valid.")
+				}
+			}
 
 			// Additional Validation for Enum
 			switch foundNode.Type.Kind {

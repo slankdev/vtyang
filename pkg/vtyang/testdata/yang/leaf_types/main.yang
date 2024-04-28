@@ -84,6 +84,25 @@ module main {
         }
       }
     }
+    container items {
+      list item1 {
+        key "name";
+        leaf description { type string; }
+      }
+      list item2 {
+        key "name type";
+        leaf name { type string; }
+        leaf type { type string; }
+        leaf description { type string; }
+      }
+      list item3 {
+        key "name type vrf";
+        leaf name { type string; }
+        leaf type { type string; }
+        leaf vrf { type string; }
+        leaf description { type string; }
+      }
+    }
   }
 
   // TODO(slankdev): this is in frr modules

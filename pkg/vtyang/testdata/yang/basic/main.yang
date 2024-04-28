@@ -2,20 +2,6 @@ module main {
   namespace "http://slank.dev/vtyang";
   prefix main;
 
-  typedef route-types-v4 {
-    type enumeration {
-      enum connected;
-      enum static;
-      enum bgp;
-    }
-  }
-  typedef route-types-v6 {
-    type enumeration {
-      enum connected;
-      enum static;
-      enum bgp;
-    }
-  }
   typedef month {
     type uint8 {
       range "1..12";
@@ -54,12 +40,6 @@ module main {
       type enumeration {
         enum ipv4;
         enum ipv6;
-      }
-    }
-    leaf union {
-      type union {
-        type route-types-v4;
-        type route-types-v6;
       }
     }
     leaf month {
@@ -102,6 +82,23 @@ module main {
         leaf type { type string; }
         leaf vrf { type string; }
         leaf description { type string; }
+      }
+    }
+
+    // When generating an XML encoding, a value is encoded according
+    // to the rules of the member type to which the value belongs.
+    // When interpreting an XML encoding, a value is validated
+    // consecutively against each member type, in the order they are
+    // specified in the "type" statement, until a match is found.
+    // The type that matched will be the type of the value for the
+    // node that was validated, and the encoding is interpreted
+    // according to the rules for that type.
+    leaf union {
+      type union {
+        type string;
+        type uint8 {
+          range "1..12";
+        }
       }
     }
   }

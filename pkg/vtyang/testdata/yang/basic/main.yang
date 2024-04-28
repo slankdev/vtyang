@@ -134,25 +134,10 @@ module main {
     // The type that matched will be the type of the value for the
     // node that was validated, and the encoding is interpreted
     // according to the rules for that type.
-    leaf union {
+    leaf month-union {
       type union {
-        type enumeration {
-          enum January;
-          enum February;
-          enum March;
-          enum April;
-          enum May;
-          enum June;
-          enum July;
-          enum August;
-          enum September;
-          enum October;
-          enum November;
-          enum December;
-        }
-        type uint8 {
-          range "1..12";
-        }
+        type month-str;
+        type month;
       }
     }
   }

@@ -173,39 +173,60 @@ func ParseXPathArgsImpl(module *yang.Entry, args []string, setmode bool) (XPath,
 			xword.Dbtype = Leaf
 			xword.Dbvaluetype = foundNode.Type.Kind
 
-			// Additional Validation for String
+			// Additional Validation for Union
 			switch foundNode.Type.Kind {
-			case yang.Ystring:
-				valid := true
-				for _, pattern := range foundNode.Type.Pattern {
-					re, err := regexp.Compile("^" + pattern + "$")
-					if err != nil {
-						return XPath{}, "", errors.Wrap(err, "regexp.Compile")
+			case yang.Yunion:
+				// pp.Println("UNION")
+				validated := false
+				for _, ytype := range foundNode.Type.Type {
+					// pp.Println("TYPE", ytype.Kind.String())
+					switch ytype.Kind {
+					case yang.Ystring:
+						if err := validateStringValue(valueStr, ytype); err == nil {
+							validated = true
+						}
+					case yang.Yenum:
+						if err := validateEnumValue(valueStr, ytype); err == nil {
+							validated = true
+						}
+					case
+						yang.Yint8,
+						yang.Yint16,
+						yang.Yint32,
+						yang.Yint64,
+						yang.Yuint8,
+						yang.Yuint16,
+						yang.Yuint32,
+						yang.Yuint64,
+						yang.Ydecimal64:
+						if err := validateNumberValue(valueStr, ytype); err == nil {
+							validated = true
+						}
+					default:
+						panic(fmt.Sprintf("PANIC %s", ytype.Kind.String()))
 					}
-					if re.FindString(valueStr) != valueStr {
-						valid = false
+					if validated {
 						break
 					}
 				}
-				if !valid {
-					return XPath{}, "", errors.Errorf("string value is not valid.")
+				if !validated {
+					return XPath{}, "", errors.Errorf("union not validated")
+				}
+			}
+
+			// Additional Validation for String
+			switch foundNode.Type.Kind {
+			case yang.Ystring:
+				if err := validateStringValue(valueStr, foundNode.Type); err != nil {
+					return XPath{}, "", errors.Wrap(err, "validateStringValue")
 				}
 			}
 
 			// Additional Validation for Enum
 			switch foundNode.Type.Kind {
 			case yang.Yenum:
-				valid := false
-				for _, n := range foundNode.Type.Enum.Names() {
-					if n == valueStr {
-						valid = true
-						break
-					}
-				}
-				if !valid {
-					return XPath{}, "", errors.Errorf(
-						"enum value is not valid available=%+v",
-						foundNode.Type.Enum.Names())
+				if err := validateEnumValue(valueStr, foundNode.Type); err != nil {
+					return XPath{}, "", errors.Wrap(err, "validateEnumValue")
 				}
 			}
 
@@ -215,27 +236,8 @@ func ParseXPathArgsImpl(module *yang.Entry, args []string, setmode bool) (XPath,
 			case yang.Yint8, yang.Yint16, yang.Yint32, yang.Yint64,
 				yang.Yuint8, yang.Yuint16, yang.Yuint32, yang.Yuint64,
 				yang.Ydecimal64:
-				val := DBValue{Type: foundNode.Type.Kind}
-				if err := val.SetFromString(valueStr); err != nil {
-					return XPath{}, "", errors.Wrap(err, "SetFromString")
-				}
-				n, err := val.ToYangNumber()
-				if err != nil {
-					return XPath{}, "", errors.Wrap(err, "ToYangNumber")
-				}
-				for _, valRange := range foundNode.Type.Range {
-					// Validate Min
-					if n.Less(valRange.Min) {
-						return XPath{}, "", errors.Errorf(
-							"min validation failed min=%v input=%v",
-							valRange.Min, n)
-					}
-					// Validate Min
-					if valRange.Max.Less(*n) {
-						return XPath{}, "", errors.Errorf(
-							"max validation failed max=%v input=%v",
-							valRange.Max, n)
-					}
+				if err := validateNumberValue(valueStr, foundNode.Type); err != nil {
+					return XPath{}, "", errors.Wrap(err, "validateNumberValue")
 				}
 			}
 
@@ -298,4 +300,64 @@ func ParseXPathArgsImpl(module *yang.Entry, args []string, setmode bool) (XPath,
 	}
 
 	return xpath, valueStr, nil
+}
+
+func validateStringValue(valueStr string, yangType *yang.YangType) error {
+	valid := true
+	for _, pattern := range yangType.Pattern {
+		re, err := regexp.Compile("^" + pattern + "$")
+		if err != nil {
+			return errors.Wrap(err, "regexp.Compile")
+		}
+		if re.FindString(valueStr) != valueStr {
+			valid = false
+			break
+		}
+	}
+	if !valid {
+		return errors.Errorf("string value is not valid.")
+	}
+	return nil
+}
+
+func validateEnumValue(valueStr string, yangType *yang.YangType) error {
+	valid := false
+	for _, n := range yangType.Enum.Names() {
+		if n == valueStr {
+			valid = true
+			break
+		}
+	}
+	if !valid {
+		return errors.Errorf(
+			"enum value is not valid available=%+v",
+			yangType.Enum.Names())
+	}
+	return nil
+}
+
+func validateNumberValue(valueStr string, yangType *yang.YangType) error {
+	val := DBValue{Type: yangType.Kind}
+	if err := val.SetFromString(valueStr); err != nil {
+		return errors.Wrap(err, "SetFromString")
+	}
+	n, err := val.ToYangNumber()
+	if err != nil {
+		return errors.Wrap(err, "ToYangNumber")
+	}
+	for _, valRange := range yangType.Range {
+		// Validate Min
+		if n.Less(valRange.Min) {
+			return errors.Errorf(
+				"min validation failed min=%v input=%v",
+				valRange.Min, n)
+		}
+		// Validate Min
+		if valRange.Max.Less(*n) {
+			return errors.Errorf(
+				"max validation failed max=%v input=%v",
+				valRange.Max, n)
+		}
+	}
+	return nil
 }

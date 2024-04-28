@@ -25,7 +25,7 @@ func getCommandConfig(modules *yang.Modules) *CompletionNode {
 			if e.Kind == yang.NotificationEntry {
 				continue
 			}
-			c := resolveCompletionNodeConfig(e, 0, m.Name)
+			c := resolveCompletionNodeConfig(e, 0, m.Name, []string{})
 			found := false
 			for idx := range child {
 				if child[idx].Name == c.Name {
@@ -35,7 +35,7 @@ func getCommandConfig(modules *yang.Modules) *CompletionNode {
 				}
 			}
 			if !found {
-				child = append(child, resolveCompletionNodeConfig(e, 0, m.Name))
+				child = append(child, resolveCompletionNodeConfig(e, 0, m.Name, []string{}))
 			}
 		}
 	}
@@ -58,10 +58,11 @@ func getCommandConfig(modules *yang.Modules) *CompletionNode {
 	}
 }
 
-func resolveCompletionNodeConfig(e *yang.Entry, depth int, modName string) *CompletionNode {
+func resolveCompletionNodeConfig(e *yang.Entry, depth int, modName string, chains []string) *CompletionNode {
 	n := CompletionNode{}
 	n.Name = e.Name
 	n.Modules = []string{modName}
+	chains = append(chains, e.Name)
 
 	// TODO(slankdev):
 	//
@@ -96,7 +97,7 @@ func resolveCompletionNodeConfig(e *yang.Entry, depth int, modName string) *Comp
 						for _, ee3 := range ee2.Dir {
 							if !ee3.ReadOnly() && ee3.RPC == nil {
 								tail.Childs = append(tail.Childs,
-									resolveCompletionNodeConfig(ee3, depth+1, modName))
+									resolveCompletionNodeConfig(ee3, depth+1, modName, chains))
 								sort.Slice(tail.Childs,
 									func(i, j int) bool {
 										return tail.Childs[i].Name < tail.Childs[j].Name
@@ -105,7 +106,7 @@ func resolveCompletionNodeConfig(e *yang.Entry, depth int, modName string) *Comp
 						}
 					}
 				default:
-					nn := resolveCompletionNodeConfig(ee, depth+1, modName)
+					nn := resolveCompletionNodeConfig(ee, depth+1, modName, chains)
 					if nn != nil {
 						tail.Childs = append(tail.Childs, nn)
 						sort.Slice(tail.Childs, func(i, j int) bool { return tail.Childs[i].Name < tail.Childs[j].Name })
@@ -133,12 +134,12 @@ func resolveCompletionNodeConfig(e *yang.Entry, depth int, modName string) *Comp
 					for _, ee2 := range ee.Dir {
 						for _, ee3 := range ee2.Dir {
 							if !ee3.ReadOnly() && ee3.RPC == nil {
-								childs = append(childs, resolveCompletionNodeConfig(ee3, depth+1, modName))
+								childs = append(childs, resolveCompletionNodeConfig(ee3, depth+1, modName, chains))
 							}
 						}
 					}
 				default:
-					childs = append(childs, resolveCompletionNodeConfig(ee, depth+1, modName))
+					childs = append(childs, resolveCompletionNodeConfig(ee, depth+1, modName, chains))
 
 				}
 			}
@@ -261,7 +262,7 @@ func getViewCommandConfig(modules *yang.Modules) *CompletionNode {
 		}
 		for _, e := range yang.ToEntry(m).Dir {
 			if !e.ReadOnly() && e.RPC == nil {
-				c := resolveCompletionNodeConfig(e, 0, m.Name)
+				c := resolveCompletionNodeConfig(e, 0, m.Name, []string{})
 				found := false
 				for idx := range child {
 					if child[idx].Name == c.Name {
@@ -271,7 +272,7 @@ func getViewCommandConfig(modules *yang.Modules) *CompletionNode {
 					}
 				}
 				if !found {
-					child = append(child, resolveCompletionNodeConfig(e, 0, m.Name))
+					child = append(child, resolveCompletionNodeConfig(e, 0, m.Name, []string{}))
 				}
 			}
 		}

@@ -1,18 +1,21 @@
 {
   "Words": [
     {
+      "Module": "main",
       "Word": "values",
       "Keys": null,
       "Dbtype": "container",
       "Dbvaluetype": 0
     },
     {
+      "Module": "main",
       "Word": "transport-proto",
       "Keys": null,
       "Dbtype": "container",
       "Dbvaluetype": 0
     },
     {
+      "Module": "main",
       "Word": "tcp-app",
       "Keys": null,
       "Dbtype": "leaf",
@@ -23,12 +26,14 @@
 {
   "Words": [
     {
+      "Module": "main",
       "Word": "items",
       "Keys": null,
       "Dbtype": "container",
       "Dbvaluetype": 0
     },
     {
+      "Module": "main",
       "Word": "items",
       "Keys": {
         "name": {
@@ -50,6 +55,7 @@
       "Dbvaluetype": 0
     },
     {
+      "Module": "main",
       "Word": "ipv4-proto",
       "Keys": null,
       "Dbtype": "leaf",

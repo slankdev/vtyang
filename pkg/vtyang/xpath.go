@@ -10,6 +10,7 @@ import (
 )
 
 type XWord struct {
+	Module      string
 	Word        string
 	Keys        map[string]DBValue
 	Dbtype      DBNodeType
@@ -21,81 +22,13 @@ type XPath struct {
 	Words []XWord
 }
 
-func NewXPath(dbm *DatabaseManager, s string) (XPath, error) {
-	xp := XPath{}
-	if err := ParseXPath(dbm, &xp, s); err != nil {
-		return XPath{}, err
-	}
-	return xp, nil
-}
-
-func NewXPathOrDie(dbm *DatabaseManager, s string) XPath {
-	xp, err := NewXPath(dbm, s)
-	ErrorOnDie(err)
-	return xp
-}
-
-func ParseXPath(dbm *DatabaseManager, xpath *XPath, s string) error {
-	words := strings.FieldsFunc(s, func(c rune) bool {
-		return c == '/'
-	})
-
-	module := &yang.Entry{}
-	module.Dir = map[string]*yang.Entry{}
-	for _, ent := range dbm.DumpEntries() {
-		module.Dir[ent.Name] = ent
-	}
-
-	for len(words) != 0 {
-		xword := XWord{Word: name(words[0])}
-		if hasKV(words[0]) {
-			k := key(words[0])
-			v := val(words[0])
-			xword.Keys = map[string]DBValue{}
-			xword.Keys[k] = DBValue{
-				Type:   yang.Ystring,
-				String: v,
-			}
-		}
-
-		var foundNode *yang.Entry = nil
-		for n := range module.Dir {
-			if n == name(words[0]) {
-				foundNode = module.Dir[n]
-				break
-			}
-		}
-		if foundNode == nil {
-			return fmt.Errorf("entry %s is not found", name(words[0]))
-		}
-
-		switch {
-		case foundNode.IsContainer():
-			xword.Dbtype = Container
-		case foundNode.IsLeaf():
-			xword.Dbtype = Leaf
-			xword.Dbvaluetype = foundNode.Type.Kind
-		case foundNode.IsList():
-			xword.Dbtype = List
-		default:
-			panic("ASSERT")
-		}
-
-		xpath.Words = append(xpath.Words, xword)
-		words = words[1:]
-		module = foundNode
-	}
-
-	return nil
-}
-
 func (x XPath) String() string {
 	s := ""
 	for _, w := range x.Words {
-		s = fmt.Sprintf("%s/%s", s, w.Word)
+		s = fmt.Sprintf("%s/%s:%s", s, w.Module, w.Word)
 		if w.Keys != nil {
 			for k, v := range w.Keys {
-				s = fmt.Sprintf("%s['%s'='%s']", s, k, v.ToString())
+				s = fmt.Sprintf("%s[%s='%s']", s, k, v.ToString())
 			}
 		}
 	}
@@ -155,7 +88,7 @@ func ParseXPathArgsImpl(module *yang.Entry, args []string, setmode bool) (XPath,
 			}
 		}
 		if foundNode == nil {
-			return XPath{}, "", fmt.Errorf("entry %s is not found", words[0])
+			return XPath{}, "", errors.Errorf("entry %s is not found", words[0])
 		}
 
 		argumentCount := 1
@@ -339,6 +272,12 @@ func ParseXPathArgsImpl(module *yang.Entry, args []string, setmode bool) (XPath,
 			panic("ASSERT")
 		}
 
+		mod, err := foundNode.InstantiatingModule()
+		if err != nil {
+			return XPath{}, "", errors.Wrap(err, "InstantiationgModule")
+		}
+		xword.Module = mod
+
 		xpath.Words = append(xpath.Words, xword)
 		words = words[1:]
 		if argumentExist {
@@ -422,4 +361,147 @@ func resolveUnionTypes(yangTypes []*yang.YangType) []*yang.YangType {
 		}
 	}
 	return ret
+}
+
+type YangData struct {
+	XPath XPath
+	Value string
+}
+
+func CraftDBNode(datas []YangData) (*DBNode, error) {
+	root, err := ReadFromJsonString("{}")
+	if err != nil {
+		return nil, errors.Wrap(err, "ReadFromJsonString")
+	}
+	dbm0 := NewDatabaseManager()
+	dbm0.candidateRoot = root
+	dbm0.candidateRoot.Type = Container
+	for _, data := range datas {
+		dbm0.SetNode(data.XPath, data.Value)
+	}
+	return dbm0.candidateRoot, nil
+}
+
+func ParseXPathString(dbm *DatabaseManager, s string) (XPath, error) {
+	var xpath XPath
+	var err error
+	for _, ent := range dbm.DumpEntries() {
+		module := &yang.Entry{}
+		module.Dir = map[string]*yang.Entry{}
+		module.Dir[ent.Name] = ent
+		xpath, err = ParseXPathStringImpl(module, s)
+		if err == nil {
+			break
+		}
+	}
+	if err != nil {
+		return XPath{}, err
+	}
+	return xpath, nil
+}
+
+func ParseXPathStringImpl(module *yang.Entry, s string) (XPath, error) {
+	words := strings.FieldsFunc(s, func(r rune) bool { return r == '/' })
+	xpath := XPath{}
+	for len(words) != 0 {
+		word := words[0]
+		keys := []string{}
+		if strings.Contains(word, ":") {
+			word = strings.Split(word, ":")[1]
+		}
+		if strings.Contains(word, "[") {
+			tmp := strings.Split(word, "[")
+			word = tmp[0]
+			keys = tmp[1:]
+			for idx := range keys {
+				s := keys[idx]
+				s = strings.ReplaceAll(s, "]", "")
+				s = strings.ReplaceAll(s, "'", "")
+				keys[idx] = s
+			}
+		}
+
+		xword := XWord{Word: word}
+		var foundNode *yang.Entry = nil
+		for n := range module.Dir {
+			e := module.Dir[n]
+			switch {
+			case e.IsChoice():
+				for _, ee := range e.Dir {
+					switch {
+					case ee.IsCase():
+						for _, eee := range ee.Dir {
+							if eee.Name == word {
+								foundNode = eee
+							}
+						}
+					default:
+						panic("OKASHII")
+					}
+				}
+			default:
+				if n == word {
+					foundNode = module.Dir[n]
+				}
+			}
+			if foundNode != nil {
+				break
+			}
+		}
+		if foundNode == nil {
+			return XPath{}, fmt.Errorf("entry %s is not found (%s)", word, s)
+		}
+
+		switch {
+		case foundNode.IsContainer():
+			xword.Dbtype = Container
+		case foundNode.IsList():
+			xword.Dbtype = List
+			xword.Keys = map[string]DBValue{}
+			for _, w := range strings.Fields(foundNode.Key) {
+				var keyLeafNode *yang.Entry
+				for _, ee := range foundNode.Dir {
+					if ee.Name == w {
+						keyLeafNode = ee
+						break
+					}
+				}
+				if keyLeafNode == nil {
+					return XPath{}, errors.Errorf("key(%s) not found", w)
+				}
+
+				// Parse list key-value
+				valueStr := ""
+				for _, key := range keys {
+					kv := strings.FieldsFunc(key, func(r rune) bool { return r == '=' })
+					if kv[0] == keyLeafNode.Name {
+						valueStr = kv[1]
+						break
+					}
+				}
+				if valueStr == "" {
+					return XPath{}, errors.Errorf("key(%s) value not found", w)
+				}
+				v := DBValue{Type: keyLeafNode.Type.Kind}
+				if err := v.SetFromString(valueStr); err != nil {
+					return XPath{}, errors.Wrap(err, "SetFromstring")
+				}
+				xword.Keys[keyLeafNode.Name] = v
+			}
+		case foundNode.IsLeaf():
+			xword.Dbtype = Leaf
+			xword.Dbvaluetype = foundNode.Type.Kind
+		}
+
+		mod, err := foundNode.InstantiatingModule()
+		if err != nil {
+			return XPath{}, errors.Wrap(err, "InstantiationgModule")
+		}
+		xword.Module = mod
+		xpath.Words = append(xpath.Words, xword)
+		words = words[1:]
+		module = foundNode
+	}
+
+	return xpath, nil
 }

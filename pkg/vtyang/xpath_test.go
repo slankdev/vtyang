@@ -165,51 +165,6 @@ var xpathTestDBRoot = DBNode{
 	},
 }
 
-func TestXPathParse(t *testing.T) {
-	dbm := NewDatabaseManager()
-	dbm.LoadYangModuleOrDie("./testdata/yang/accounting")
-	dbm.LoadDatabaseFromData(&xpathTestDBRoot)
-
-	testcases := []struct {
-		in    string
-		xpath XPath
-	}{
-		{
-			in: "/users/user['name'='eva']",
-			xpath: XPath{
-				Words: []XWord{
-					{
-						Dbtype: Container,
-						Word:   "users",
-					},
-					{
-						Dbtype: List,
-						Word:   "user",
-						Keys: map[string]DBValue{
-							"name": {
-								Type:   yang.Ystring,
-								String: "eva",
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-
-	for _, tc := range testcases {
-		xpath := NewXPathOrDie(dbm, tc.in)
-		if !reflect.DeepEqual(xpath, tc.xpath) {
-			pp.Println("in", tc.xpath)
-			pp.Println("out", xpath)
-			t.Errorf("missmatch deepequal in=%s", tc.in)
-		}
-		if xpath.String() != tc.in {
-			t.Errorf("missmatch in=%s out=%s", tc.in, xpath.String())
-		}
-	}
-}
-
 func TestXPathParseCli(t *testing.T) {
 	dbm := NewDatabaseManager()
 	dbm.LoadYangModuleOrDie("./testdata/yang/accounting")
@@ -228,10 +183,12 @@ func TestXPathParseCli(t *testing.T) {
 			xpath: XPath{
 				Words: []XWord{
 					{
+						Module: "account",
 						Dbtype: Container,
 						Word:   "users",
 					},
 					{
+						Module: "account",
 						Dbtype: List,
 						Word:   "user",
 						Keys: map[string]DBValue{
@@ -242,6 +199,7 @@ func TestXPathParseCli(t *testing.T) {
 						},
 					},
 					{
+						Module:      "account",
 						Dbtype:      Leaf,
 						Word:        "age",
 						Dbvaluetype: yang.Yint32,

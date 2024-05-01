@@ -11,6 +11,14 @@ module frr-zebra {
     prefix inet;
   }
 
+  // import frr-affinity-map {
+  //   prefix frr-affinity-map;
+  // }
+
+  // import frr-route-map {
+  //   prefix frr-route-map;
+  // }
+
   import frr-route-types {
     prefix frr-route-types;
   }
@@ -137,16 +145,16 @@ module frr-zebra {
       "Zebra interface type bond.";
   }
 
+  identity zif-bond-slave {
+    base zebra-interface-type;
+    description
+      "Zebra interface type bond slave.";
+  }
+
   identity zif-macvlan {
     base zebra-interface-type;
     description
       "Zebra interface type macvlan.";
-  }
-
-  identity zif-gre {
-    base zebra-interface-type;
-    description
-      "Zebra interface type gre.";
   }
 
   /*
@@ -2105,6 +2113,52 @@ module frr-zebra {
           description
             "Unidirectional utilized bandwidth.";
         }
+        choice admin-group-mode {
+          description "Admin-group mode";
+          case legacy {
+            description
+              "Legacy mode. Only support standard admin-group (RFC3630/5305/5329)";
+            leaf legacy-admin-group {
+              description "Admin-Group value";
+              type uint32;
+            }
+          }
+          case affinity {
+            container affinities {
+              leaf-list affinity {
+                type frr-affinity-map:affinity-map-ref;
+                max-elements "256";
+                must '../../affinity-mode != "standard" or /frr-affinity-map:lib/frr-affinity-map:affinity-maps/frr-affinity-map:affinity-map[frr-affinity-map:name=current()]/frr-affinity-map:value < 32' {
+                  error-message "Affinity bit-position must be less than 32 when used with standard affinity mode";
+                }
+                description
+                  "Array of Attribute Names";
+              }
+            }
+          }
+        }
+        leaf affinity-mode {
+          description
+            "Affinity mode";
+          default "extended";
+          type enumeration {
+              enum extended {
+              value 0;
+              description
+                "Extended Admin-Group only (RFC7308)";
+            }
+            enum standard {
+            value 1;
+              description
+                "Standard Admin-Group only (RFC3630/5305/5329)";
+            }
+            enum both {
+              value 2;
+              description
+                "Standard and extended Admin-Group";
+            }
+          }
+        }
         container neighbor {
           description "Remote ASBR information (RFC 5316 & RFC 5392)";
           presence "Activates neighbor information on this interface.";
@@ -2679,12 +2733,6 @@ module frr-zebra {
           description
             "The VNI multicast group for BUM traffic.";
         }
-
-        leaf bond {
-          type frr-interface:interface-ref;
-          description
-            "The bond interface this interface belongs to.";
-        }
       }
     }
   }
@@ -2727,6 +2775,12 @@ module frr-zebra {
           description
             "The protocol to filter.";
         }
+        // leaf route-map {
+        //   type frr-route-map:route-map-ref;
+        //   mandatory true;
+        //   description
+        //     "A route-map to filter routes.";
+        // }
       }
 
       list filter-nht {
@@ -2746,6 +2800,12 @@ module frr-zebra {
           description
             "The protocol to filter.";
         }
+        // leaf route-map {
+        //   type frr-route-map:route-map-ref;
+        //   mandatory true;
+        //   description
+        //     "A route-map to filter nexthops.";
+        // }
       }
 
       leaf resolve-via-default {
@@ -2875,6 +2935,11 @@ module frr-zebra {
         description
           "The admin distance to use for imported routes.";
       }
+      // leaf route-map {
+      //   type frr-route-map:route-map-ref;
+      //   description
+      //     "A route-map to filter imported routes.";
+      // }
     }
     leaf allow-external-route-update {
       type empty;
@@ -2895,6 +2960,15 @@ module frr-zebra {
       default "false";
       description
         "Enable PTM globally.";
+    }
+    leaf route-map-delay {
+      type uint32 {
+        range "0..600";
+      }
+      units "seconds";
+      default "5";
+      description
+        "Time to wait before route-map updates are processed.";
     }
     /*
      * Debug options

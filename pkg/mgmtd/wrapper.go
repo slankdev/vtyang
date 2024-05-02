@@ -162,11 +162,11 @@ func writeProtobufMsg(conn net.Conn, msg *FeMessage) error {
 		return errors.Wrap(err, "proto.Marshal")
 	}
 	buf := new(bytes.Buffer)
-	if err := binary.Write(buf, binary.NativeEndian,
+	if err := binary.Write(buf, binary.LittleEndian,
 		MGMT_MSG_MARKER_PROTOBUF); err != nil {
 		return errors.Wrap(err, "binary.Write")
 	}
-	if err := binary.Write(buf, binary.NativeEndian,
+	if err := binary.Write(buf, binary.LittleEndian,
 		uint32(8+len(data))); err != nil {
 		return errors.Wrap(err, "binary.Write")
 	}

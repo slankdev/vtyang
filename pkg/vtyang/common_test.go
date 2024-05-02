@@ -48,7 +48,11 @@ func executeTestCase(t *testing.T, tc *TestCase) {
 	}
 
 	// Initializing Agent
-	if err := InitAgent(tc.RuntimePath, tc.YangPath, tc.LogFile); err != nil {
+	if err := InitAgent(AgentOpts{
+		RuntimePath: tc.RuntimePath,
+		YangPath:    tc.YangPath,
+		LogFile:     tc.LogFile,
+	}); err != nil {
 		t.Fatal(err)
 	}
 

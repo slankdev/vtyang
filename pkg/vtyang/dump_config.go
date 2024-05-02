@@ -7,6 +7,10 @@ import (
 	"strings"
 
 	"github.com/openconfig/goyang/pkg/yang"
+	"github.com/pkg/errors"
+
+	"github.com/slankdev/vtyang/pkg/mgmtd"
+	"github.com/slankdev/vtyang/pkg/util"
 )
 
 func getCommandConfig(modules *yang.Modules) *CompletionNode {
@@ -181,6 +185,32 @@ func getCommandCallbackConfig(_ *yang.Modules) []Command {
 				if _, err := dbm.SetNode(xpath, valueStr); err != nil {
 					fmt.Fprintf(stdout, "Error: %s\n", err.Error())
 					return
+				}
+
+				if agentOpts.BackendMgmtd != nil {
+					if err := mgmtdClient.SetConfig(&mgmtd.FeSetConfigReq{
+						SessionId:      mgmtdClient.GetSessionId(),
+						DsId:           mgmtd.DatastoreId_CANDIDATE_DS.Enum(),
+						CommitDsId:     mgmtd.DatastoreId_RUNNING_DS.Enum(),
+						ReqId:          util.NewUint64Pointer(0),
+						ImplicitCommit: util.NewBoolPointer(false),
+						Data: []*mgmtd.YangCfgDataReq{
+							{
+								ReqType: mgmtd.CfgDataReqType_SET_DATA.Enum(),
+								Data: &mgmtd.YangData{
+									Xpath: util.NewStringPointer(xpath.String()),
+									Value: &mgmtd.YangDataValue{
+										Value: &mgmtd.YangDataValue_EncodedStrVal{
+											EncodedStrVal: valueStr,
+										},
+									},
+								},
+							},
+						},
+					}); err != nil {
+						err := errors.Wrap(err, "SetConfig")
+						fmt.Fprintf(stdout, "Error: %v\n", err)
+					}
 				}
 			},
 		},

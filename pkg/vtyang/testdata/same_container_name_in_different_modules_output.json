@@ -48,26 +48,6 @@
           ]
         },
         {
-          "Name": "yang",
-          "Description": "Display yang information",
-          "Modules": null,
-          "Childs": [
-            {
-              "Name": "modules",
-              "Description": "Display yang modules",
-              "Modules": null,
-              "Childs": [
-                {
-                  "Name": "\u003ccr\u003e",
-                  "Description": "",
-                  "Modules": null,
-                  "Childs": null
-                }
-              ]
-            }
-          ]
-        },
-        {
           "Name": "startup-config",
           "Description": "Display startup configuration",
           "Modules": null,

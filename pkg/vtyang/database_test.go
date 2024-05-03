@@ -77,8 +77,13 @@ var testDummyDBRoot = DBNode{
 
 func TestDBNodeGet(t *testing.T) {
 	dbm := NewDatabaseManager()
-	dbm.LoadYangModuleOrDie("./testdata/yang/accounting")
 	dbm.LoadDatabaseFromData(&testDummyDBRoot)
+
+	var err error
+	yangmodules, err = yangModulesPath("./testdata/yang/accounting")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	testcases := []struct {
 		in  string
@@ -106,8 +111,13 @@ func TestDBNodeGet(t *testing.T) {
 
 func TestDBNodeCreate(t *testing.T) {
 	dbm := NewDatabaseManager()
-	dbm.LoadYangModuleOrDie("./testdata/yang/accounting")
 	dbm.LoadDatabaseFromData(&testDummyDBRoot)
+
+	var err error
+	yangmodules, err = yangModulesPath("./testdata/yang/accounting")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	testcases := []struct {
 		in   []string

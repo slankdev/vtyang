@@ -362,16 +362,6 @@ func installCommands() {
 		})
 
 	installCommand(CliModeView,
-		"show yang modules", []string{
-			"Display information",
-			"Display yang information",
-			"Display yang modules",
-		},
-		func(args []string) {
-			dbm.Dump()
-		})
-
-	installCommand(CliModeView,
 		"show startup-config", []string{
 			"Display information",
 			"Display startup configuration",
@@ -866,7 +856,7 @@ func dumpCompletionTreeJson(root *CompletionNode) string {
 }
 
 func yangModulesPath(path string) (*yang.Modules, error) {
-	files, err := ioutil.ReadDir(path)
+	files, err := os.ReadDir(path)
 	if err != nil {
 		return nil, err
 	}

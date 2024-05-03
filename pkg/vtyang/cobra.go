@@ -24,18 +24,6 @@ var (
 	GlobalOptCommands    []string
 	GlobalOptMgmtdSock   string
 
-	actionCBs = map[string]func(args []string) error{
-		"uptime-callback": func(args []string) error {
-			fmt.Fprintf(stdout, "UPTIME")
-			return nil
-		},
-		"date-callback": func(args []string) error {
-			fmt.Fprint(stdout, "DATE")
-			return nil
-		},
-	}
-	_ = actionCBs
-
 	agentOpts   AgentOpts
 	mgmtdClient *mgmtd.Client
 

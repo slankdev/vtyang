@@ -37,11 +37,12 @@ func (x XPath) String() string {
 	return s
 }
 
+// TODO eliminate dbm
 func ParseXPathArgs(dbm *DatabaseManager, args []string, setmode bool) (XPath, string, error) {
 	var xpath XPath
 	var val string
 	var err error
-	for _, ent := range dbm.DumpEntries() {
+	for _, ent := range yangModuleDumpEntries() {
 		module := &yang.Entry{}
 		module.Dir = map[string]*yang.Entry{}
 		module.Dir[ent.Name] = ent
@@ -384,10 +385,11 @@ func CraftDBNode(datas []YangData) (*DBNode, error) {
 	return dbm0.candidateRoot, nil
 }
 
+// TODO: dbm eliminate
 func ParseXPathString(dbm *DatabaseManager, s string) (XPath, error) {
 	var xpath XPath
 	var err error
-	for _, ent := range dbm.DumpEntries() {
+	for _, ent := range yangModuleDumpEntries() {
 		module := &yang.Entry{}
 		module.Dir = map[string]*yang.Entry{}
 		module.Dir[ent.Name] = ent

@@ -1,0 +1,95 @@
+{
+  "Words": [
+    {
+      "Module": "main",
+      "Word": "values",
+      "Keys": null,
+      "Dbtype": "container",
+      "Dbvaluetype": 0
+    },
+    {
+      "Module": "main",
+      "Word": "union-list",
+      "Keys": {
+        "month": {
+          "Type": 5,
+          "UnionType": 5,
+          "Int8": 0,
+          "Int16": 0,
+          "Int32": 0,
+          "Int64": 0,
+          "Uint8": 1,
+          "Uint16": 0,
+          "Uint32": 0,
+          "Uint64": 0,
+          "String": "",
+          "Boolean": false,
+          "Decimal64": 0
+        }
+      },
+      "Dbtype": "list",
+      "Dbvaluetype": 0
+    },
+    {
+      "Module": "main",
+      "Word": "month",
+      "Keys": null,
+      "Dbtype": "leaf",
+      "Dbvaluetype": 19,
+      "UnionTypes": [
+        {
+          "Name": "month-str",
+          "Kind": 14,
+          "Enum": {
+            "ToString": {
+              "0": "January",
+              "1": "February",
+              "10": "November",
+              "11": "December",
+              "2": "March",
+              "3": "April",
+              "4": "May",
+              "5": "June",
+              "6": "July",
+              "7": "August",
+              "8": "September",
+              "9": "October"
+            },
+            "ToInt": {
+              "April": 3,
+              "August": 7,
+              "December": 11,
+              "February": 1,
+              "January": 0,
+              "July": 6,
+              "June": 5,
+              "March": 2,
+              "May": 4,
+              "November": 10,
+              "October": 9,
+              "September": 8
+            }
+          }
+        },
+        {
+          "Name": "month",
+          "Kind": 5,
+          "Range": [
+            {
+              "Min": {
+                "Value": 1,
+                "FractionDigits": 0,
+                "Negative": false
+              },
+              "Max": {
+                "Value": 12,
+                "FractionDigits": 0,
+                "Negative": false
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

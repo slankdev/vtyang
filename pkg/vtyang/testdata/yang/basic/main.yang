@@ -158,6 +158,19 @@ module main {
         }
       }
     }
+
+    list union-list {
+      key "month";
+      leaf month {
+        type union {
+          type month-str;
+          type month;
+        }
+      }
+      leaf description {
+        type string;
+      }
+    }
   }
 
   // TODO(slankdev): this is in frr modules

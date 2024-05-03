@@ -3,17 +3,17 @@ module github.com/slankdev/vtyang
 go 1.17
 
 require (
-	github.com/google/go-cmp v0.5.6
+	github.com/google/go-cmp v0.6.0
 	github.com/k0kubun/pp v3.0.1+incompatible
 	github.com/mattn/go-runewidth v0.0.13
 	github.com/nsf/jsondiff v0.0.0-20210926074059-1e845ec5d249
 	github.com/olekukonko/tablewriter v0.0.5
-	github.com/openconfig/goyang v0.4.0
+	github.com/openconfig/goyang v1.4.5
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.3.0
 	golang.org/x/sys v0.0.0-20211205182925-97ca703d548d
 	google.golang.org/grpc v1.42.0
-	google.golang.org/protobuf v1.27.1
+	google.golang.org/protobuf v1.28.0
 )
 
 require (

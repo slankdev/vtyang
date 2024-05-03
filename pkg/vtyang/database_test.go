@@ -85,7 +85,7 @@ func TestDBNodeGet(t *testing.T) {
 		ptr *DBNode
 	}{
 		{
-			in:  "/users/user['name'='alice']",
+			in:  "/users/user[name='alice']",
 			ptr: &testDummyDBRoot.Childs[0].Childs[0].Childs[0],
 		},
 	}
@@ -115,7 +115,7 @@ func TestDBNodeCreate(t *testing.T) {
 	}{
 		{
 			in: []string{
-				"/users/user['name'='hoge']",
+				"/users/user[name='hoge']",
 			},
 			root: DBNode{
 				Name: "<root>",

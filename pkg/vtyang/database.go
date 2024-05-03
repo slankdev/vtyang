@@ -337,164 +337,18 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 				n = &n.Childs[len(n.Childs)-1]
 			}
 		case Leaf:
-			switch xword.Dbvaluetype {
-			case yang.Yint8:
-				v := DBValue{Type: xword.Dbvaluetype}
-				if err := v.SetFromString(val); err != nil {
-					return nil, errors.Wrap(err, "SetFromString")
-				}
-				n.Childs = append(n.Childs, DBNode{
-					Name:  xword.Word,
-					Type:  Leaf,
-					Value: v,
-				})
-			case yang.Yint16:
-				v := DBValue{Type: xword.Dbvaluetype}
-				if err := v.SetFromString(val); err != nil {
-					return nil, errors.Wrap(err, "SetFromString")
-				}
-				n.Childs = append(n.Childs, DBNode{
-					Name:  xword.Word,
-					Type:  Leaf,
-					Value: v,
-				})
-			case yang.Yint32:
-				v := DBValue{Type: xword.Dbvaluetype}
-				if err := v.SetFromString(val); err != nil {
-					return nil, errors.Wrap(err, "SetFromString")
-				}
-				n.Childs = append(n.Childs, DBNode{
-					Name:  xword.Word,
-					Type:  Leaf,
-					Value: v,
-				})
-			case yang.Yint64:
-				v := DBValue{Type: xword.Dbvaluetype}
-				if err := v.SetFromString(val); err != nil {
-					return nil, errors.Wrap(err, "SetFromString")
-				}
-				n.Childs = append(n.Childs, DBNode{
-					Name:  xword.Word,
-					Type:  Leaf,
-					Value: v,
-				})
-			case yang.Yuint8:
-				v := DBValue{Type: xword.Dbvaluetype}
-				if err := v.SetFromString(val); err != nil {
-					return nil, errors.Wrap(err, "SetFromString")
-				}
-				n.Childs = append(n.Childs, DBNode{
-					Name:  xword.Word,
-					Type:  Leaf,
-					Value: v,
-				})
-			case yang.Yuint16:
-				v := DBValue{Type: xword.Dbvaluetype}
-				if err := v.SetFromString(val); err != nil {
-					return nil, errors.Wrap(err, "SetFromString")
-				}
-				n.Childs = append(n.Childs, DBNode{
-					Name:  xword.Word,
-					Type:  Leaf,
-					Value: v,
-				})
-			case yang.Yuint32:
-				v := DBValue{Type: xword.Dbvaluetype}
-				if err := v.SetFromString(val); err != nil {
-					return nil, errors.Wrap(err, "SetFromString")
-				}
-				n.Childs = append(n.Childs, DBNode{
-					Name:  xword.Word,
-					Type:  Leaf,
-					Value: v,
-				})
-			case yang.Yuint64:
-				v := DBValue{Type: xword.Dbvaluetype}
-				if err := v.SetFromString(val); err != nil {
-					return nil, errors.Wrap(err, "SetFromString")
-				}
-				n.Childs = append(n.Childs, DBNode{
-					Name:  xword.Word,
-					Type:  Leaf,
-					Value: v,
-				})
-			case yang.Ystring:
-				n.Childs = append(n.Childs, DBNode{
-					Name: xword.Word,
-					Type: Leaf,
-					Value: DBValue{
-						Type:   yang.Ystring,
-						String: val,
-					},
-				})
-			case yang.Ybool:
-				bval, err := strconv.ParseBool(val)
-				if err != nil {
-					return nil, err
-				}
-				n.Childs = append(n.Childs, DBNode{
-					Name: xword.Word,
-					Type: Leaf,
-					Value: DBValue{
-						Type:    yang.Ybool,
-						Boolean: bval,
-					},
-				})
-			case yang.Ydecimal64:
-				dval, err := strconv.ParseFloat(val, 64)
-				if err != nil {
-					return nil, err
-				}
-				n.Childs = append(n.Childs, DBNode{
-					Name: xword.Word,
-					Type: Leaf,
-					Value: DBValue{
-						Type:      yang.Ydecimal64,
-						Decimal64: dval,
-					},
-				})
-			case yang.Yunion:
-				v := DBValue{
-					Type:      xword.Dbvaluetype,
-					UnionType: xword.Dbuniontype,
-				}
-				if err := v.SetFromString(val); err != nil {
-					return nil, errors.Wrap(err, "SetFromString")
-				}
-				n.Childs = append(n.Childs, DBNode{
-					Name:  xword.Word,
-					Type:  Leaf,
-					Value: v,
-				})
-
-			// TODO(slankdev)
-			case yang.Yenum:
-				n.Childs = append(n.Childs, DBNode{
-					Name: xword.Word,
-					Type: Leaf,
-					Value: DBValue{
-						Type:   yang.Yenum,
-						String: val,
-					},
-				})
-			// TODO(slankdev)
-			case yang.Yidentityref:
-				n.Childs = append(n.Childs, DBNode{
-					Name: xword.Word,
-					Type: Leaf,
-					Value: DBValue{
-						Type:   yang.Yidentityref,
-						String: val,
-					},
-				})
-
-			// case yang.Ybits:
-			// case yang.Yempty:
-			// case yang.YinstanceIdentifier:
-			// case yang.Yleafref:
-			default:
-				panic(fmt.Sprintf("OKASHI (%s)", xword.Dbvaluetype))
+			v := DBValue{
+				Type:      xword.Dbvaluetype,
+				UnionType: xword.Dbuniontype,
 			}
+			if err := v.SetFromStringWithType(val, xword); err != nil {
+				return nil, errors.Wrap(err, "SetFromString")
+			}
+			n.Childs = append(n.Childs, DBNode{
+				Name:  xword.Word,
+				Type:  Leaf,
+				Value: v,
+			})
 		case LeafList:
 			var tmpNode *DBNode
 			for idx := range n.Childs {
@@ -1074,6 +928,49 @@ func (v DBValue) ToValue() interface{} {
 	}
 }
 
+func (v *DBValue) SetFromStringWithType(s string, xword XWord) error {
+	if v.Type == yang.Yunion && v.UnionType == yang.Ynone {
+		validated := false
+		for _, ytype := range xword.UnionTypes {
+			switch ytype.Kind {
+			case yang.Ystring:
+				if err := validateStringValue(s, ytype); err == nil {
+					v.UnionType = ytype.Kind
+					validated = true
+				}
+			case yang.Yenum:
+				if err := validateEnumValue(s, ytype); err == nil {
+					v.UnionType = ytype.Kind
+					validated = true
+				}
+			case
+				yang.Yint8,
+				yang.Yint16,
+				yang.Yint32,
+				yang.Yint64,
+				yang.Yuint8,
+				yang.Yuint16,
+				yang.Yuint32,
+				yang.Yuint64,
+				yang.Ydecimal64:
+				if err := validateNumberValue(s, ytype); err == nil {
+					v.UnionType = ytype.Kind
+					validated = true
+				}
+			default:
+				panic(fmt.Sprintf("PANIC %s", ytype.Kind.String()))
+			}
+			if validated {
+				break
+			}
+		}
+		if !validated {
+			return errors.Errorf("union not validated")
+		}
+	}
+	return v.SetFromString(s)
+}
+
 func (v *DBValue) SetFromString(s string) error {
 	switch v.Type {
 	case yang.Yint8:
@@ -1130,8 +1027,6 @@ func (v *DBValue) SetFromString(s string) error {
 			return errors.Wrap(err, "strconv.ParseFloat(s,64)")
 		}
 		v.Decimal64 = float64(ival)
-	case yang.Ystring:
-		v.String = s
 	case yang.Ybool:
 		bval, err := strconv.ParseBool(s)
 		if err != nil {
@@ -1139,86 +1034,20 @@ func (v *DBValue) SetFromString(s string) error {
 		}
 		v.Boolean = bval
 	case yang.Yunion:
-		switch v.UnionType {
-		case yang.Yint8:
-			ival, err := strconv.ParseInt(s, 10, 8)
-			if err != nil {
-				return errors.Wrap(err, "strconv.ParseInt(s,10,8)")
-			}
-			v.Int8 = int8(ival)
-		case yang.Yint16:
-			ival, err := strconv.ParseInt(s, 10, 16)
-			if err != nil {
-				return errors.Wrap(err, "strconv.ParseInt(s,10,16)")
-			}
-			v.Int16 = int16(ival)
-		case yang.Yint32:
-			ival, err := strconv.ParseInt(s, 10, 32)
-			if err != nil {
-				return errors.Wrap(err, "strconv.ParseInt(s,10,32)")
-			}
-			v.Int32 = int32(ival)
-		case yang.Yint64:
-			ival, err := strconv.ParseInt(s, 10, 64)
-			if err != nil {
-				return errors.Wrap(err, "strconv.ParseInt(s,10,64)")
-			}
-			v.Int64 = int64(ival)
-		case yang.Yuint8:
-			ival, err := strconv.ParseUint(s, 10, 8)
-			if err != nil {
-				return errors.Wrap(err, "strconv.ParseUint(s,10,8)")
-			}
-			v.Uint8 = uint8(ival)
-		case yang.Yuint16:
-			ival, err := strconv.ParseUint(s, 10, 16)
-			if err != nil {
-				return errors.Wrap(err, "strconv.ParseUint(s,10,16)")
-			}
-			v.Uint16 = uint16(ival)
-		case yang.Yuint32:
-			ival, err := strconv.ParseUint(s, 10, 32)
-			if err != nil {
-				return errors.Wrap(err, "strconv.ParseUint(s,10,32)")
-			}
-			v.Uint32 = uint32(ival)
-		case yang.Yuint64:
-			ival, err := strconv.ParseUint(s, 10, 64)
-			if err != nil {
-				return errors.Wrap(err, "strconv.ParseUint(s,10,64)")
-			}
-			v.Uint64 = uint64(ival)
-		case yang.Ydecimal64:
-			ival, err := strconv.ParseFloat(s, 64)
-			if err != nil {
-				return errors.Wrap(err, "strconv.ParseFloat(s,64)")
-			}
-			v.Decimal64 = float64(ival)
-		case yang.Ystring:
-			v.String = s
-		case yang.Ybool:
-			bval, err := strconv.ParseBool(s)
-			if err != nil {
-				return err
-			}
-			v.Boolean = bval
-		// TODO(slankdev)
-		case yang.Yenum:
-			v.String = s
-		case yang.Yleafref:
-			v.String = s
-		case yang.Yidentityref:
-			v.String = s
-		default:
-			panic(fmt.Sprintf("PANIC (%s)", v.UnionType))
+		vv := DBValue{}
+		vv.Type = v.UnionType
+		if err := vv.SetFromString(s); err != nil {
+			return errors.Wrap(err, "vv.SetFromString")
 		}
+		*v = vv
+		v.UnionType = v.Type
+		v.Type = v.UnionType
 
 	// TODO(slankdev)
-	case yang.Yenum:
-		v.String = s
-	case yang.Yleafref:
-		v.String = s
-	case yang.Yidentityref:
+	case yang.Ystring,
+		yang.Yenum,
+		yang.Yleafref,
+		yang.Yidentityref:
 		v.String = s
 
 	// case yang.Ybits:

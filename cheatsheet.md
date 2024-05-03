@@ -37,19 +37,19 @@ YANG3 := ./pkg/vtyang/testdata/yang/choice_case
 YANG := \$(YANG1)
 r: vtyang-build
 	sudo ./bin/vtyang agent \\
-		--run-path /var/run/vtyang \\
+		--run /var/run/vtyang \\
 		--yang \$(YANG) \\
 		#END
 rr: vtyang-build
 	sudo ./bin/vtyang agent \\
-		--run-path /var/run/vtyang \\
+		--run /var/run/vtyang \\
 		--yang \$(YANG) \\
 		-c "configure" \\
 		-c "set values u08 10"
 		#END
 run-mgmt: vtyang-build
 	sudo ./bin/vtyang agent \\
-		--run-path /var/run/vtyang \\
+		--run /var/run/vtyang \\
 		--yang \$(YANG2) \\
 		--mgmtd-sock /var/run/frr/mgmtd_fe.sock \\
 		#END

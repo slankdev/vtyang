@@ -117,10 +117,7 @@ func installCommandsDefault(mode CliMode) {
 		fmt.Fprintln(stdout, dumpCompletionTreeJson(getCommandNodeCurrent().tree.Root))
 	})
 
-	installCommand(mode, "show system-info", []string{
-		"Display information",
-		"Display system information",
-	}, func(arg []string) {
+	installCommandNoCompletion(mode, "hidden-command-test1", func(arg []string) {
 		fmt.Fprintln(stdout, "I'm fine, thank you")
 	})
 
@@ -765,10 +762,6 @@ func ccbCommitCallback(args []string) {
 	cliMode = CliModeConfigure
 	dbm.root = *dbm.candidateRoot.DeepCopy()
 	if err := dbm.root.WriteToJsonFile(getDatabasePath()); err != nil {
-		fmt.Fprintf(stdout, "Error: %s\n", err.Error())
-	}
-
-	if err := nofityRunningConfigToSubscribers(); err != nil {
 		fmt.Fprintf(stdout, "Error: %s\n", err.Error())
 	}
 }

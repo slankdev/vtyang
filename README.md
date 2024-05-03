@@ -67,7 +67,7 @@ protoc --version
 
 ```
 sudo ./bin/vtyang agent \
---run-path /var/run/vtyang \
+--run /var/run/vtyang \
 --yang ./pkg/vtyang/testdata/yang/frr_mgmtd_minimal \
 --mgmtd-sock /var/run/frr/mgmtd_fe.sock \
 #END

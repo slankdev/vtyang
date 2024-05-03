@@ -7,6 +7,7 @@ import (
 
 	"github.com/k0kubun/pp"
 	"github.com/openconfig/goyang/pkg/yang"
+	"github.com/slankdev/vtyang/pkg/util"
 )
 
 var xpathTestDBRoot = DBNode{
@@ -212,7 +213,7 @@ func TestXPathParseCli(t *testing.T) {
 	for _, tc := range testcases {
 		args := strings.Fields(tc.in)
 		xpath, val, err := ParseXPathArgs(dbm, args, tc.set)
-		ErrorOnDie(err)
+		util.PanicOnErr(err)
 
 		if !reflect.DeepEqual(xpath, tc.xpath) {
 			pp.Println("in", tc.xpath)

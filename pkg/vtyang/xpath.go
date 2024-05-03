@@ -7,6 +7,8 @@ import (
 
 	"github.com/openconfig/goyang/pkg/yang"
 	"github.com/pkg/errors"
+
+	"github.com/slankdev/vtyang/pkg/util"
 )
 
 type XWord struct {
@@ -18,10 +20,26 @@ type XWord struct {
 	Dbuniontype yang.TypeKind `json:"Dbuniontype,omitempty"`
 	// UnionTypes
 	UnionTypes []*yang.YangType `json:",omitempty"`
+	// IdentityBase
+	Identities []*yang.Identity `json:",omitempty"`
 }
 
 type XPath struct {
 	Words []XWord
+}
+
+func (xp *XPath) TailIsLeaf() bool {
+	if len(xp.Words) > 0 {
+		return xp.Words[len(xp.Words)-1].Dbtype == Leaf
+	}
+	return false
+}
+
+func (xp *XPath) TailIsList() bool {
+	if len(xp.Words) > 0 {
+		return xp.Words[len(xp.Words)-1].Dbtype == List
+	}
+	return false
 }
 
 func (x XPath) String() string {
@@ -35,261 +53,6 @@ func (x XPath) String() string {
 		}
 	}
 	return s
-}
-
-// TODO eliminate dbm
-func ParseXPathArgs(dbm *DatabaseManager, args []string, setmode bool) (XPath, string, error) {
-	var xpath XPath
-	var val string
-	var err error
-	for _, ent := range yangModuleDumpEntries() {
-		module := &yang.Entry{}
-		module.Dir = map[string]*yang.Entry{}
-		module.Dir[ent.Name] = ent
-		xpath, val, err = ParseXPathArgsImpl(module, args, setmode)
-		if err == nil {
-			break
-		}
-	}
-	if err != nil {
-		return XPath{}, "", err
-	}
-	return xpath, val, nil
-}
-
-func ParseXPathArgsImpl(module *yang.Entry, args []string, setmode bool) (XPath, string, error) {
-	words := args
-	xpath := XPath{}
-	valueStr := ""
-	for len(words) != 0 {
-		xword := XWord{Word: words[0]}
-
-		var foundNode *yang.Entry = nil
-		for n := range module.Dir {
-			e := module.Dir[n]
-			switch {
-			case e.IsChoice():
-				for _, ee := range e.Dir {
-					switch {
-					case ee.IsCase():
-						for _, eee := range ee.Dir {
-							if eee.Name == words[0] {
-								foundNode = eee
-							}
-						}
-					default:
-						panic("OKASHII")
-					}
-				}
-			default:
-				if n == words[0] {
-					foundNode = module.Dir[n]
-				}
-			}
-			if foundNode != nil {
-				break
-			}
-		}
-		if foundNode == nil {
-			return XPath{}, "", errors.Errorf("entry %s is not found", words[0])
-		}
-
-		argumentCount := 1
-		argumentExist := false
-		switch {
-		case foundNode.IsContainer():
-			xword.Dbtype = Container
-		case foundNode.IsLeaf():
-			if setmode {
-				if len(words) < 2 {
-					return XPath{}, "", fmt.Errorf("invalid args len")
-				}
-				valueStr = words[argumentCount]
-				argumentExist = true
-			}
-			xword.Dbtype = Leaf
-			xword.Dbvaluetype = foundNode.Type.Kind
-
-			// Additional Validation for Union
-			switch foundNode.Type.Kind {
-			case yang.Yunion:
-				validated := false
-				ytypes := resolveUnionTypes(foundNode.Type.Type)
-				for _, ytype := range ytypes {
-					switch ytype.Kind {
-					case yang.Ystring:
-						if err := validateStringValue(valueStr, ytype); err == nil {
-							xword.Dbuniontype = ytype.Kind
-							validated = true
-						}
-					case yang.Yenum:
-						if err := validateEnumValue(valueStr, ytype); err == nil {
-							xword.Dbuniontype = ytype.Kind
-							validated = true
-						}
-					case
-						yang.Yint8,
-						yang.Yint16,
-						yang.Yint32,
-						yang.Yint64,
-						yang.Yuint8,
-						yang.Yuint16,
-						yang.Yuint32,
-						yang.Yuint64,
-						yang.Ydecimal64:
-						if err := validateNumberValue(valueStr, ytype); err == nil {
-							xword.Dbuniontype = ytype.Kind
-							validated = true
-						}
-					default:
-						panic(fmt.Sprintf("PANIC %s", ytype.Kind.String()))
-					}
-					if validated {
-						break
-					}
-				}
-				if !validated {
-					return XPath{}, "", errors.Errorf("union not validated")
-				}
-			}
-
-			// Additional Validation for String
-			switch foundNode.Type.Kind {
-			case yang.Ystring:
-				if err := validateStringValue(valueStr, foundNode.Type); err != nil {
-					return XPath{}, "", errors.Wrap(err, "validateStringValue")
-				}
-			}
-
-			// Additional Validation for Enum
-			switch foundNode.Type.Kind {
-			case yang.Yenum:
-				if err := validateEnumValue(valueStr, foundNode.Type); err != nil {
-					return XPath{}, "", errors.Wrap(err, "validateEnumValue")
-				}
-			}
-
-			// Additional Validatation for Number-types
-			// - range (A)..(B)
-			switch foundNode.Type.Kind {
-			case yang.Yint8, yang.Yint16, yang.Yint32, yang.Yint64,
-				yang.Yuint8, yang.Yuint16, yang.Yuint32, yang.Yuint64,
-				yang.Ydecimal64:
-				if err := validateNumberValue(valueStr, foundNode.Type); err != nil {
-					return XPath{}, "", errors.Wrap(err, "validateNumberValue")
-				}
-			}
-
-			// Additional Validation for String-types
-			// - length
-			// - pattern
-			// - pattern(invert-match)
-			// TODO(slankdev): IMPLEMENT ME
-
-		case foundNode.IsList():
-			if len(words) < 2 {
-				return XPath{}, "", fmt.Errorf("invalid args len")
-			}
-			xword.Dbtype = List
-			xword.Keys = map[string]DBValue{}
-			for _, w := range strings.Fields(foundNode.Key) {
-				var keyLeafNode *yang.Entry
-				for _, ee := range foundNode.Dir {
-					if ee.Name == w {
-						keyLeafNode = ee
-						break
-					}
-				}
-
-				// Check union type
-				tmpStr := words[argumentCount]
-				unionType := yang.Ynone
-				if keyLeafNode.Type.Kind == yang.Yunion {
-					validated := false
-					ytypes := resolveUnionTypes(keyLeafNode.Type.Type)
-					for _, ytype := range ytypes {
-						switch ytype.Kind {
-						case yang.Ystring:
-							if err := validateStringValue(valueStr, ytype); err == nil {
-								unionType = ytype.Kind
-								validated = true
-							}
-						case yang.Yenum:
-							if err := validateEnumValue(valueStr, ytype); err == nil {
-								unionType = ytype.Kind
-								validated = true
-							}
-						case
-							yang.Yint8,
-							yang.Yint16,
-							yang.Yint32,
-							yang.Yint64,
-							yang.Yuint8,
-							yang.Yuint16,
-							yang.Yuint32,
-							yang.Yuint64,
-							yang.Ydecimal64:
-							if err := validateNumberValue(valueStr, ytype); err == nil {
-								unionType = ytype.Kind
-								validated = true
-							}
-						default:
-							panic(fmt.Sprintf("PANIC %s", ytype.Kind.String()))
-						}
-					}
-					if !validated {
-						return XPath{}, "", errors.Errorf("union not validated")
-					}
-				}
-
-				// Prase from string
-				v := DBValue{
-					Type:      keyLeafNode.Type.Kind,
-					UnionType: unionType,
-				}
-				if err := v.SetFromString(tmpStr); err != nil {
-					return XPath{}, "", errors.Wrap(err, "SetFromString")
-				}
-				xword.Keys[w] = v
-				argumentCount++
-			}
-			argumentCount--
-			argumentExist = true
-		case foundNode.IsLeafList():
-			if setmode {
-				if len(words) < 2 {
-					return XPath{}, "", fmt.Errorf("invalid args len")
-				}
-				vals := []string{}
-				for argumentCount < len(words) {
-					vals = append(vals, words[argumentCount])
-					argumentCount++
-				}
-				argumentCount--
-				valueStr = strings.Join(vals, " ")
-				argumentExist = true
-			}
-			xword.Dbtype = LeafList
-			xword.Dbvaluetype = foundNode.Type.Kind
-		default:
-			panic("ASSERT")
-		}
-
-		mod, err := foundNode.InstantiatingModule()
-		if err != nil {
-			return XPath{}, "", errors.Wrap(err, "InstantiationgModule")
-		}
-		xword.Module = mod
-
-		xpath.Words = append(xpath.Words, xword)
-		words = words[1:]
-		if argumentExist {
-			words = words[argumentCount:]
-		}
-		module = foundNode
-	}
-
-	return xpath, valueStr, nil
 }
 
 func validateStringValue(valueStr string, yangType *yang.YangType) error {
@@ -348,6 +111,17 @@ func validateNumberValue(valueStr string, yangType *yang.YangType) error {
 				"max validation failed max=%v input=%v",
 				valRange.Max, n)
 		}
+	}
+	return nil
+}
+
+func validateIdentityrefValue(valueStr string, yangType *yang.YangType) error {
+	possibleNames := []string{}
+	for _, val := range yangType.IdentityBase.Values {
+		possibleNames = append(possibleNames, val.Name)
+	}
+	if !util.StringInArray(valueStr, possibleNames) {
+		return errors.Errorf("invalid identity possible=(%+v)", possibleNames)
 	}
 	return nil
 }
@@ -583,4 +357,275 @@ func ParseXPathStringImpl(module *yang.Entry, s string) (XPath, error) {
 	}
 
 	return xpath, nil
+}
+
+func ParseXPathCli(dbm *DatabaseManager, args []string, tail []string,
+	setmode bool) (XPath, []DBValue, []string, error) {
+	if len(args) == 0 {
+		return XPath{}, nil, tail, nil
+	}
+	xpath, val, err := ParseXPathArgs(dbm, args, setmode)
+	if err != nil {
+		tail = append(tail, args[len(args)-1])
+		return ParseXPathCli(dbm, args[:len(args)-1], tail, setmode)
+	}
+	return xpath, val, tail, nil
+}
+
+func ParseXPathArgs(dbm *DatabaseManager, args []string, setmode bool) (XPath, []DBValue, error) {
+	var xpath XPath
+	var vals []DBValue
+	var err error
+	for _, ent := range yangModuleDumpEntries() {
+		module := &yang.Entry{}
+		module.Dir = map[string]*yang.Entry{}
+		module.Dir[ent.Name] = ent
+		xpath, vals, err = ParseXPathArgsImpl(module, args, setmode)
+		if err == nil {
+			break
+		}
+	}
+	if err != nil {
+		return XPath{}, nil, err
+	}
+	return xpath, vals, nil
+}
+
+func ParseXPathArgsImpl(module *yang.Entry, args []string, setmode bool) (XPath, []DBValue, error) {
+	words := args
+	xpath := XPath{}
+	value := []DBValue{}
+	for len(words) != 0 {
+		xword := XWord{Word: words[0]}
+
+		var foundNode *yang.Entry = nil
+		for n := range module.Dir {
+			e := module.Dir[n]
+			switch {
+			case e.IsChoice():
+				for _, ee := range e.Dir {
+					switch {
+					case ee.IsCase():
+						for _, eee := range ee.Dir {
+							if eee.Name == words[0] {
+								foundNode = eee
+							}
+						}
+					default:
+						panic("OKASHII")
+					}
+				}
+			default:
+				if n == words[0] {
+					foundNode = module.Dir[n]
+				}
+			}
+			if foundNode != nil {
+				break
+			}
+		}
+		if foundNode == nil {
+			return XPath{}, nil, errors.Errorf("entry %s is not found", words[0])
+		}
+
+		argumentCount := 1
+		argumentExist := false
+		switch {
+		case foundNode.IsContainer():
+			xword.Dbtype = Container
+		case foundNode.IsLeaf():
+			xword.Dbtype = Leaf
+			xword.Dbvaluetype = foundNode.Type.Kind
+			if setmode {
+				if len(words) > 1 {
+					v, err := validateValue(words[argumentCount], foundNode.Type)
+					if err != nil {
+						return XPath{}, nil, errors.Wrap(err, "validateValue")
+					}
+					value = append(value, v)
+					argumentExist = true
+				}
+			}
+
+		case foundNode.IsList():
+			xword.Dbtype = List
+			xword.Keys = map[string]DBValue{}
+			for _, w := range strings.Fields(foundNode.Key) {
+				xword.Keys[w] = DBValue{}
+			}
+			if len(words) > 1 {
+				for _, w := range strings.Fields(foundNode.Key) {
+					if len(words[argumentCount:]) == 0 {
+						break
+					}
+					var keyLeafNode *yang.Entry
+					for _, ee := range foundNode.Dir {
+						if ee.Name == w {
+							keyLeafNode = ee
+							break
+						}
+					}
+					v, err := validateValue(words[argumentCount], keyLeafNode.Type)
+					if err != nil {
+						return XPath{}, nil, errors.Wrap(err, "validateValue(%s)")
+					}
+					xword.Keys[w] = v
+					argumentCount++
+				}
+				argumentCount--
+				argumentExist = true
+			}
+
+		case foundNode.IsLeafList():
+			if setmode {
+				if len(words) < 2 {
+					return XPath{}, nil, fmt.Errorf("is-leaf-list invalid args len")
+				}
+				for argumentCount < len(words) {
+					v, err := validateValue(words[argumentCount], foundNode.Type)
+					if err != nil {
+						return XPath{}, nil, errors.Wrap(err, "validateValue(leaf-list)")
+					}
+					value = append(value, v)
+					argumentCount++
+				}
+				argumentCount--
+				argumentExist = true
+			}
+			xword.Dbtype = LeafList
+			xword.Dbvaluetype = foundNode.Type.Kind
+		default:
+			panic("ASSERT")
+		}
+
+		if foundNode.IsLeaf() && foundNode.Type.Kind == yang.Yidentityref {
+			xword.Identities = foundNode.Type.IdentityBase.Values
+			for idx := range xword.Identities {
+				xword.Identities[idx].Parent = nil
+			}
+		}
+		if foundNode.IsLeaf() && foundNode.Type.Kind == yang.Yunion {
+			types := resolveUnionTypes(foundNode.Type.Type)
+			xword.UnionTypes = types
+		}
+
+		mod, err := foundNode.InstantiatingModule()
+		if err != nil {
+			return XPath{}, nil, errors.Wrap(err, "InstantiationgModule")
+		}
+		xword.Module = mod
+
+		xpath.Words = append(xpath.Words, xword)
+		words = words[1:]
+		if argumentExist {
+			words = words[argumentCount:]
+		}
+		module = foundNode
+	}
+
+	return xpath, value, nil
+}
+
+func validateValue(valueStr string, ytype *yang.YangType) (DBValue, error) {
+	value := DBValue{}
+
+	// Additional Validation for Union
+	switch ytype.Kind {
+	case yang.Yunion:
+		validated := false
+		ytypes := resolveUnionTypes(ytype.Type)
+		for _, ytype := range ytypes {
+			switch ytype.Kind {
+			case yang.Ystring:
+				if err := validateStringValue(valueStr, ytype); err == nil {
+					validated = true
+					value.Type = ytype.Kind
+					if err := value.SetFromString(valueStr); err != nil {
+						return DBValue{}, errors.Wrap(err, "SetFromString")
+					}
+				}
+			case yang.Yenum:
+				if err := validateEnumValue(valueStr, ytype); err == nil {
+					validated = true
+					value.Type = ytype.Kind
+					if err := value.SetFromString(valueStr); err != nil {
+						return DBValue{}, errors.Wrap(err, "SetFromString")
+					}
+				}
+			case
+				yang.Yint8,
+				yang.Yint16,
+				yang.Yint32,
+				yang.Yint64,
+				yang.Yuint8,
+				yang.Yuint16,
+				yang.Yuint32,
+				yang.Yuint64,
+				yang.Ydecimal64:
+				if err := validateNumberValue(valueStr, ytype); err == nil {
+					validated = true
+					value.Type = ytype.Kind
+					if err := value.SetFromString(valueStr); err != nil {
+						return DBValue{}, errors.Wrap(err, "SetFromString")
+					}
+				}
+			default:
+				panic(fmt.Sprintf("PANIC %s", ytype.Kind.String()))
+			}
+			if validated {
+				break
+			}
+		}
+		if !validated {
+			return DBValue{}, errors.Errorf("union not validated")
+		}
+	}
+
+	// Additional Validation for String
+	switch ytype.Kind {
+	case yang.Ystring:
+		if err := validateStringValue(valueStr, ytype); err != nil {
+			return DBValue{}, errors.Wrap(err, "validateStringValue")
+		}
+	}
+
+	// Additional Validation for Enum
+	switch ytype.Kind {
+	case yang.Yenum:
+		if err := validateEnumValue(valueStr, ytype); err != nil {
+			return DBValue{}, errors.Wrap(err, "validateEnumValue")
+		}
+	}
+
+	// Additional Validatation for Number-types
+	// - range (A)..(B)
+	switch ytype.Kind {
+	case yang.Yint8, yang.Yint16, yang.Yint32, yang.Yint64,
+		yang.Yuint8, yang.Yuint16, yang.Yuint32, yang.Yuint64,
+		yang.Ydecimal64:
+		if err := validateNumberValue(valueStr, ytype); err != nil {
+			return DBValue{}, errors.Wrap(err, "validateNumberValue")
+		}
+	}
+
+	switch ytype.Kind {
+	case yang.Yidentityref:
+		if err := validateIdentityrefValue(valueStr, ytype); err != nil {
+			return DBValue{}, errors.Wrap(err, "validateIdentityrefValue")
+		}
+	}
+
+	if ytype.Kind != yang.Yunion {
+		value.Type = ytype.Kind
+		if err := value.SetFromString(valueStr); err != nil {
+			return DBValue{}, errors.Wrap(err, "SetFromString")
+		}
+	}
+
+	// Additional Validation for String-types
+	// - length
+	// - pattern
+	// - pattern(invert-match)
+	// TODO(slankdev): IMPLEMENT ME
+	return value, nil
 }

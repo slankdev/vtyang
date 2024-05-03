@@ -122,6 +122,20 @@ module main {
         leaf vrf { type string; }
         leaf description { type string; }
       }
+      list item4 {
+        key "algo";
+        leaf algo {
+          type identityref {
+            base crypto-algo;
+          }
+        }
+        leaf algo2 {
+          type identityref {
+            base crypto-algo;
+          }
+        }
+        leaf description { type string; }
+      }
     }
     leaf ipv4-address { type ipv4-address; }
     leaf ipv6-address { type ipv6-address; }

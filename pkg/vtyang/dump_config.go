@@ -177,11 +177,16 @@ func getCommandCallbackConfig(_ *yang.Modules) []Command {
 		{
 			m: "set",
 			f: func(args []string) {
-				xpath, valueStr, err := ParseXPathArgs(dbm, args[1:], true)
+				xpath, value, err := ParseXPathArgs(dbm, args[1:], true)
 				if err != nil {
 					fmt.Fprintf(stdout, "Error: %s\n", err.Error())
 					return
 				}
+				vals := []string{}
+				for _, v := range value {
+					vals = append(vals, v.ToString())
+				}
+				valueStr := strings.Join(vals, " ")
 				if _, err := dbm.SetNode(xpath, valueStr); err != nil {
 					fmt.Fprintf(stdout, "Error: %s\n", err.Error())
 					return

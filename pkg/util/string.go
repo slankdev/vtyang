@@ -8,6 +8,15 @@ import (
 	"github.com/pkg/errors"
 )
 
+func StringInArray(s string, slice []string) bool {
+	for _, tmp := range slice {
+		if tmp == s {
+			return true
+		}
+	}
+	return false
+}
+
 func SplitMultiSep(s string, sep []string) []string {
 	var ret []string
 	ret = strings.Split(s, sep[0])

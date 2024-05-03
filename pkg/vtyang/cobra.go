@@ -19,7 +19,7 @@ var (
 	GlobalOptEnableGrpc  bool
 	GlobalOptLogFile     string
 	GlobalOptRunFilePath string
-	GlobalOptYangPath    string
+	GlobalOptYangPath    []string
 	GlobalOptDumpCliTree string
 	GlobalOptCommands    []string
 	GlobalOptMgmtdSock   string
@@ -115,7 +115,7 @@ func NewCommand() *cobra.Command {
 	fs.BoolVar(&GlobalOptEnableGrpc, "grpc", false, "Enable gRPC server")
 	fs.StringVarP(&GlobalOptLogFile, "logfile", "l", "/tmp/vtyang.log", "Log file")
 	fs.StringVarP(&GlobalOptRunFilePath, "run", "r", "", "Runtime file path")
-	fs.StringVarP(&GlobalOptYangPath, "yang", "y", "", "Yang file path")
+	fs.StringArrayVarP(&GlobalOptYangPath, "yang", "y", []string{}, "Yang file path")
 	fs.StringArrayVarP(&GlobalOptCommands, "command", "c", []string{}, "")
 	fs.StringVar(&GlobalOptMgmtdSock, "mgmtd-sock", "", "/var/run/frr/mgmtd_fe.sock")
 

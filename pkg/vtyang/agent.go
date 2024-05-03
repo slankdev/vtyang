@@ -14,7 +14,7 @@ type AgentOptsBackendMgmtd struct {
 
 type AgentOpts struct {
 	RuntimePath string
-	YangPath    string
+	YangPath    []string
 	LogFile     string
 	// BackendMgmtd
 	BackendMgmtd *AgentOptsBackendMgmtd

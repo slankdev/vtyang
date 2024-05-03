@@ -80,7 +80,7 @@ func TestDBNodeGet(t *testing.T) {
 	dbm.LoadDatabaseFromData(&testDummyDBRoot)
 
 	var err error
-	yangmodules, err = yangModulesPath("./testdata/yang/accounting")
+	yangmodules, err = yangModulesPath([]string{"./testdata/yang/accounting"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -114,7 +114,7 @@ func TestDBNodeCreate(t *testing.T) {
 	dbm.LoadDatabaseFromData(&testDummyDBRoot)
 
 	var err error
-	yangmodules, err = yangModulesPath("./testdata/yang/accounting")
+	yangmodules, err = yangModulesPath([]string{"./testdata/yang/accounting"})
 	if err != nil {
 		t.Fatal(err)
 	}

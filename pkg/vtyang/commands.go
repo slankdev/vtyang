@@ -855,27 +855,27 @@ func dumpCompletionTreeJson(root *CompletionNode) string {
 	return string(out)
 }
 
-func yangModulesPath(path string) (*yang.Modules, error) {
-	files, err := os.ReadDir(path)
-	if err != nil {
-		return nil, err
-	}
-
+func yangModulesPath(paths []string) (*yang.Modules, error) {
 	modules := yang.NewModules()
-	for _, file := range files {
-		if file.IsDir() {
-			continue
-		}
-		if !strings.HasSuffix(file.Name(), ".yang") {
-			continue
-		}
-		fullname := fmt.Sprintf("%s/%s", path, file.Name())
-		log.Printf("loading yang module '%s'\n", fullname)
-		if err := modules.Read(fullname); err != nil {
+	for _, path := range paths {
+		files, err := os.ReadDir(path)
+		if err != nil {
 			return nil, err
 		}
+		for _, file := range files {
+			if file.IsDir() {
+				continue
+			}
+			if !strings.HasSuffix(file.Name(), ".yang") {
+				continue
+			}
+			fullname := fmt.Sprintf("%s/%s", path, file.Name())
+			log.Printf("loading yang module '%s'\n", fullname)
+			if err := modules.Read(fullname); err != nil {
+				return nil, err
+			}
+		}
 	}
-
 	errs := modules.Process()
 	if len(errs) > 0 {
 		for _, err := range errs {

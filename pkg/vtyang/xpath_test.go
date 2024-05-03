@@ -168,7 +168,7 @@ var xpathTestDBRoot = DBNode{
 
 func TestXPathParseCli(t *testing.T) {
 	var err error
-	yangmodules, err = yangModulesPath("./testdata/yang/accounting")
+	yangmodules, err = yangModulesPath([]string{"./testdata/yang/accounting"})
 	if err != nil {
 		t.Fatal(err)
 	}

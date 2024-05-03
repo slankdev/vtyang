@@ -10,12 +10,12 @@ module frr-ripd {
   import ietf-yang-types {
     prefix yang;
   }
-  // import frr-if-rmap {
-  //   prefix frr-if-rmap;
-  // }
-  // import frr-bfdd {
-  //   prefix frr-bfdd;
-  // }
+  import frr-if-rmap {
+    prefix frr-if-rmap;
+  }
+  import frr-bfdd {
+    prefix frr-bfdd;
+  }
   import frr-filter {
     prefix frr-filter;
   }
@@ -28,9 +28,9 @@ module frr-ripd {
   import frr-vrf {
     prefix frr-vrf;
   }
-  // import frr-route-map {
-  //   prefix frr-route-map;
-  // }
+  import frr-route-map {
+    prefix frr-route-map;
+  }
   import frr-route-types {
     prefix frr-route-types;
   }
@@ -274,13 +274,13 @@ module frr-ripd {
           description
             "Routing protocol.";
         }
-        // leaf route-map {
-        //   type frr-route-map:route-map-ref;
-        //   description
-        //     "Applies the conditions of the specified route-map to
-        //      routes that are redistributed into the RIP routing
-        //      instance.";
-        // }
+        leaf route-map {
+          type frr-route-map:route-map-ref;
+          description
+            "Applies the conditions of the specified route-map to
+             routes that are redistributed into the RIP routing
+             instance.";
+        }
         leaf metric {
           type uint8 {
             range "0..16";
@@ -295,7 +295,7 @@ module frr-ripd {
         }
       }
 
-      // uses frr-if-rmap:if-route-maps-group;
+      uses frr-if-rmap:if-route-maps-group;
 
       leaf-list static-route {
         type inet:ipv4-prefix;
@@ -385,11 +385,11 @@ module frr-ripd {
         }
       }
 
-      // leaf default-bfd-profile {
-      //   type frr-bfdd:profile-ref;
-      //   description
-      //     "Use this BFD profile for all peers by default.";
-      // }
+      leaf default-bfd-profile {
+        type frr-bfdd:profile-ref;
+        description
+          "Use this BFD profile for all peers by default.";
+      }
 
       /*
        * Operational data.
@@ -706,11 +706,11 @@ module frr-ripd {
             "Enable/disable BFD monitoring.";
         }
 
-        // leaf profile {
-        //   type frr-bfdd:profile-ref;
-        //   description
-        //     "BFD profile to use.";
-        // }
+        leaf profile {
+          type frr-bfdd:profile-ref;
+          description
+            "BFD profile to use.";
+        }
       }
     }
   }

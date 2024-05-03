@@ -300,6 +300,17 @@ func TestChoiceCase2(t *testing.T) {
 	})
 }
 
+func TestPrototype(t *testing.T) {
+	executeTestCase(t, &TestCase{
+		RuntimePath: "/tmp/run/vtyang",
+		YangPath:    "./testdata/yang/basic",
+		OutputFile:  "./testdata/output/TestPrototype.txt",
+		Inputs: []string{
+			"show system-info",
+		},
+	})
+}
+
 func TestFilterDbWithModule(t *testing.T) {
 	input := &DBNode{
 		Name: "",

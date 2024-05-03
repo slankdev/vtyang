@@ -54,7 +54,6 @@ func InitAgent(opts AgentOpts) error {
 
 	GlobalOptRunFilePath = runtimePath
 	dbm = NewDatabaseManager()
-	dbm.LoadYangModuleOrDie(yangPath)
 	if err := dbm.LoadDatabaseFromFile(getDatabasePath()); err != nil {
 		return err
 	}

@@ -167,8 +167,13 @@ var xpathTestDBRoot = DBNode{
 }
 
 func TestXPathParseCli(t *testing.T) {
+	var err error
+	yangmodules, err = yangModulesPath("./testdata/yang/accounting")
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	dbm := NewDatabaseManager()
-	dbm.LoadYangModuleOrDie("./testdata/yang/accounting")
 	dbm.LoadDatabaseFromData(&xpathTestDBRoot)
 
 	testcases := []struct {

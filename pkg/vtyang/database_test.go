@@ -102,8 +102,8 @@ func TestDBNodeGet(t *testing.T) {
 		util.PanicOnErr(err)
 
 		if !reflect.DeepEqual(node, tc.ptr) {
-			pp.Println(node)
-			pp.Println(tc.ptr)
+			pp.Println("dbnode-expect", tc.ptr)
+			pp.Println("dbnode-result", node)
 			t.Errorf("missmatch")
 		}
 	}
@@ -312,21 +312,25 @@ func TestSetNode(t *testing.T) {
 			},
 			{
 				Word: "instance",
-				Keys: map[string]DBValue{
+				Keys: map[string]XWordKey{
 					"area-tag": {
-						Type:   yang.Ystring,
-						String: "1",
+						Value: DBValue{
+							Type:   yang.Ystring,
+							String: "1",
+						},
 					},
 					"vrf": {
-						Type:   yang.Ystring,
-						String: "default",
+						Value: DBValue{
+							Type:   yang.Ystring,
+							String: "default",
+						},
 					},
 				},
 				Dbtype: "list",
 			},
 			{
 				Word:        "description",
-				Keys:        map[string]DBValue{},
+				Keys:        map[string]XWordKey{},
 				Dbtype:      "leaf",
 				Dbvaluetype: yang.Ystring,
 			},
@@ -428,10 +432,12 @@ func Test_SetNode(t *testing.T) {
 				Module: "frr-interface",
 				Word:   "interface",
 				Dbtype: List,
-				Keys: map[string]DBValue{
+				Keys: map[string]XWordKey{
 					"name": {
-						Type:   yang.Ystring,
-						String: "dum0",
+						Value: DBValue{
+							Type:   yang.Ystring,
+							String: "dum0",
+						},
 					},
 				},
 			},

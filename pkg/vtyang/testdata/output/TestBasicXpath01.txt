@@ -12,21 +12,26 @@
       "Word": "union-list",
       "Keys": {
         "month": {
-          "Type": 5,
-          "UnionType": 5,
-          "Int8": 0,
-          "Int16": 0,
-          "Int32": 0,
-          "Int64": 0,
-          "Uint8": 1,
-          "Uint16": 0,
-          "Uint32": 0,
-          "Uint64": 0,
-          "String": "",
-          "Boolean": false,
-          "Decimal64": 0
+          "Value": {
+            "Type": 5,
+            "UnionType": 5,
+            "Int8": 0,
+            "Int16": 0,
+            "Int32": 0,
+            "Int64": 0,
+            "Uint8": 1,
+            "Uint16": 0,
+            "Uint32": 0,
+            "Uint64": 0,
+            "String": "",
+            "Boolean": false,
+            "Decimal64": 0
+          }
         }
       },
+      "KeysIndex": [
+        "month"
+      ],
       "Dbtype": "list",
       "Dbvaluetype": 0
     },

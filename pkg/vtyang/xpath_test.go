@@ -207,6 +207,11 @@ func TestXPathParseCli(t *testing.T) {
 						},
 						Keys: map[string]XWordKey{
 							"name": {
+								ytype: yang.YangType{
+									Name: "string",
+									Kind: yang.Ystring,
+									Base: nil,
+								},
 								Value: DBValue{
 									Type:   yang.Ystring,
 									String: "eva",
@@ -219,6 +224,24 @@ func TestXPathParseCli(t *testing.T) {
 						Dbtype:      Leaf,
 						Word:        "age",
 						Dbvaluetype: yang.Yint32,
+						ytype: yang.YangType{
+							Name: yang.Yint32.String(),
+							Kind: yang.Yint32,
+							Range: yang.YangRange{
+								yang.YRange{
+									Min: yang.Number{
+										Value:          0x0000000080000000,
+										FractionDigits: 0x00,
+										Negative:       true,
+									},
+									Max: yang.Number{
+										Value:          0x000000007fffffff,
+										FractionDigits: 0x00,
+										Negative:       false,
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -230,6 +253,23 @@ func TestXPathParseCli(t *testing.T) {
 		xpath, val, err := ParseXPathArgs(dbm, args, tc.set)
 		util.PanicOnErr(err)
 
+		// Post process
+		for idx := range xpath.Words {
+			if xpath.Words[idx].Dbtype == List {
+				for idx2 := range xpath.Words[idx].Keys {
+					tmp := xpath.Words[idx].Keys[idx2]
+					tmp.ytype.Base = nil
+					tmp.ytype.Root = nil
+					xpath.Words[idx].Keys[idx2] = tmp
+				}
+			}
+			if xpath.Words[idx].Dbtype == Leaf {
+				xpath.Words[idx].ytype.Base = nil
+				xpath.Words[idx].ytype.Root = nil
+			}
+		}
+
+		// Compare
 		if !reflect.DeepEqual(xpath, tc.xpath) {
 			pp.Println("xpath-expect", tc.xpath)
 			pp.Println("xpath-result", xpath)

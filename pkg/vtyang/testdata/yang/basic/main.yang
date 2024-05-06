@@ -43,12 +43,25 @@ module main {
             + '(%.+)?';
     }
   }
+  typedef ip-address {
+    type union {
+      type ipv4-address;
+      type ipv6-address;
+    }
+  }
   identity crypto-algo;
   identity aes {
     base crypto-algo;
   }
   identity des3 {
     base crypto-algo;
+  }
+  identity tcp-app;
+  identity http {
+    base tcp-app;
+  }
+  identity ftp {
+    base tcp-app;
   }
 
   container values {
@@ -133,6 +146,68 @@ module main {
           type identityref {
             base crypto-algo;
           }
+        }
+        leaf description { type string; }
+      }
+      list item5 {
+        key "algo1 algo2";
+        leaf algo1 {
+          type identityref {
+            base crypto-algo;
+          }
+        }
+        leaf algo2 {
+          type identityref {
+            base crypto-algo;
+          }
+        }
+        leaf description { type string; }
+      }
+      list item6 {
+        key "algo app";
+        leaf algo {
+          type identityref {
+            base crypto-algo;
+          }
+        }
+        leaf app {
+          type identityref {
+            base tcp-app;
+          }
+        }
+        leaf description { type string; }
+      }
+      list item7 {
+        key "month";
+        leaf month {
+          type month-str;
+        }
+        leaf description { type string; }
+      }
+      list item8 {
+        key "name";
+        leaf name {
+          type string;
+        }
+        leaf description { type string; }
+      }
+      list item9 {
+        key "key-string key-uint32 key-uint8";
+        leaf key-string {
+          type string;
+        }
+        leaf key-uint32 {
+          type uint32;
+        }
+        leaf key-uint8 {
+          type uint8;
+        }
+        leaf description { type string; }
+      }
+      list item10 {
+        key "address";
+        leaf address {
+          type ip-address;
         }
         leaf description { type string; }
       }

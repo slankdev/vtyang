@@ -145,8 +145,8 @@ func TestBasicEvalCli01(t *testing.T) {
 			"eval-cli values items item2 hoge fuga",
 			"eval-cli values items item2 hoge fuga des",
 			"eval-cli values crypto",
-			"eval-cli values crypto de",
-			"eval-cli values crypto des3",
+			"eval-cli values crypto main:de",
+			"eval-cli values crypto main:des3",
 		},
 	})
 }
@@ -184,7 +184,7 @@ func TestXpathParse2(t *testing.T) {
 			"set values month-str January",
 			"set values decimal -0.22",
 			"set values bool false",
-			"set values crypto des3",
+			"set values crypto main:des3",
 			"commit",
 			"quit",
 			"show running-config",
@@ -203,7 +203,7 @@ func TestXpathParse2(t *testing.T) {
 			"set values month-str December",
 			"set values decimal 3.14",
 			"set values bool true",
-			"set values crypto aes",
+			"set values crypto main:aes",
 			"commit",
 			"quit",
 			"show running-config",

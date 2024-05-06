@@ -27,6 +27,26 @@ https://pkg.go.dev/github.com/openconfig/goyang/pkg/yang#pkg-constants
 0x13	19 Yunion
 ```
 
+## FRR mgmtd cli
+
+ok
+```
+mgmt set-config /frr-routing:routing/control-plane-protocols/control-plane-protocol[type='frr-staticd:staticd'][name='staticd'][vrf='default'] {}
+```
+
+ng
+```
+mgmt set-config /frr-routing:routing/control-plane-protocols/control-plane-protocol[type='staticd'][name='staticd'][vrf='default'] {}
+```
+
+full snippet
+```
+mgmt set-config /frr-routing:routing/control-plane-protocols/control-plane-protocol[type='frr-staticd:staticd'][name='staticd'][vrf='default'] {}
+mgmt set-config /frr-routing:routing/control-plane-protocols/control-plane-protocol[type='frr-staticd:staticd'][name='staticd'][vrf='default']/frr-staticd:staticd/route-list[prefix='1.1.1.1/32'][afi-safi='frr-routing:ipv4-unicast'] {}
+mgmt set-config /frr-routing:routing/control-plane-protocols/control-plane-protocol[type='frr-staticd:staticd'][name='staticd'][vrf='default']/frr-staticd:staticd/route-list[prefix='1.1.1.1/32'][afi-safi='frr-routing:ipv4-unicast']/path-list[table-id='0'][distance='1'] {}
+mgmt set-config /frr-routing:routing/control-plane-protocols/control-plane-protocol[type='frr-staticd:staticd'][name='staticd'][vrf='default']/frr-staticd:staticd/route-list[prefix='1.1.1.1/32'][afi-safi='frr-routing:ipv4-unicast']/path-list[table-id='0'][distance='1']/frr-nexthops/nexthop[nh-type='blackhole'][vrf='default'][gateway=''][interface='(null)'] {}
+```
+
 ## Developer Makefile
 
 ```

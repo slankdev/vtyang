@@ -1,0 +1,7 @@
+module module1 {
+  namespace "http://slank.dev/vtyang/module1";
+  prefix module1;
+  import main { prefix main; }
+  identity bgp { base main:protocol; }
+  identity ospf { base main:protocol; }
+}

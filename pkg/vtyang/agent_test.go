@@ -42,7 +42,7 @@ func TestAgentLoadDatabase(t *testing.T) {
 	})
 }
 
-func TestAgentXPathCli(t *testing.T) {
+func TestAgentXPathCli01(t *testing.T) {
 	executeTestCase(t, &TestCase{
 		RuntimePath: "/tmp/run/vtyang",
 		YangPath:    "./testdata/yang/frr_isisd_minimal",
@@ -60,7 +60,7 @@ func TestAgentXPathCli(t *testing.T) {
 	})
 }
 
-func TestAgentXPathCliFRR(t *testing.T) {
+func TestAgentXPathCliFRR01(t *testing.T) {
 	executeTestCase(t, &TestCase{
 		RuntimePath: "/tmp/run/vtyang",
 		YangPath:    "./testdata/yang/frr_isisd_minimal",
@@ -109,6 +109,20 @@ func TestAccountingXpath01(t *testing.T) {
 	})
 }
 
+func TestAccountingEvalCli01(t *testing.T) {
+	executeTestCase(t, &TestCase{
+		RuntimePath: "/tmp/run/vtyang",
+		YangPath:    "./testdata/yang/accounting",
+		OutputFile:  "./testdata/output/TestAccountingEvalCli01.txt",
+		Inputs: []string{
+			"eval-cli users user eva age 200",
+			"eval-cli users user eva age",
+			"eval-cli users user eva",
+			"eval-cli users user",
+		},
+	})
+}
+
 func TestBasicXpath01(t *testing.T) {
 	executeTestCase(t, &TestCase{
 		RuntimePath: "/tmp/run/vtyang",
@@ -116,6 +130,23 @@ func TestBasicXpath01(t *testing.T) {
 		OutputFile:  "./testdata/output/TestBasicXpath01.txt",
 		Inputs: []string{
 			"eval-xpath /values/union-list[month='1']/month",
+		},
+	})
+}
+
+func TestBasicEvalCli01(t *testing.T) {
+	executeTestCase(t, &TestCase{
+		RuntimePath: "/tmp/run/vtyang",
+		YangPath:    "./testdata/yang/basic",
+		OutputFile:  "./testdata/output/TestBasicEvalCli01.txt",
+		Inputs: []string{
+			"eval-cli values items item2",
+			"eval-cli values items item2 hoge",
+			"eval-cli values items item2 hoge fuga",
+			"eval-cli values items item2 hoge fuga des",
+			"eval-cli values crypto",
+			"eval-cli values crypto de",
+			"eval-cli values crypto des3",
 		},
 	})
 }
@@ -306,7 +337,7 @@ func TestPrototype(t *testing.T) {
 		YangPath:    "./testdata/yang/basic",
 		OutputFile:  "./testdata/output/TestPrototype.txt",
 		Inputs: []string{
-			"hidden-command-test1",
+			"hidden-command-nothing",
 		},
 	})
 }

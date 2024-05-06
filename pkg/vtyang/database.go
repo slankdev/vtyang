@@ -3,7 +3,6 @@ package vtyang
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"math"
 	"math/big"
 	"os"
@@ -299,7 +298,7 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 				UnionType: xword.Dbuniontype,
 			}
 			if err := v.SetFromStringWithType(val, xword); err != nil {
-				return nil, errors.Wrap(err, "SetFromString")
+				return nil, errors.Wrap(err, "SetFromStringWithType")
 			}
 			n.Childs = append(n.Childs, DBNode{
 				Name:  xword.Word,
@@ -589,7 +588,7 @@ func (n *DBNode) ToMap() interface{} {
 
 func (n *DBNode) WriteToJsonFile(filename string) error {
 	s := dbm.root.String()
-	if err := ioutil.WriteFile(filename, []byte(s), 0644); err != nil {
+	if err := os.WriteFile(filename, []byte(s), 0644); err != nil {
 		return err
 	}
 	return nil
@@ -876,7 +875,7 @@ func (v *DBValue) SetFromString(s string) error {
 	case yang.Ybool:
 		bval, err := strconv.ParseBool(s)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "strconv.ParseBool")
 		}
 		v.Boolean = bval
 	case yang.Yunion:

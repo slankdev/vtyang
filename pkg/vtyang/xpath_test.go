@@ -178,13 +178,18 @@ func TestXPathParseCli(t *testing.T) {
 
 	testcases := []struct {
 		in    string
-		val   string
+		val   []DBValue
 		set   bool
 		xpath XPath
 	}{
 		{
-			in:  "users user eva age 200",
-			val: "200",
+			in: "users user eva age 200",
+			val: []DBValue{
+				{
+					Type:  yang.Yint32,
+					Int32: 200,
+				},
+			},
 			set: true,
 			xpath: XPath{
 				Words: []XWord{
@@ -226,8 +231,11 @@ func TestXPathParseCli(t *testing.T) {
 			t.Errorf("missmatch deepequal in=%s", tc.in)
 		}
 
-		if val != tc.val {
-			t.Errorf("missmatch val in=%s out=%s", tc.val, val)
+		if len(val) != len(tc.val) {
+			t.Errorf("missmatch val-len in=%d out=%d", len(tc.val), len(val))
+		}
+		if val[0] != tc.val[0] {
+			t.Errorf("missmatch val in=%s out=%s", tc.val[0].ToString(), val[0].ToString())
 		}
 	}
 }

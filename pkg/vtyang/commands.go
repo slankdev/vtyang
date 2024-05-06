@@ -3,7 +3,6 @@ package vtyang
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"sort"
@@ -117,8 +116,8 @@ func installCommandsDefault(mode CliMode) {
 		fmt.Fprintln(stdout, dumpCompletionTreeJson(getCommandNodeCurrent().tree.Root))
 	})
 
-	installCommandNoCompletion(mode, "hidden-command-test1", func(arg []string) {
-		fmt.Fprintln(stdout, "I'm fine, thank you")
+	installCommandNoCompletion(mode, "hidden-command-nothing", func(arg []string) {
+		// do nothing
 	})
 
 	installCommand(mode, "save cli-tree", []string{
@@ -126,7 +125,7 @@ func installCommandsDefault(mode CliMode) {
 		"Save completion tree",
 	}, func(arg []string) {
 		content := dumpCompletionTreeJson(getCommandNodeCurrent().tree.Root)
-		if err := ioutil.WriteFile("/tmp/clitree.json", []byte(content), os.ModePerm); err != nil {
+		if err := os.WriteFile("/tmp/clitree.json", []byte(content), os.ModePerm); err != nil {
 			fmt.Fprintf(stdout, "ERROR: %s", err.Error())
 		}
 	})
@@ -138,6 +137,28 @@ func installCommandsDefault(mode CliMode) {
 			return
 		}
 		out, err := json.MarshalIndent(xpath, "", "  ")
+		if err != nil {
+			fmt.Fprintf(stdout, "Error: %s\n", err.Error())
+			return
+		}
+		fmt.Fprintf(stdout, "%s\n", string(out))
+	})
+
+	installCommandNoCompletion(mode, "eval-cli", func(args []string) {
+		xpath, val, tail, err := ParseXPathCli(dbm, args[1:], []string{}, true)
+		if err != nil {
+			fmt.Fprintf(stdout, "Error: %s\n", err.Error())
+			return
+		}
+		out, err := json.MarshalIndent(struct {
+			XPath XPath
+			Value []DBValue `json:",omitempty"`
+			Tail  []string  `json:",omitempty"`
+		}{
+			XPath: xpath,
+			Value: val,
+			Tail:  tail,
+		}, "", "  ")
 		if err != nil {
 			fmt.Fprintf(stdout, "Error: %s\n", err.Error())
 			return
@@ -553,15 +574,10 @@ func DigNodeOrDie(mode CliMode, query []string) *CompletionNode {
 }
 
 func completer(line string, pos int) (string, []string, string) {
-	tree := getCommandNodeCurrent().tree
-	nodes := tree.Completion(line, pos)
-	if len(nodes) == 0 {
-		return line[:pos], nil, line[pos:]
-	}
-
 	names := []string{}
-	for _, node := range nodes {
-		names = append(names, node.Name)
+	result := doCompletion(line, pos)
+	for _, item := range result.Items {
+		names = append(names, item.Word)
 	}
 
 	pre := line[:pos]
@@ -595,18 +611,177 @@ func completer(line string, pos int) (string, []string, string) {
 	return pre, names, line[pos:]
 }
 
+type CompletionResult struct {
+	// InvalidArg
+	InvalidArg bool
+	// ResolvedXPath
+	ResolvedXPath *XPath
+	// Items
+	Items []CompletionItem `json:",omitempty"`
+}
+
+type CompletionItem struct {
+	Word   string `json:",omitempty"`
+	Helper string `json:",omitempty"`
+}
+
+func doCompletion(line string, pos int) CompletionResult {
+	ret := CompletionResult{}
+	nodes := getCommandNodeCurrent().tree.Completion(line, pos)
+	items := []CompletionItem{}
+
+	tailSpace := false
+	if len(line) > 0 {
+		tailSpace = line[pos-1] == ' '
+	}
+
+	// Static information (1) yang-tree
+	for _, node := range nodes {
+		items = append(items, CompletionItem{
+			Word:   node.Name,
+			Helper: node.Description,
+		})
+	}
+
+	// Static information (2) identityref, enum
+	// TODO(slankdev): implement me
+	args := strings.Fields(line)
+	if len(args) > 1 {
+		xpath, value, tail0, err := ParseXPathCli(dbm, args[1:], []string{}, true)
+		if err != nil {
+			fmt.Fprintf(stdout, "Error(%s): %s \n", util.LINE(), err)
+			return CompletionResult{}
+		}
+
+		// TODO(slankdev): implement me
+		//
+		// [AS-IS]
+		// > set values items item4 ?
+		// Possible Completions:
+		//   NAME algo
+		//
+		// [TO-BE]
+		// > set values items item4 ?
+		// Possible Completions:
+		//   aes
+		//   des3
+		// if xpath.TailIsList() {
+		// 	pp.Println(xpath)
+		// }
+
+		eliminateValue := false
+		if xpath.TailIsLeaf() {
+			if tailSpace {
+				if len(value) == 0 {
+					ret.ResolvedXPath = &xpath
+					if ret.ResolvedXPath != nil {
+						if len(xpath.Words) > 0 {
+							tail := xpath.Words[len(xpath.Words)-1]
+							if tail.Dbtype == Leaf && tail.Dbvaluetype == yang.Yidentityref {
+								for _, id := range tail.Identities {
+									if len(tail0) == 0 {
+										items = append(items, CompletionItem{
+											Word:   id.Name,
+											Helper: "",
+										})
+									} else {
+										if strings.HasPrefix(id.Name, tail0[0]) {
+											items = append(items, CompletionItem{
+												Word:   id.Name,
+												Helper: "",
+											})
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+				eliminateValue = true
+			} else {
+				if tailSpace {
+					tail := xpath.Words[len(xpath.Words)-1]
+					if tail.Dbtype == Leaf && tail.Dbvaluetype == yang.Yidentityref {
+						for _, id := range tail.Identities {
+							if len(tail0) == 0 {
+								items = append(items, CompletionItem{
+									Word:   id.Name,
+									Helper: "",
+								})
+							} else {
+								if strings.HasPrefix(id.Name, tail0[0]) {
+									items = append(items, CompletionItem{
+										Word:   id.Name,
+										Helper: "",
+									})
+								}
+							}
+						}
+					}
+					eliminateValue = true
+				} else {
+					if value != nil {
+						tail := xpath.Words[len(xpath.Words)-1]
+						for _, id := range tail.Identities {
+							if strings.HasPrefix(id.Name, args[len(args)-1]) {
+								items = append(items, CompletionItem{
+									Word:   id.Name,
+									Helper: "",
+								})
+							}
+						}
+
+						eliminateValue = true
+					} else {
+
+						tail := xpath.Words[len(xpath.Words)-1]
+						if tail.Dbtype == Leaf && tail.Dbvaluetype == yang.Yidentityref {
+							for _, id := range tail.Identities {
+								if len(tail0) > 0 {
+									if strings.HasPrefix(id.Name, tail0[0]) {
+										items = append(items, CompletionItem{
+											Word:   id.Name,
+											Helper: "",
+										})
+									}
+									eliminateValue = true
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		if eliminateValue {
+			for idx := range items {
+				if items[idx].Word == "VALUE" {
+					items = append(items[:idx], items[idx+1:]...)
+					break
+				}
+			}
+		}
+	}
+
+	// Dynamic information
+	// TODO(slankdev): implement me
+
+	// Return result
+	ret.Items = items
+	return ret
+}
+
 func completionLister(line string, pos int) {
-	tree := getCommandNodeCurrent().tree
-	nodes := tree.Completion(line, pos)
-	if len(nodes) == 0 {
+	result := doCompletion(line, pos)
+	if len(result.Items) == 0 {
 		fmt.Fprintf(stdout, "\n%% Invalid input detected\n")
 		return
 	}
 
 	longestnamelen := 0
-	for _, node := range nodes {
-		if len(node.Name) > longestnamelen {
-			longestnamelen = len(node.Name)
+	for _, item := range result.Items {
+		if len(item.Word) > longestnamelen {
+			longestnamelen = len(item.Word)
 		}
 	}
 	padding := func(str string, maxlen int) string {
@@ -618,9 +793,10 @@ func completionLister(line string, pos int) {
 	}
 
 	fmt.Fprintf(stdout, "\nPossible Completions:\n")
-	for _, node := range nodes {
-		fmt.Fprintf(stdout, "  %s%s  %s\n", node.Name, padding(node.Name, longestnamelen),
-			node.Description)
+	for _, item := range result.Items {
+		fmt.Fprintf(stdout, "  %s%s  %s\n", item.Word,
+			padding(item.Word, longestnamelen),
+			item.Helper)
 	}
 }
 
@@ -634,7 +810,7 @@ type CommitHistory struct {
 
 func initCommitHistories() {
 	if GlobalOptRunFilePath != "" {
-		files, err := ioutil.ReadDir(GlobalOptRunFilePath)
+		files, err := os.ReadDir(GlobalOptRunFilePath)
 		if err != nil {
 			panic(err)
 		}
@@ -653,7 +829,7 @@ func initCommitHistories() {
 
 func readCommitHistoryFromFile(filename string) (CommitHistory, error) {
 	h := CommitHistory{}
-	b, err := ioutil.ReadFile(filename)
+	b, err := os.ReadFile(filename)
 	if err != nil {
 		return h, err
 	}
@@ -708,7 +884,7 @@ func (h CommitHistory) WriteToFile(basepath string) error {
 		return err
 	}
 	filename := fmt.Sprintf("%s/history.%d.json", basepath, h.Timestamp.UnixNano())
-	if err := ioutil.WriteFile(filename, b, 0644); err != nil {
+	if err := os.WriteFile(filename, b, 0644); err != nil {
 		return err
 	}
 	return nil

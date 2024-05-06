@@ -12,9 +12,12 @@ import (
 )
 
 type XWord struct {
-	Module      string
-	Word        string
-	Keys        map[string]DBValue
+	Module string
+	Word   string
+	// Keys
+	Keys map[string]XWordKey
+	// KeysIndex
+	KeysIndex   []string `json:",omitempty"`
 	Dbtype      DBNodeType
 	Dbvaluetype yang.TypeKind
 	Dbuniontype yang.TypeKind `json:"Dbuniontype,omitempty"`
@@ -22,6 +25,10 @@ type XWord struct {
 	UnionTypes []*yang.YangType `json:",omitempty"`
 	// IdentityBase
 	Identities []*yang.Identity `json:",omitempty"`
+}
+
+type XWordKey struct {
+	Value DBValue
 }
 
 type XPath struct {
@@ -42,13 +49,20 @@ func (xp *XPath) TailIsList() bool {
 	return false
 }
 
+func (xp *XPath) Tail() *XWord {
+	if len(xp.Words) > 0 {
+		return &xp.Words[len(xp.Words)-1]
+	}
+	return nil
+}
+
 func (x XPath) String() string {
 	s := ""
 	for _, w := range x.Words {
 		s = fmt.Sprintf("%s/%s:%s", s, w.Module, w.Word)
 		if w.Keys != nil {
 			for k, v := range w.Keys {
-				s = fmt.Sprintf("%s[%s='%s']", s, k, v.ToString())
+				s = fmt.Sprintf("%s[%s='%s']", s, k, v.Value.ToString())
 			}
 		}
 	}
@@ -271,8 +285,9 @@ func ParseXPathStringImpl(module *yang.Entry, s string) (XPath, error) {
 			xword.Dbtype = Container
 		case foundNode.IsList():
 			xword.Dbtype = List
-			xword.Keys = map[string]DBValue{}
+			xword.Keys = map[string]XWordKey{}
 			for _, w := range strings.Fields(foundNode.Key) {
+				xword.KeysIndex = append(xword.KeysIndex, w)
 				var keyLeafNode *yang.Entry
 				for _, ee := range foundNode.Dir {
 					if ee.Name == w {
@@ -334,7 +349,7 @@ func ParseXPathStringImpl(module *yang.Entry, s string) (XPath, error) {
 				if err := v.SetFromString(valueStr); err != nil {
 					return XPath{}, errors.Wrap(err, "SetFromstring")
 				}
-				xword.Keys[keyLeafNode.Name] = v
+				xword.Keys[keyLeafNode.Name] = XWordKey{Value: v}
 			}
 		case foundNode.IsLeaf():
 			xword.Dbtype = Leaf
@@ -372,7 +387,8 @@ func ParseXPathCli(dbm *DatabaseManager, args []string, tail []string,
 	return xpath, val, tail, nil
 }
 
-func ParseXPathArgs(dbm *DatabaseManager, args []string, setmode bool) (XPath, []DBValue, error) {
+func ParseXPathArgs(dbm *DatabaseManager, args []string,
+	setmode bool) (XPath, []DBValue, error) {
 	var xpath XPath
 	var vals []DBValue
 	var err error
@@ -391,7 +407,8 @@ func ParseXPathArgs(dbm *DatabaseManager, args []string, setmode bool) (XPath, [
 	return xpath, vals, nil
 }
 
-func ParseXPathArgsImpl(module *yang.Entry, args []string, setmode bool) (XPath, []DBValue, error) {
+func ParseXPathArgsImpl(module *yang.Entry, args []string,
+	setmode bool) (XPath, []DBValue, error) {
 	words := args
 	xpath := XPath{}
 	value := []DBValue{}
@@ -449,9 +466,11 @@ func ParseXPathArgsImpl(module *yang.Entry, args []string, setmode bool) (XPath,
 
 		case foundNode.IsList():
 			xword.Dbtype = List
-			xword.Keys = map[string]DBValue{}
+			xword.Keys = map[string]XWordKey{}
 			for _, w := range strings.Fields(foundNode.Key) {
-				xword.Keys[w] = DBValue{}
+				xword.KeysIndex = append(xword.KeysIndex, w)
+				k := XWordKey{}
+				xword.Keys[w] = k
 			}
 			if len(words) > 1 {
 				for _, w := range strings.Fields(foundNode.Key) {
@@ -469,7 +488,9 @@ func ParseXPathArgsImpl(module *yang.Entry, args []string, setmode bool) (XPath,
 					if err != nil {
 						return XPath{}, nil, errors.Wrap(err, "validateValue(%s)")
 					}
-					xword.Keys[w] = v
+					tmp := xword.Keys[w]
+					tmp.Value = v
+					xword.Keys[w] = tmp
 					argumentCount++
 				}
 				argumentCount--

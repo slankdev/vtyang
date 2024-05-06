@@ -1,6 +1,7 @@
 package vtyang
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path"
@@ -83,6 +84,19 @@ func executeTestCase(t *testing.T, tc *TestCase) {
 		t.Errorf("KINDLY_CLI diff -u %s_expected.txt %s_result.txt", p, p)
 		t.Errorf("KINDLY_CLI vim -O %s_result.txt %s",
 			p, path.Join("./pkg/vtyang", tc.OutputFile))
+		t.Errorf("KINDLY_CLI sh /tmp/diff.sh")
+		t.Errorf("KINDLY_CLI sh /tmp/edit.sh")
+		b0 := bytes.NewBufferString("")
+		fmt.Fprintf(b0, "diff -u %s_expected.txt %s_result.txt", p, p)
+		if err := os.WriteFile("/tmp/diff.sh", b0.Bytes(), os.ModePerm); err != nil {
+			t.Fatal(err)
+		}
+		b1 := bytes.NewBufferString("")
+		fmt.Fprintf(b1, "vim -O %s_result.txt %s",
+			p, path.Join("./pkg/vtyang", tc.OutputFile))
+		if err := os.WriteFile("/tmp/edit.sh", b1.Bytes(), os.ModePerm); err != nil {
+			t.Fatal(err)
+		}
 		t.Fatal("quiting test with FAILED result")
 	}
 

@@ -89,7 +89,7 @@ func (dbm *DatabaseManager) GetNode(xpath XPath) (*DBNode, error) {
 									panic("database is broken")
 								}
 								for k, v := range xword.Keys {
-									if child3.Name == k && reflect.DeepEqual(child3.Value, v) {
+									if child3.Name == k && reflect.DeepEqual(child3.Value, v.Value) {
 										n = child2
 										found = true
 										goto end
@@ -225,7 +225,7 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 									{
 										Name:  k,
 										Type:  Leaf,
-										Value: v,
+										Value: v.Value,
 									},
 								},
 							},
@@ -265,7 +265,7 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 				match := true
 				for k, v := range xword.Keys {
 					for _, c := range n.Childs[idx].Childs {
-						if c.Name == k && !reflect.DeepEqual(c.Value, v) {
+						if c.Name == k && !reflect.DeepEqual(c.Value, v.Value) {
 							match = false
 						}
 					}
@@ -282,7 +282,7 @@ func (dbm *DatabaseManager) SetNode(xpath XPath, val string) (
 					tmp := DBNode{
 						Name:  k,
 						Type:  Leaf,
-						Value: v,
+						Value: v.Value,
 					}
 					listChilds = append(listChilds, tmp)
 				}
@@ -359,7 +359,7 @@ func (xpath XPath) CreateDBNodeTree() (*DBNode, error) {
 					{
 						Name:  k,
 						Type:  Leaf,
-						Value: v,
+						Value: v.Value,
 					},
 				}
 			}
@@ -373,7 +373,7 @@ func (xpath XPath) CreateDBNodeTree() (*DBNode, error) {
 	return &root, nil
 }
 
-func EnsureListNode(listNode *DBNode, kv map[string]DBValue) *DBNode {
+func EnsureListNode(listNode *DBNode, kv map[string]XWordKey) *DBNode {
 	if listNode.Type != List {
 		panic("ASSERTION")
 	}
@@ -390,7 +390,7 @@ func EnsureListNode(listNode *DBNode, kv map[string]DBValue) *DBNode {
 		n := DBNode{
 			Name:  k,
 			Type:  Leaf,
-			Value: v,
+			Value: v.Value,
 		}
 		newElement.Childs = append(newElement.Childs, n)
 	}
@@ -399,12 +399,12 @@ func EnsureListNode(listNode *DBNode, kv map[string]DBValue) *DBNode {
 	return &listNode.Childs[len(listNode.Childs)-1]
 }
 
-func matchChild(root *DBNode, kv map[string]DBValue) bool {
+func matchChild(root *DBNode, kv map[string]XWordKey) bool {
 	nMatch := 0
 	for idx := range root.Childs {
 		child := &root.Childs[idx]
 		for k, v := range kv {
-			if child.Name == k && reflect.DeepEqual(child.Value, v) {
+			if child.Name == k && reflect.DeepEqual(child.Value, v.Value) {
 				nMatch++
 			}
 		}
@@ -412,14 +412,14 @@ func matchChild(root *DBNode, kv map[string]DBValue) bool {
 	return len(kv) == nMatch
 }
 
-func lookupChildIdx(root *DBNode, kv map[string]DBValue) int {
+func lookupChildIdx(root *DBNode, kv map[string]XWordKey) int {
 	for idx := range root.Childs {
 		child := &root.Childs[idx]
 		for idx2 := range child.Childs {
 			child2 := &child.Childs[idx2]
 			nMatch := 0
 			for k, v := range kv {
-				if child2.Name == k && reflect.DeepEqual(child2.Value, v) {
+				if child2.Name == k && reflect.DeepEqual(child2.Value, v.Value) {
 					nMatch++
 				}
 			}

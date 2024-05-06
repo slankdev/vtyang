@@ -13,20 +13,25 @@
         "Word": "user",
         "Keys": {
           "name": {
-            "Type": 18,
-            "Int8": 0,
-            "Int16": 0,
-            "Int32": 0,
-            "Int64": 0,
-            "Uint8": 0,
-            "Uint16": 0,
-            "Uint32": 0,
-            "Uint64": 0,
-            "String": "eva",
-            "Boolean": false,
-            "Decimal64": 0
+            "Value": {
+              "Type": 18,
+              "Int8": 0,
+              "Int16": 0,
+              "Int32": 0,
+              "Int64": 0,
+              "Uint8": 0,
+              "Uint16": 0,
+              "Uint32": 0,
+              "Uint64": 0,
+              "String": "eva",
+              "Boolean": false,
+              "Decimal64": 0
+            }
           }
         },
+        "KeysIndex": [
+          "name"
+        ],
         "Dbtype": "list",
         "Dbvaluetype": 0
       },
@@ -71,20 +76,25 @@
         "Word": "user",
         "Keys": {
           "name": {
-            "Type": 18,
-            "Int8": 0,
-            "Int16": 0,
-            "Int32": 0,
-            "Int64": 0,
-            "Uint8": 0,
-            "Uint16": 0,
-            "Uint32": 0,
-            "Uint64": 0,
-            "String": "eva",
-            "Boolean": false,
-            "Decimal64": 0
+            "Value": {
+              "Type": 18,
+              "Int8": 0,
+              "Int16": 0,
+              "Int32": 0,
+              "Int64": 0,
+              "Uint8": 0,
+              "Uint16": 0,
+              "Uint32": 0,
+              "Uint64": 0,
+              "String": "eva",
+              "Boolean": false,
+              "Decimal64": 0
+            }
           }
         },
+        "KeysIndex": [
+          "name"
+        ],
         "Dbtype": "list",
         "Dbvaluetype": 0
       },
@@ -113,20 +123,25 @@
         "Word": "user",
         "Keys": {
           "name": {
-            "Type": 18,
-            "Int8": 0,
-            "Int16": 0,
-            "Int32": 0,
-            "Int64": 0,
-            "Uint8": 0,
-            "Uint16": 0,
-            "Uint32": 0,
-            "Uint64": 0,
-            "String": "eva",
-            "Boolean": false,
-            "Decimal64": 0
+            "Value": {
+              "Type": 18,
+              "Int8": 0,
+              "Int16": 0,
+              "Int32": 0,
+              "Int64": 0,
+              "Uint8": 0,
+              "Uint16": 0,
+              "Uint32": 0,
+              "Uint64": 0,
+              "String": "eva",
+              "Boolean": false,
+              "Decimal64": 0
+            }
           }
         },
+        "KeysIndex": [
+          "name"
+        ],
         "Dbtype": "list",
         "Dbvaluetype": 0
       }
@@ -148,20 +163,25 @@
         "Word": "user",
         "Keys": {
           "name": {
-            "Type": 0,
-            "Int8": 0,
-            "Int16": 0,
-            "Int32": 0,
-            "Int64": 0,
-            "Uint8": 0,
-            "Uint16": 0,
-            "Uint32": 0,
-            "Uint64": 0,
-            "String": "",
-            "Boolean": false,
-            "Decimal64": 0
+            "Value": {
+              "Type": 0,
+              "Int8": 0,
+              "Int16": 0,
+              "Int32": 0,
+              "Int64": 0,
+              "Uint8": 0,
+              "Uint16": 0,
+              "Uint32": 0,
+              "Uint64": 0,
+              "String": "",
+              "Boolean": false,
+              "Decimal64": 0
+            }
           }
         },
+        "KeysIndex": [
+          "name"
+        ],
         "Dbtype": "list",
         "Dbvaluetype": 0
       }

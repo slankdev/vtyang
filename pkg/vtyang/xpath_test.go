@@ -202,10 +202,15 @@ func TestXPathParseCli(t *testing.T) {
 						Module: "account",
 						Dbtype: List,
 						Word:   "user",
-						Keys: map[string]DBValue{
+						KeysIndex: []string{
+							"name",
+						},
+						Keys: map[string]XWordKey{
 							"name": {
-								Type:   yang.Ystring,
-								String: "eva",
+								Value: DBValue{
+									Type:   yang.Ystring,
+									String: "eva",
+								},
 							},
 						},
 					},
@@ -226,8 +231,8 @@ func TestXPathParseCli(t *testing.T) {
 		util.PanicOnErr(err)
 
 		if !reflect.DeepEqual(xpath, tc.xpath) {
-			pp.Println("in", tc.xpath)
-			pp.Println("out", xpath)
+			pp.Println("xpath-expect", tc.xpath)
+			pp.Println("xpath-result", xpath)
 			t.Errorf("missmatch deepequal in=%s", tc.in)
 		}
 

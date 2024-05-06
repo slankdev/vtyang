@@ -12,20 +12,25 @@
       "Word": "interface",
       "Keys": {
         "name": {
-          "Type": 18,
-          "Int8": 0,
-          "Int16": 0,
-          "Int32": 0,
-          "Int64": 0,
-          "Uint8": 0,
-          "Uint16": 0,
-          "Uint32": 0,
-          "Uint64": 0,
-          "String": "dum0",
-          "Boolean": false,
-          "Decimal64": 0
+          "Value": {
+            "Type": 18,
+            "Int8": 0,
+            "Int16": 0,
+            "Int32": 0,
+            "Int64": 0,
+            "Uint8": 0,
+            "Uint16": 0,
+            "Uint32": 0,
+            "Uint64": 0,
+            "String": "dum0",
+            "Boolean": false,
+            "Decimal64": 0
+          }
         }
       },
+      "KeysIndex": [
+        "name"
+      ],
       "Dbtype": "list",
       "Dbvaluetype": 0
     },
@@ -52,20 +57,25 @@
       "Word": "interface",
       "Keys": {
         "name": {
-          "Type": 18,
-          "Int8": 0,
-          "Int16": 0,
-          "Int32": 0,
-          "Int64": 0,
-          "Uint8": 0,
-          "Uint16": 0,
-          "Uint32": 0,
-          "Uint64": 0,
-          "String": "dum10",
-          "Boolean": false,
-          "Decimal64": 0
+          "Value": {
+            "Type": 18,
+            "Int8": 0,
+            "Int16": 0,
+            "Int32": 0,
+            "Int64": 0,
+            "Uint8": 0,
+            "Uint16": 0,
+            "Uint32": 0,
+            "Uint64": 0,
+            "String": "dum10",
+            "Boolean": false,
+            "Decimal64": 0
+          }
         }
       },
+      "KeysIndex": [
+        "name"
+      ],
       "Dbtype": "list",
       "Dbvaluetype": 0
     },
@@ -99,48 +109,59 @@
       "Word": "control-plane-protocol",
       "Keys": {
         "name": {
-          "Type": 18,
-          "Int8": 0,
-          "Int16": 0,
-          "Int32": 0,
-          "Int64": 0,
-          "Uint8": 0,
-          "Uint16": 0,
-          "Uint32": 0,
-          "Uint64": 0,
-          "String": "staticd",
-          "Boolean": false,
-          "Decimal64": 0
+          "Value": {
+            "Type": 18,
+            "Int8": 0,
+            "Int16": 0,
+            "Int32": 0,
+            "Int64": 0,
+            "Uint8": 0,
+            "Uint16": 0,
+            "Uint32": 0,
+            "Uint64": 0,
+            "String": "staticd",
+            "Boolean": false,
+            "Decimal64": 0
+          }
         },
         "type": {
-          "Type": 15,
-          "Int8": 0,
-          "Int16": 0,
-          "Int32": 0,
-          "Int64": 0,
-          "Uint8": 0,
-          "Uint16": 0,
-          "Uint32": 0,
-          "Uint64": 0,
-          "String": "frr-staticd:staticd",
-          "Boolean": false,
-          "Decimal64": 0
+          "Value": {
+            "Type": 15,
+            "Int8": 0,
+            "Int16": 0,
+            "Int32": 0,
+            "Int64": 0,
+            "Uint8": 0,
+            "Uint16": 0,
+            "Uint32": 0,
+            "Uint64": 0,
+            "String": "frr-staticd:staticd",
+            "Boolean": false,
+            "Decimal64": 0
+          }
         },
         "vrf": {
-          "Type": 17,
-          "Int8": 0,
-          "Int16": 0,
-          "Int32": 0,
-          "Int64": 0,
-          "Uint8": 0,
-          "Uint16": 0,
-          "Uint32": 0,
-          "Uint64": 0,
-          "String": "default",
-          "Boolean": false,
-          "Decimal64": 0
+          "Value": {
+            "Type": 17,
+            "Int8": 0,
+            "Int16": 0,
+            "Int32": 0,
+            "Int64": 0,
+            "Uint8": 0,
+            "Uint16": 0,
+            "Uint32": 0,
+            "Uint64": 0,
+            "String": "default",
+            "Boolean": false,
+            "Decimal64": 0
+          }
         }
       },
+      "KeysIndex": [
+        "type",
+        "name",
+        "vrf"
+      ],
       "Dbtype": "list",
       "Dbvaluetype": 0
     },
@@ -156,35 +177,43 @@
       "Word": "route-list",
       "Keys": {
         "afi-safi": {
-          "Type": 15,
-          "Int8": 0,
-          "Int16": 0,
-          "Int32": 0,
-          "Int64": 0,
-          "Uint8": 0,
-          "Uint16": 0,
-          "Uint32": 0,
-          "Uint64": 0,
-          "String": "frr-routing:ipv4-unicast",
-          "Boolean": false,
-          "Decimal64": 0
+          "Value": {
+            "Type": 15,
+            "Int8": 0,
+            "Int16": 0,
+            "Int32": 0,
+            "Int64": 0,
+            "Uint8": 0,
+            "Uint16": 0,
+            "Uint32": 0,
+            "Uint64": 0,
+            "String": "frr-routing:ipv4-unicast",
+            "Boolean": false,
+            "Decimal64": 0
+          }
         },
         "prefix": {
-          "Type": 18,
-          "UnionType": 18,
-          "Int8": 0,
-          "Int16": 0,
-          "Int32": 0,
-          "Int64": 0,
-          "Uint8": 0,
-          "Uint16": 0,
-          "Uint32": 0,
-          "Uint64": 0,
-          "String": "1.1.1.1/32",
-          "Boolean": false,
-          "Decimal64": 0
+          "Value": {
+            "Type": 18,
+            "UnionType": 18,
+            "Int8": 0,
+            "Int16": 0,
+            "Int32": 0,
+            "Int64": 0,
+            "Uint8": 0,
+            "Uint16": 0,
+            "Uint32": 0,
+            "Uint64": 0,
+            "String": "1.1.1.1/32",
+            "Boolean": false,
+            "Decimal64": 0
+          }
         }
       },
+      "KeysIndex": [
+        "prefix",
+        "afi-safi"
+      ],
       "Dbtype": "list",
       "Dbvaluetype": 0
     },

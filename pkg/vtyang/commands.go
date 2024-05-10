@@ -644,7 +644,6 @@ func doCompletion(line string, pos int) CompletionResult {
 	}
 
 	// Static information (2) identityref, enum
-	// TODO(slankdev): implement me
 	args := strings.Fields(line)
 	if len(args) > 1 {
 		xpath, value, tail0, err := ParseXPathCli(dbm, args[1:], []string{}, true)
@@ -653,22 +652,53 @@ func doCompletion(line string, pos int) CompletionResult {
 			return CompletionResult{}
 		}
 
-		// TODO(slankdev): implement me
-		//
-		// [AS-IS]
-		// > set values items item4 ?
-		// Possible Completions:
-		//   NAME algo
-		//
-		// [TO-BE]
-		// > set values items item4 ?
-		// Possible Completions:
-		//   aes
-		//   des3
-		// if xpath.TailIsList() {
-		// 	pp.Println(xpath)
-		// }
+		// (2.1) TailIsList
+		eliminateName := false
+		if xpath.TailIsList() {
+			t := xpath.Tail()
+			tailArg := args[len(args)-1]
+			if tailSpace {
+				eliminateName = true
+				for _, k := range t.KeysIndex {
+					if t.Keys[k].Value.Type == yang.Ynone {
+						items0, err := resolveListKeyCompletionItems("", t.Keys[k].ytype)
+						if err != nil {
+							fmt.Fprintf(stdout, "Error(%s): %s \n", util.LINE(), err)
+							return CompletionResult{}
+						}
+						items = append(items, items0...)
+						break
+					}
+				}
+			} else {
+				eliminateName = true
+				for _, k := range t.KeysIndex {
+					if t.Keys[k].Value.Type == yang.Ynone {
+						items0, err := resolveListKeyCompletionItems(tailArg, t.Keys[k].ytype)
+						if err != nil {
+							fmt.Fprintf(stdout, "Error(%s): %s \n", util.LINE(), err)
+							return CompletionResult{}
+						}
+						items = append(items, items0...)
+						break
+					} else {
+						value := t.Keys[k].Value
+						if tailArg != value.ToString() {
+							continue
+						}
+						items0, err := resolveListKeyCompletionItems(tailArg, t.Keys[k].ytype)
+						if err != nil {
+							fmt.Fprintf(stdout, "Error(%s): %s \n", util.LINE(), err)
+							return CompletionResult{}
+						}
+						items = append(items, items0...)
+						break
+					}
+				}
+			}
+		}
 
+		// (2.2) TailIsLeaf
 		eliminateValue := false
 		if xpath.TailIsLeaf() {
 			if tailSpace {
@@ -677,82 +707,55 @@ func doCompletion(line string, pos int) CompletionResult {
 					if ret.ResolvedXPath != nil {
 						if len(xpath.Words) > 0 {
 							tail := xpath.Words[len(xpath.Words)-1]
-							if tail.Dbtype == Leaf && tail.Dbvaluetype == yang.Yidentityref {
-								for _, id := range tail.Identities {
-									if len(tail0) == 0 {
-										items = append(items, CompletionItem{
-											Word:   id.Name,
-											Helper: "",
-										})
-									} else {
-										if strings.HasPrefix(id.Name, tail0[0]) {
-											items = append(items, CompletionItem{
-												Word:   id.Name,
-												Helper: "",
-											})
-										}
-									}
-								}
+							tailArg := ""
+							if len(tail0) > 0 {
+								tailArg = tail0[0]
 							}
+							items0, err := resolveLeafValueCompletionItems(tailArg, tail.ytype)
+							if err != nil {
+								fmt.Fprintf(stdout, "Error(%s): %s \n", util.LINE(), err)
+								return CompletionResult{}
+							}
+							items = append(items, items0...)
 						}
 					}
 				}
 				eliminateValue = true
 			} else {
-				if tailSpace {
+				if value != nil {
 					tail := xpath.Words[len(xpath.Words)-1]
-					if tail.Dbtype == Leaf && tail.Dbvaluetype == yang.Yidentityref {
-						for _, id := range tail.Identities {
-							if len(tail0) == 0 {
-								items = append(items, CompletionItem{
-									Word:   id.Name,
-									Helper: "",
-								})
-							} else {
-								if strings.HasPrefix(id.Name, tail0[0]) {
-									items = append(items, CompletionItem{
-										Word:   id.Name,
-										Helper: "",
-									})
-								}
-							}
-						}
+					tailArg := args[len(args)-1]
+					items0, err := resolveLeafValueCompletionItems(tailArg, tail.ytype)
+					if err != nil {
+						fmt.Fprintf(stdout, "Error(%s): %s \n", util.LINE(), err)
+						return CompletionResult{}
 					}
+					items = append(items, items0...)
 					eliminateValue = true
 				} else {
-					if value != nil {
+					if len(tail0) > 0 {
 						tail := xpath.Words[len(xpath.Words)-1]
-						for _, id := range tail.Identities {
-							if strings.HasPrefix(id.Name, args[len(args)-1]) {
-								items = append(items, CompletionItem{
-									Word:   id.Name,
-									Helper: "",
-								})
-							}
+						tailArg := tail0[0]
+						items0, err := resolveLeafValueCompletionItems(tailArg, tail.ytype)
+						if err != nil {
+							fmt.Fprintf(stdout, "Error(%s): %s \n", util.LINE(), err)
+							return CompletionResult{}
 						}
-
+						items = append(items, items0...)
 						eliminateValue = true
-					} else {
-
-						tail := xpath.Words[len(xpath.Words)-1]
-						if tail.Dbtype == Leaf && tail.Dbvaluetype == yang.Yidentityref {
-							for _, id := range tail.Identities {
-								if len(tail0) > 0 {
-									if strings.HasPrefix(id.Name, tail0[0]) {
-										items = append(items, CompletionItem{
-											Word:   id.Name,
-											Helper: "",
-										})
-									}
-									eliminateValue = true
-								}
-							}
-						}
 					}
 				}
 			}
 		}
 
+		if eliminateName {
+			for idx := range items {
+				if items[idx].Word == "NAME" {
+					items = append(items[:idx], items[idx+1:]...)
+					break
+				}
+			}
+		}
 		if eliminateValue {
 			for idx := range items {
 				if items[idx].Word == "VALUE" {
@@ -763,10 +766,39 @@ func doCompletion(line string, pos int) CompletionResult {
 		}
 	}
 
+	// Unique
+	uniqueItems := []CompletionItem{}
+	for _, item := range items {
+		found := false
+		for _, t := range uniqueItems {
+			if t.Word == item.Word {
+				found = true
+				break
+			}
+		}
+		if !found {
+			uniqueItems = append(uniqueItems, item)
+		}
+	}
+	items = uniqueItems
+
 	// Dynamic information
 	// TODO(slankdev): implement me
+	//
+	// [TO-BE]
+	// > set lib interface dum0 description hoge-dum0
+	// > set lib interface dum4 description hoge-dum4
+	// > set values items item4 ?
+	// Pissible Completions
+	//   NAME   interface name
+	//   dum0   configured in candidate-ds
+	//   dum1   configured in running-ds
+	//   dum4   configured in candidate-ds
 
 	// Return result
+	sort.Slice(items, func(i, j int) bool {
+		return items[i].Word < items[j].Word
+	})
 	ret.Items = items
 	return ret
 }
@@ -1123,4 +1155,147 @@ func frrConfigDiff() (string, error) {
 	_, diff := jsondiff.Compare(jsonRunningConfig,
 		jsonCandidateConfig, &opts)
 	return diff, nil
+}
+
+func resolveListKeyCompletionItems(tailArg string,
+	ytype yang.YangType) ([]CompletionItem, error) {
+	return resolveCompletionItemsImpl(tailArg, ytype, false)
+}
+
+func resolveLeafValueCompletionItems(tailArg string,
+	ytype yang.YangType) ([]CompletionItem, error) {
+	return resolveCompletionItemsImpl(tailArg, ytype, true)
+}
+
+func resolveCompletionItemsImpl(tailArg string,
+	ytype yang.YangType, isValue bool) ([]CompletionItem, error) {
+	word := "NAME"
+	if isValue {
+		word = "VALUE"
+	}
+
+	// COMPLETION SWITCHES
+	ok := false
+	items := []CompletionItem{}
+
+	// TYPE: identityref
+	if ytype.IdentityBase != nil {
+		for _, vv := range ytype.IdentityBase.Values {
+			m, err := yang.ToEntry(vv.Parent).InstantiatingModule()
+			if err != nil {
+				return nil, errors.Wrap(err, "yang.ToEntry")
+			}
+			tmpName := fmt.Sprintf("%s:%s", m, vv.Name)
+			if strings.HasPrefix(tmpName, tailArg) {
+				items = append(items, CompletionItem{
+					Word:   tmpName,
+					Helper: "",
+				})
+			}
+		}
+		ok = true
+	}
+
+	// TYPE: string
+	if ytype.Kind == yang.Ystring {
+		items = append(items, CompletionItem{
+			Word:   word,
+			Helper: "",
+		})
+		ok = true
+	}
+
+	// TYPE: leafref
+	if ytype.Kind == yang.Yleafref {
+		items = append(items, CompletionItem{
+			Word:   word,
+			Helper: "TODO(leafref)",
+		})
+		ok = true
+	}
+
+	// TYPE: uint64
+	if ytype.Kind == yang.Yuint64 {
+		items = append(items, CompletionItem{
+			Word:   word,
+			Helper: "TODO(uint64)",
+		})
+		ok = true
+	}
+
+	// TYPE: uint32
+	if ytype.Kind == yang.Yuint32 {
+		items = append(items, CompletionItem{
+			Word:   word,
+			Helper: "TODO(uint32)",
+		})
+		ok = true
+	}
+
+	// TYPE: uint16
+	if ytype.Kind == yang.Yuint16 {
+		items = append(items, CompletionItem{
+			Word:   word,
+			Helper: "TODO(uint16)",
+		})
+		ok = true
+	}
+
+	// TYPE: uint8
+	if ytype.Kind == yang.Yuint8 {
+		items = append(items, CompletionItem{
+			Word:   word,
+			Helper: "TODO(uint8)",
+		})
+		ok = true
+	}
+
+	// TYPE: union
+	if ytype.Kind == yang.Yunion {
+		tmp := []CompletionItem{}
+		for _, subytype := range ytype.Type {
+			items0, err := resolveCompletionItemsImpl(tailArg, *subytype, isValue)
+			if err != nil {
+				return nil, errors.Wrap(err, "resolveCompletionItemsImpl(sub)")
+			}
+			tmp = append(tmp, items0...)
+		}
+
+		// Make unique for tmp
+		ret := []CompletionItem{}
+		for _, item := range tmp {
+			found := false
+			for _, t := range ret {
+				if t.Word == item.Word {
+					found = true
+					break
+				}
+			}
+			if !found {
+				ret = append(ret, item)
+			}
+		}
+		items = append(items, ret...)
+		ok = true
+	}
+
+	// TYPE: enumeration
+	if ytype.Kind == yang.Yenum {
+		for _, n := range ytype.Enum.Names() {
+			if strings.HasPrefix(n, tailArg) {
+				items = append(items, CompletionItem{
+					Word:   n,
+					Helper: "",
+				})
+			}
+		}
+		ok = true
+	}
+
+	// ERROR CASE
+	if !ok {
+		fmt.Printf("\nSOMETHING UN-CATCHED 1 (%s)\n", ytype.Kind.String())
+	}
+
+	return items, nil
 }

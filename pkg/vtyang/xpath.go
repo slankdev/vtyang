@@ -12,22 +12,26 @@ import (
 )
 
 type XWord struct {
+	// Module
 	Module string
-	Word   string
+	// Word
+	Word string
 	// Keys
 	Keys map[string]XWordKey
 	// KeysIndex
-	KeysIndex   []string `json:",omitempty"`
-	Dbtype      DBNodeType
+	KeysIndex []string `json:",omitempty"`
+	// Dbtype
+	Dbtype DBNodeType
+	// Dbvaluetype
 	Dbvaluetype yang.TypeKind
+	// Dbuniontype
 	Dbuniontype yang.TypeKind `json:"Dbuniontype,omitempty"`
-	// UnionTypes
-	UnionTypes []*yang.YangType `json:",omitempty"`
-	// IdentityBase
-	Identities []*yang.Identity `json:",omitempty"`
+	// ytype
+	ytype yang.YangType
 }
 
 type XWordKey struct {
+	ytype yang.YangType
 	Value DBValue
 }
 
@@ -132,7 +136,12 @@ func validateNumberValue(valueStr string, yangType *yang.YangType) error {
 func validateIdentityrefValue(valueStr string, yangType *yang.YangType) error {
 	possibleNames := []string{}
 	for _, val := range yangType.IdentityBase.Values {
-		possibleNames = append(possibleNames, val.Name)
+		m, err := yang.ToEntry(val.Parent).InstantiatingModule()
+		if err != nil {
+			return errors.Wrap(err, "yang.ToEntry")
+		}
+		possibleNames = append(possibleNames,
+			fmt.Sprintf("%s:%s", m, val.Name))
 	}
 	if !util.StringInArray(valueStr, possibleNames) {
 		return errors.Errorf("invalid identity possible=(%+v)", possibleNames)
@@ -298,6 +307,9 @@ func ParseXPathStringImpl(module *yang.Entry, s string) (XPath, error) {
 				if keyLeafNode == nil {
 					return XPath{}, errors.Errorf("key(%s) not found", w)
 				}
+				k := XWordKey{}
+				k.ytype = *keyLeafNode.Type
+				xword.Keys[w] = k
 
 				// Parse list key-value
 				valueStr := ""
@@ -354,11 +366,11 @@ func ParseXPathStringImpl(module *yang.Entry, s string) (XPath, error) {
 		case foundNode.IsLeaf():
 			xword.Dbtype = Leaf
 			xword.Dbvaluetype = foundNode.Type.Kind
+			xword.ytype = *foundNode.Type
 		}
 
-		if foundNode.IsLeaf() && foundNode.Type.Kind == yang.Yunion {
-			types := resolveUnionTypes(foundNode.Type.Type)
-			xword.UnionTypes = types
+		if foundNode.IsLeaf() {
+			xword.ytype = *foundNode.Type
 		}
 
 		mod, err := foundNode.InstantiatingModule()
@@ -453,6 +465,7 @@ func ParseXPathArgsImpl(module *yang.Entry, args []string,
 		case foundNode.IsLeaf():
 			xword.Dbtype = Leaf
 			xword.Dbvaluetype = foundNode.Type.Kind
+			xword.ytype = *foundNode.Type
 			if setmode {
 				if len(words) > 1 {
 					v, err := validateValue(words[argumentCount], foundNode.Type)
@@ -469,7 +482,15 @@ func ParseXPathArgsImpl(module *yang.Entry, args []string,
 			xword.Keys = map[string]XWordKey{}
 			for _, w := range strings.Fields(foundNode.Key) {
 				xword.KeysIndex = append(xword.KeysIndex, w)
+				var keyLeafNode *yang.Entry
+				for _, ee := range foundNode.Dir {
+					if ee.Name == w {
+						keyLeafNode = ee
+						break
+					}
+				}
 				k := XWordKey{}
+				k.ytype = *keyLeafNode.Type
 				xword.Keys[w] = k
 			}
 			if len(words) > 1 {
@@ -515,19 +536,13 @@ func ParseXPathArgsImpl(module *yang.Entry, args []string,
 			}
 			xword.Dbtype = LeafList
 			xword.Dbvaluetype = foundNode.Type.Kind
+			xword.ytype = *foundNode.Type
 		default:
 			panic("ASSERT")
 		}
 
-		if foundNode.IsLeaf() && foundNode.Type.Kind == yang.Yidentityref {
-			xword.Identities = foundNode.Type.IdentityBase.Values
-			for idx := range xword.Identities {
-				xword.Identities[idx].Parent = nil
-			}
-		}
-		if foundNode.IsLeaf() && foundNode.Type.Kind == yang.Yunion {
-			types := resolveUnionTypes(foundNode.Type.Type)
-			xword.UnionTypes = types
+		if foundNode.IsLeaf() {
+			xword.ytype = *foundNode.Type
 		}
 
 		mod, err := foundNode.InstantiatingModule()

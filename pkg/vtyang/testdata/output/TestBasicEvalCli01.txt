@@ -272,15 +272,7 @@
         "Word": "crypto",
         "Keys": null,
         "Dbtype": "leaf",
-        "Dbvaluetype": 15,
-        "Identities": [
-          {
-            "Name": "aes"
-          },
-          {
-            "Name": "des3"
-          }
-        ]
+        "Dbvaluetype": 15
       }
     ]
   }
@@ -300,20 +292,12 @@
         "Word": "crypto",
         "Keys": null,
         "Dbtype": "leaf",
-        "Dbvaluetype": 15,
-        "Identities": [
-          {
-            "Name": "aes"
-          },
-          {
-            "Name": "des3"
-          }
-        ]
+        "Dbvaluetype": 15
       }
     ]
   },
   "Tail": [
-    "de"
+    "main:de"
   ]
 }
 {
@@ -331,15 +315,7 @@
         "Word": "crypto",
         "Keys": null,
         "Dbtype": "leaf",
-        "Dbvaluetype": 15,
-        "Identities": [
-          {
-            "Name": "aes"
-          },
-          {
-            "Name": "des3"
-          }
-        ]
+        "Dbvaluetype": 15
       }
     ]
   },
@@ -354,7 +330,7 @@
       "Uint16": 0,
       "Uint32": 0,
       "Uint64": 0,
-      "String": "des3",
+      "String": "main:des3",
       "Boolean": false,
       "Decimal64": 0
     }

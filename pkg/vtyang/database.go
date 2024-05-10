@@ -776,7 +776,8 @@ func (v DBValue) ToValue() interface{} {
 func (v *DBValue) SetFromStringWithType(s string, xword XWord) error {
 	if v.Type == yang.Yunion && v.UnionType == yang.Ynone {
 		validated := false
-		for _, ytype := range xword.UnionTypes {
+		unionTypes := resolveUnionTypes(xword.ytype.Type)
+		for _, ytype := range unionTypes {
 			switch ytype.Kind {
 			case yang.Ystring:
 				if err := validateStringValue(s, ytype); err == nil {

@@ -1,0 +1,7 @@
+module module2 {
+  namespace "http://slank.dev/vtyang/module2";
+  prefix module2;
+  import main { prefix main; }
+  identity isis { base main:protocol; }
+  identity ospf { base main:protocol; }
+}

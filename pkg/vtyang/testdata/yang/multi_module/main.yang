@@ -1,0 +1,22 @@
+module main {
+  namespace "http://slank.dev/vtyang/main";
+  prefix main;
+  identity protocol;
+  identity connected { base protocol; }
+  identity static { base protocol; }
+  container system {
+    container routing {
+      list protocol {
+        key "protocol";
+        leaf protocol {
+          type identityref {
+            base protocol;
+          }
+        }
+        leaf description {
+          type string;
+        }
+      }
+    }
+  }
+}

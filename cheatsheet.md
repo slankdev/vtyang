@@ -76,6 +76,37 @@ run-mgmt: vtyang-build
 EOF
 ```
 
+## gnmic
+
+```
+gnmic -a sandbox-iosxr-1.cisco.com:57777 \
+-u admin -p ******* --insecure -e json_ietf \
+--file yang/vendor/cisco/xr/732/openconfig-interfaces.yang \
+--dir yang/standard/ietf \
+--exclude ietf-interfaces \
+get --path '/interfaces'
+
+gnmic -a sandbox-iosxr-1.cisco.com:57777 \
+-u admin -p ******** --insecure -e json_ietf \
+get --path '/interfaces'
+
+gnmic -a sandbox-iosxr-1.cisco.com:57777 \
+-u admin -p C1sco12345 --insecure -e json_ietf \
+get --path '/openconfig-interfaces:interfaces/interface[name="GigabitEthernet0/0/0/2"]'
+
+gnmic -a sandbox-iosxr-1.cisco.com:57777 \
+-u admin -p C1sco12345 --insecure -e json_ietf \
+get --path '/Cisco-IOS-XR-um-interface-cfg:interfaces/interface[interface-name="GigabitEthernet0/0/0/2"]'
+
+grpcurl -plaintext \
+-proto github.com/openconfig/gnmi/proto/gnmi/gnmi.proto \
+-proto github.com/openconfig/gnmi/proto/gnmi_ext/gnmi_ext.proto \
+-H "username: admin" \
+-H "password: C1sco12345" \
+sandbox-iosxr-1.cisco.com:57777 \
+gnmi.gNMI.Capabilities
+```
+
 ## Presentation Materials
 
 - todo

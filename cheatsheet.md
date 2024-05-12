@@ -80,14 +80,14 @@ EOF
 
 ```
 gnmic -a sandbox-iosxr-1.cisco.com:57777 \
--u admin -p ******* --insecure -e json_ietf \
+-u admin -p C1sco12345 --insecure -e json_ietf \
 --file yang/vendor/cisco/xr/732/openconfig-interfaces.yang \
 --dir yang/standard/ietf \
 --exclude ietf-interfaces \
 get --path '/interfaces'
 
 gnmic -a sandbox-iosxr-1.cisco.com:57777 \
--u admin -p ******** --insecure -e json_ietf \
+-u admin -p C1sco12345 --insecure -e json_ietf \
 get --path '/interfaces'
 
 gnmic -a sandbox-iosxr-1.cisco.com:57777 \

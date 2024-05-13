@@ -121,10 +121,10 @@ grpcurl -plaintext \
 -H "password: C1sco12345" \
 sandbox-iosxr-1.cisco.com:57777 \
 gnmi.gNMI.Capabilities
-```
 
-```
-clear arp-cache mgmtEth 0/RP0/CPU0/0 location all
+grpcurl -plaintext \
+-H "username: admin" -H "password: C1sco12345" \
+sandbox-iosxr-1.cisco.com:57777 list
 ```
 
 ## Cisco IOS-XR gRPC automation
@@ -156,10 +156,17 @@ get --path '/Cisco-IOS-XR-ipv4-arp-cfg:arpgmp'
 
 gnmic -a sandbox-iosxr-1.cisco.com:57777 \
 -u admin -p C1sco12345 --insecure -e json_ietf \
-get --path '/Cisco-IOS-XR-ipv4-arp-cfg:arpgmp/vrf[vrf-name="default"]/entries/entry[address="10.10.20.111"]'
+get --delete '/Cisco-IOS-XR-ipv4-arp-cfg:arpgmp/vrf[vrf-name="default"]/entries/entry[address="10.10.20.111"]'
 ```
 
-set configuration
+delete configuration (gNMI)
+```
+gnmic -a sandbox-iosxr-1.cisco.com:57777 \
+-u admin -p C1sco12345 --insecure -e json_ietf \
+set --delete '/Cisco-IOS-XR-ipv4-arp-cfg:arpgmp/vrf[vrf-name="default"]/entries/entry[address="10.10.20.111"]'
+```
+
+set configuration (gNMI)
 ```
 // configure
 // arp 10.10.20.111 5254.0000.0001 ARPA interface MgmtEth 0/RP0/CPU0/0
@@ -173,6 +180,19 @@ gnmic -a sandbox-iosxr-1.cisco.com:57777 \
 --update-value "MgmtEth0/RP0/CPU0/0" \
 --update-path '/Cisco-IOS-XR-ipv4-arp-cfg:arpgmp/vrf[vrf-name="default"]/entries/entry[address="10.10.20.111"]/mac-address' \
 --update-value "52:54:00:00:00:01"
+```
+
+set configuration (cisco gRPC)
+```
+grpcurl -plaintext \
+-H "username: admin" -H "password: C1sco12345" \
+-d '{"ReqId":1,"yangjson":"{\"Cisco-IOS-XR-ipv4-arp-cfg:arpgmp\":{\"vrf\":[{\"vrf-name\":\"default\",\"entries\":{\"entry\":[{\"address\":\"10.10.20.111\",\"encapsulation\":\"arpa\",\"entry-type\":\"static\",\"interface\":\"MgmtEth0/RP0/CPU0/0\",\"mac-address\":\"52:54:00:00:00:01\"}]}}]}}"}' \
+sandbox-iosxr-1.cisco.com:57777 IOSXRExtensibleManagabilityService.gRPCConfigOper.MergeConfig
+
+grpcurl -plaintext \
+-H "username: admin" -H "password: C1sco12345" \
+-d '{"ReqId":1,"yangjson":"{\"Cisco-IOS-XR-ipv4-arp-cfg:arpgmp\":{\"vrf\":[{\"vrf-name\":\"default\",\"entries\":{\"entry\":[{\"address\":\"10.10.20.111\",\"encapsulation\":\"arpa\",\"entry-type\":\"static\",\"interface\":\"MgmtEth0/RP0/CPU0/0\",\"mac-address\":\"52:54:00:00:00:01\"}]}}]}}"}' \
+sandbox-iosxr-1.cisco.com:57777 IOSXRExtensibleManagabilityService.gRPCConfigOper.ReplaceConfig
 ```
 
 ## Presentation Materials

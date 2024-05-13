@@ -129,6 +129,7 @@ clear arp-cache mgmtEth 0/RP0/CPU0/0 location all
 
 ## Cisco IOS-XR gRPC automation
 
+show operational state
 ```
 // show arp
 gnmic -a sandbox-iosxr-1.cisco.com:57777 \
@@ -136,6 +137,7 @@ gnmic -a sandbox-iosxr-1.cisco.com:57777 \
 get --path '/Cisco-IOS-XR-ipv4-arp-oper:arp/nodes/node[node-name="0/RP0/CPU0"]/entries'
 ```
 
+execute rpc
 ```
 // clear arp-cache mgmtEth 0/RP0/CPU0/0 location all
 grpcurl -plaintext \
@@ -143,6 +145,34 @@ grpcurl -plaintext \
 -d '{"ReqId":1,"yangpathjson":"{\"Cisco-IOS-XR-ipv4-arp-act:clear-arp-cache-interface-location\":{\"node-location\":\"0/RP0/CPU0\"}}"}' \
 sandbox-iosxr-1.cisco.com:57777 \
 IOSXRExtensibleManagabilityService.gRPCExec.ActionJSON
+```
+
+get configuration
+```
+// show running-config arp 10.10.20.111 5254.0000.0001 ARPA
+gnmic -a sandbox-iosxr-1.cisco.com:57777 \
+-u admin -p C1sco12345 --insecure -e json_ietf \
+get --path '/Cisco-IOS-XR-ipv4-arp-cfg:arpgmp'
+
+gnmic -a sandbox-iosxr-1.cisco.com:57777 \
+-u admin -p C1sco12345 --insecure -e json_ietf \
+get --path '/Cisco-IOS-XR-ipv4-arp-cfg:arpgmp/vrf[vrf-name="default"]/entries/entry[address="10.10.20.111"]'
+```
+
+set configuration
+```
+// configure
+// arp 10.10.20.111 5254.0000.0001 ARPA interface MgmtEth 0/RP0/CPU0/0
+gnmic -a sandbox-iosxr-1.cisco.com:57777 \
+-u admin -p C1sco12345 --insecure -e json_ietf set \
+--update-path '/Cisco-IOS-XR-ipv4-arp-cfg:arpgmp/vrf[vrf-name="default"]/entries/entry[address="10.10.20.111"]/encapsulation' \
+--update-value arpa \
+--update-path '/Cisco-IOS-XR-ipv4-arp-cfg:arpgmp/vrf[vrf-name="default"]/entries/entry[address="10.10.20.111"]/entry-type' \
+--update-value static \
+--update-path '/Cisco-IOS-XR-ipv4-arp-cfg:arpgmp/vrf[vrf-name="default"]/entries/entry[address="10.10.20.111"]/interface' \
+--update-value "MgmtEth0/RP0/CPU0/0" \
+--update-path '/Cisco-IOS-XR-ipv4-arp-cfg:arpgmp/vrf[vrf-name="default"]/entries/entry[address="10.10.20.111"]/mac-address' \
+--update-value "52:54:00:00:00:01"
 ```
 
 ## Presentation Materials

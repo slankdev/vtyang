@@ -98,6 +98,26 @@ gnmic -a sandbox-iosxr-1.cisco.com:57777 \
 -u admin -p C1sco12345 --insecure -e json_ietf \
 get --path '/Cisco-IOS-XR-um-interface-cfg:interfaces/interface[interface-name="GigabitEthernet0/0/0/2"]'
 
+gnmic -a sandbox-iosxr-1.cisco.com:57777 \
+-u admin -p C1sco12345 --insecure -e json_ietf \
+get --path '/Cisco-IOS-XR-ipv4-arp-oper:arp/nodes/node[node-name="0/RP0/CPU0"]'
+
+// show arp
+gnmic -a sandbox-iosxr-1.cisco.com:57777 \
+-u admin -p C1sco12345 --insecure -e json_ietf \
+get --path '/Cisco-IOS-XR-ipv4-arp-oper:arp/nodes/node[node-name="0/RP0/CPU0"]/entries'
+
+// clear arp-cache mgmtEth 0/RP0/CPU0/0 location all
+// (rpc clear-arp-cache-interface-location)
+grpcurl -plaintext \
+-H "username: admin" -H "password: C1sco12345" \
+-d '{"ReqId":1,"yangpathjson":"{\"Cisco-IOS-XR-ipv4-arp-act:clear-arp-cache-interface-location\":{\"node-location\":\"0/RP0/CPU0\"}}"}' \
+sandbox-iosxr-1.cisco.com:57777 IOSXRExtensibleManagabilityService.gRPCExec.ActionJSON
+
+gnmic -a sandbox-iosxr-1.cisco.com:57777 \
+-u admin -p C1sco12345 --insecure -e json_ietf \
+get --path '/Cisco-IOS-XR-ipv4-arp-oper:arp/nodes/node[node-name="0/RP0/CPU0"]/adjacency-history-interface-names/adjacency-history-interface-name[interface-name="MgmtEth0/RP0/CPU0/0"]/arp-entry'
+
 grpcurl -plaintext \
 -proto github.com/openconfig/gnmi/proto/gnmi/gnmi.proto \
 -proto github.com/openconfig/gnmi/proto/gnmi_ext/gnmi_ext.proto \
@@ -105,6 +125,10 @@ grpcurl -plaintext \
 -H "password: C1sco12345" \
 sandbox-iosxr-1.cisco.com:57777 \
 gnmi.gNMI.Capabilities
+```
+
+```
+clear arp-cache mgmtEth 0/RP0/CPU0/0 location all
 ```
 
 ## Presentation Materials
